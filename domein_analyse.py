@@ -1,11 +1,11 @@
-import os
 import argparse
 import codecs
 import logging
+import os
 import sys
-import path
 from pathlib import Path
 
+import path
 import yaml
 
 from domain_analyse_classes import DomainAnalyser
