@@ -9,7 +9,7 @@ logging.basicConfig(format='%(asctime)s [%(lineno)4s] - %(levelname)-8s : %(mess
 _logger = logging.getLogger()
 
 cache_file = Path("tables_df.pkl")
-reset = True
+reset = False
 
 
 def read_tables_from_sqlite(filename: str, table_names, index_name):
@@ -32,7 +32,7 @@ def read_tables_from_sqlite(filename: str, table_names, index_name):
     return tables_df
 
 
-def main():
+def read_data():
     if not cache_file.exists() or reset:
 
         filename = "records_cache.sqlite"
@@ -45,9 +45,10 @@ def main():
         index_name = "index"
         tables = read_tables_from_sqlite(filename, table_names, index_name)
         tables.reset_index(inplace=True)
-        tables.rename(columns=dict(index="website_url"), inplace=True)
+        url_key = "website_url"
+        tables.rename(columns=dict(index=url_key), inplace=True)
 
-        result = records.join(tables, on="website_url", how="left")
+        result = pd.merge(left=records, right=tables, on=url_key)
         _logger.info(f"Writing results to cache {cache_file}")
         with open(str(cache_file), "wb") as stream:
             pickle.dump(result, stream)
@@ -55,9 +56,15 @@ def main():
     else:
         _logger.info(f"Reading tables from cache {cache_file}")
         with open(str(cache_file), "rb") as stream:
-            result     = pickle.load(stream)
+            result = pickle.load(stream)
 
-    result.head()
+    return result
+
+
+def main():
+    dataframe = read_data()
+
+    dataframe.head()
 
 
 if __name__ == "__main__":
