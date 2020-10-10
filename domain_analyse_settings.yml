@@ -1,2 +1,16 @@
 general:
   working_directory:
+statistics:
+  statline_gk_vanaf_2: # bedrijfsgrootte, per gk vanaf 2
+    do_it: true
+    groupby:
+      gk: gk_vanaf_2
+variables:
+  percentage:
+    label: "Score"
+gk_data:
+    gk3_label:
+      GK002_010:  0
+      GK010_050: 40
+      GK050_250: 60
+      GK250_: 82

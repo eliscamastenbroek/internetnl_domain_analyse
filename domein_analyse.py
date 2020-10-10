@@ -46,14 +46,22 @@ def main(argv):
     with codecs.open(args.settings_filename, "r", encoding="UTF-8") as stream:
         settings = yaml.load(stream=stream, Loader=yaml.Loader)
 
+    general_settings = settings["general"]
+    statistics = settings["statistics"]
+    gk_data = settings["gk_data"]
+    variables = settings["variables"]
+
     if args.working_directory is None:
-        working_directory = Path(".")
+        working_directory = Path(general_settings.get("working_directory", "."))
     else:
         working_directory = Path(args.working_directory)
 
     with path.Path(str(working_directory)):
         _logger.info(f"Running domain analyser in {os.getcwd()}")
-        DomainAnalyser(settings=settings)
+        DomainAnalyser(statistics=statistics,
+                       gk_data=gk_data,
+                       variables=variables,
+                       )
 
 
 if __name__ == "__main__":

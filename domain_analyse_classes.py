@@ -10,13 +10,20 @@ _logger = logging.getLogger(__name__)
 
 class DomainAnalyser(object):
     def __init__(self,
-                 settings,
                  cache_file="tables_df.pkl", reset=False,
                  records_filename="records_cache.sqlite",
-                 internet_nl_filename="internet_nl.sqlite"):
+                 internet_nl_filename="internet_nl.sqlite",
+                 statistics: dict = None,
+                 gk_data: dict = None,
+                 variables: dict = None,
+
+                 ):
 
         _logger.info(f"Runing here {os.getcwd()}")
-        self.settings = settings
+
+        self.statistics = statistics
+        self.gk_data = gk_data
+        self.variables = variables
 
         self.records_filename = records_filename
         self.internet_nl_filename = internet_nl_filename
