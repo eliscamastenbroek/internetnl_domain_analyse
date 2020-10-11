@@ -1,20 +1,45 @@
 general:
   working_directory:
+  output: intetn_nl_stats.sqlite
 statistics:
   internet_gk_vanaf_2: # bedrijfsgrootte, per gk vanaf 2
     do_it: true
     groupby:
       gk: gk_vanaf_2
+  statline_gk_all: # bedrijfsgrootte,  2 en meer WP
+    do_it: true
+    groupby:
+      gk: gk_all_wp
+  statline_sbi_digit1:
+    do_it: false
+    groupby:
+      sbi: sbi_digit1_statline
 index:
   be_id: be_id
 weight: ratio_units
+translations:
+  'yes': 1  # the strings yes en no worden naar bools vertaald. Zet '' om als string te houden
+  'no': 0
+  passed: 1
+  good: 1
+  seclevel-bad: 1
+  ok: 1
+  failed: 0
+  bad: 0
+  na: nan
+  undetermined: nan
+  not-tested: -1
+  not_tested: -1
+  warning: -2
 variables:
   percentage:
     type: percentage
     label: "Score"
-  category_web_ipv6_verdict:
+  categories_web_ipv6_verdict:
+    type: bool
     label: "Ipv6"
-  category_web_dnssec_verdict:
+  categories_web_dnssec_verdict:
+    type: bool
     label: "dnssec"
 gk_data:
     gk3_label:

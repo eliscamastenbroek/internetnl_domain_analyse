@@ -6,7 +6,7 @@ import sqlite3
 _logger = logging.getLogger(__name__)
 
 
-def read_tables_from_sqlite(filename: str, table_names, index_name):
+def read_tables_from_sqlite(filename: str, table_names, index_name) -> pd.DataFrame:
     if isinstance(table_names, str):
         table_names = [table_names]
 
