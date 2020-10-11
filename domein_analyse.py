@@ -49,6 +49,9 @@ def main(argv):
         settings = yaml.load(stream=stream, Loader=yaml.Loader)
 
     general_settings = settings["general"]
+    cache_directory = Path(general_settings.get("cache_directory", "."))
+    cache_directory.mkdir(exist_ok=True)
+
     statistics = settings["statistics"]
     translations = settings["translations"]
     gk_data = settings["gk_data"]
@@ -70,6 +73,7 @@ def main(argv):
         DomainAnalyser(
             reset=args.reset,
             output_file=output_file,
+            cache_directory=cache_directory,
             statistics=statistics,
             gk_data=gk_data,
             variables=variables,
