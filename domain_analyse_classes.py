@@ -8,6 +8,8 @@ import pandas as pd
 
 from utils import read_tables_from_sqlite, get_domain
 
+from ict_analyser.utils import SampleStatistics, prepare_df_for_statistics, get_records_select
+
 _logger = logging.getLogger(__name__)
 
 
@@ -31,6 +33,8 @@ class DomainAnalyser(object):
         self.variables = variables
 
         self.url_key = url_key
+        self.be_id = "be_id"
+        self.mi_labels = ["sbi", "gk_sbs", self.be_id]
 
         self.records_filename = records_filename
         self.internet_nl_filename = internet_nl_filename
@@ -53,29 +57,56 @@ class DomainAnalyser(object):
 
             group_by = list(props["groupby"].values())
 
-            weights_df = self.dataframe[[self.weight_key]]
-            data_grp = self.dataframe.groupby(group_by)
-            weight_grp = weights_df.groupby(group_by)
+            group_by.append(self.be_id)
+            dataframe = prepare_df_for_statistics(self.dataframe, index_names=group_by,
+                                                  units_key="units")
 
-            weight_sum = weight_grp.transform('sum')
-            weight_prime = weights_df.div(weight_sum, axis='index')
+            all_stats = dict()
 
             for var_key, var_prop in self.variables.items():
                 _logger.info(f"{var_key}")
 
-                values = data[var_key]
-                values_scaled = values.mul(weight_prime, axis='index')
-                var_mean = values_scaled.sum()
-                _logger.info(var_mean)
+                column = var_key
+                column_list = list([var_key])
+
+                var_type = var_prop.get("type", "bool")
+                var_weight_key = var_prop.get("gewicht", "units")
+                schaal_factor_key = "_".join(["ratio", var_weight_key])
+                units_schaal_factor_key = "_".join(["ratio", "units"])
+                weight_cols = set(
+                    list([var_weight_key, schaal_factor_key, units_schaal_factor_key]))
+                df_weights = dataframe.loc[:, list(weight_cols)]
+
+                data, column_list = get_records_select(dataframe=dataframe, variables=None,
+                                                       var_type=var_type, column=column,
+                                                       column_list=column_list,
+                                                       output_format="statline", var_filter=None,
+                                                       var_gewicht_key=var_weight_key,
+                                                       schaal_factor_key=schaal_factor_key)
+
+                stats = SampleStatistics(group_keys=group_by,
+                                         records_df_selection=data,
+                                         weights_df=df_weights,
+                                         column_list=column_list,
+                                         var_type=var_type,
+                                         var_weight_key=var_weight_key,
+                                         scaling_factor_key=schaal_factor_key,
+                                         units_scaling_factor_key=units_schaal_factor_key)
+
+                _logger.debug(f"Storing {stats.records_weighted_mean_agg}")
+                all_stats[column] = stats.records_weighted_mean_agg
+
+            _logger.info("Done with statsistics")
 
     def read_data(self):
         if not self.cache_file.exists() or self.reset:
 
             table_names = ["records_df_2", "info_records_df"]
-            index_name = "be_id"
+            index_name = self.be_id
             records = read_tables_from_sqlite(self.records_filename, table_names, index_name)
 
             records[self.url_key] = [get_domain(url) for url in records[self.url_key]]
+            records.reset_index(inplace=True)
 
             table_names = ["report", "scoring", "status", "results"]
             index_name = "index"
@@ -94,4 +125,3 @@ class DomainAnalyser(object):
             _logger.info(f"Reading tables from cache {self.cache_file}")
             with open(str(self.cache_file), "rb") as stream:
                 self.dataframe = pickle.load(stream)
-

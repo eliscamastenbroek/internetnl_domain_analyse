@@ -10,7 +10,12 @@ index:
 weight: ratio_units
 variables:
   percentage:
+    type: percentage
     label: "Score"
+  category_web_ipv6_verdict:
+    label: "Ipv6"
+  category_web_dnssec_verdict:
+    label: "dnssec"
 gk_data:
     gk3_label:
       GK002_010:  0
