@@ -1,3 +1,4 @@
+from tldextract import tldextract
 import logging
 import pandas as pd
 import sqlite3
@@ -23,3 +24,13 @@ def read_tables_from_sqlite(filename: str, table_names, index_name):
     connection.close()
 
     return tables_df
+
+
+def get_domain(url):
+    try:
+        tld = tldextract.extract(url)
+    except TypeError:
+        domain = None
+    else:
+        domain = tld.domain.lower()
+    return domain

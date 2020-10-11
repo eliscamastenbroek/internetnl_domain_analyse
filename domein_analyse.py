@@ -31,6 +31,7 @@ def parse_args(args):
     parser.add_argument("--debug", dest="loglevel", help="set loglevel to DEBUG"
                         , action="store_const", const=logging.DEBUG)
     parser.add_argument("--working_directory", help="Directory relative to what we work")
+    parser.add_argument("--reset", help="Reset the cached data", action="store_true")
 
     parsed_arguments = parser.parse_args(args)
 
@@ -50,6 +51,7 @@ def main(argv):
     statistics = settings["statistics"]
     gk_data = settings["gk_data"]
     variables = settings["variables"]
+    weights = settings["weight"]
 
     if args.working_directory is None:
         working_directory = Path(general_settings.get("working_directory", "."))
@@ -58,10 +60,13 @@ def main(argv):
 
     with path.Path(str(working_directory)):
         _logger.info(f"Running domain analyser in {os.getcwd()}")
-        DomainAnalyser(statistics=statistics,
-                       gk_data=gk_data,
-                       variables=variables,
-                       )
+        DomainAnalyser(
+            reset=args.reset,
+            statistics=statistics,
+            gk_data=gk_data,
+            variables=variables,
+            weights=weights,
+        )
 
 
 if __name__ == "__main__":

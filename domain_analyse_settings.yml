@@ -1,10 +1,13 @@
 general:
   working_directory:
 statistics:
-  statline_gk_vanaf_2: # bedrijfsgrootte, per gk vanaf 2
+  internet_gk_vanaf_2: # bedrijfsgrootte, per gk vanaf 2
     do_it: true
     groupby:
       gk: gk_vanaf_2
+index:
+  be_id: be_id
+weight: ratio_units
 variables:
   percentage:
     label: "Score"
