@@ -66,14 +66,14 @@ class DomainAnalyser(object):
         _logger.info("Writing statistics")
         connection = sqlite3.connect(self.output_file)
 
-        for file_base, all_stats in self.statistics.items():
+        for file_base, all_stats in self.all_stats_per_format.items():
             data = pd.DataFrame.from_dict(all_stats)
             data.to_sql(name=file_base, con=connection, if_exists="replace")
 
     def calculate_statistics_one_breakdown(self, group_by):
 
-        group_by.append(self.be_id)
-        dataframe = prepare_df_for_statistics(self.dataframe, index_names=group_by,
+        index_names = group_by + [self.be_id]
+        dataframe = prepare_df_for_statistics(self.dataframe, index_names=index_names,
                                               units_key="units")
 
         all_stats = dict()
@@ -109,7 +109,7 @@ class DomainAnalyser(object):
                                      units_scaling_factor_key=units_schaal_factor_key)
 
             _logger.debug(f"Storing {stats.records_weighted_mean_agg}")
-            all_stats[column] = stats.records_weighted_mean_agg
+            all_stats[var_key] = stats.records_weighted_mean_agg
 
         return all_stats
 
@@ -134,7 +134,8 @@ class DomainAnalyser(object):
                 with open(str(cache_file), "wb") as stream:
                     pickle.dump(all_stats, stream)
 
-            self.all_stats_per_format[file_base] = all_stats
+            stat_df = pd.concat(list(all_stats.values()), axis=1, sort=False)
+            self.all_stats_per_format[file_base] = stat_df
             _logger.info("Done with statistics")
 
     def read_data(self):
