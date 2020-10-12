@@ -1,4 +1,5 @@
 from tldextract import tldextract
+import yaml
 import logging
 import os
 import pickle
@@ -7,9 +8,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from utils import read_tables_from_sqlite, get_domain
+from utils import read_tables_from_sqlite, get_domain, fill_booleans
 
-from ict_analyser.utils import SampleStatistics, prepare_df_for_statistics, get_records_select
+from ict_analyser.utils import (SampleStatistics,
+                                prepare_df_for_statistics,
+                                get_records_select,
+                                impose_variable_defaults)
 
 _logger = logging.getLogger(__name__)
 
@@ -27,7 +31,9 @@ class DomainAnalyser(object):
                  variables: dict = None,
                  weights=None,
                  url_key="website_url",
-                 translations=None
+                 translations=None,
+                 module_key="module",
+                 variable_key="variable"
                  ):
 
         _logger.info(f"Runing here {os.getcwd()}")
@@ -39,7 +45,9 @@ class DomainAnalyser(object):
 
         self.statistics = statistics
         self.gk_data = gk_data
-        self.variables = variables
+        self.module_key = module_key
+        self.variable_key = variable_key
+        self.variables = self.variable_dict2fd(variables)
 
         self.url_key = url_key
         self.be_id = "be_id"
@@ -62,6 +70,24 @@ class DomainAnalyser(object):
         self.calculate_statistics()
         self.write_statistics()
 
+    def variable_dict2fd(self, variables) -> pd.DataFrame:
+        """
+        Converteer de directory met variable info naar een data frame
+        Args:
+            variables:  dict met variable info
+
+        Returns:
+            dataframe
+        """
+        var_df = pd.DataFrame.from_dict(variables).unstack().dropna()
+        var_df = var_df.reset_index()
+        var_df = var_df.rename(columns={"level_0": self.module_key, "level_1": self.variable_key,
+                                        0: "properties"})
+        var_df.set_index(self.variable_key, drop=True, inplace=True)
+
+        var_df = impose_variable_defaults(var_df)
+        return var_df
+
     def write_statistics(self):
         _logger.info("Writing statistics")
         connection = sqlite3.connect(self.output_file)
@@ -78,14 +104,14 @@ class DomainAnalyser(object):
 
         all_stats = dict()
 
-        for var_key, var_prop in self.variables.items():
+        for var_key, var_prop in self.variables.iterrows():
             _logger.info(f"{var_key}")
 
             column = var_key
             column_list = list([var_key])
 
-            var_type = var_prop.get("type", "bool")
-            var_weight_key = var_prop.get("gewicht", "units")
+            var_type = var_prop["type"]
+            var_weight_key = var_prop["gewicht"]
             schaal_factor_key = "_".join(["ratio", var_weight_key])
             units_schaal_factor_key = "_".join(["ratio", "units"])
             weight_cols = set(
@@ -156,11 +182,28 @@ class DomainAnalyser(object):
 
             tables[self.url_key] = [get_domain(url) for url in tables[self.url_key]]
 
-            for col in tables.columns:
-                for key, value in self.translations.items():
-                    mask = tables[col] == key
-                    if mask.sum() > 0:
-                        tables.loc[mask, col] = value
+            if self.translations is not None:
+                tables = fill_booleans(tables, self.translations)
+
+            for column in tables:
+                var_props = self.variables.loc[column, :]
+                var_type = var_props.get("type")
+                var_translate = var_props.get("translateopts")
+
+                if var_translate is not None:
+                    # op deze manier kunnen we de vertaling {Nee: 0, Ja: 1} op de column waardes los
+                    # laten, zodat we alle Nee met 0 en Ja met 1 vervangen
+                    trans = yaml.load(str(var_translate), Loader=yaml.Loader)
+                    if set(trans.keys()).intersection(set(tables[column].unique())):
+                        _logger.debug(f"Convert for {column} trans keys {trans}")
+                        tables[column] = tables[column].map(trans)
+                    else:
+                        _logger.debug(f"No Convert for {column} trans keys {trans}")
+
+                if var_type == "dict":
+                    tables[column] = tables[column].astype('category')
+                elif var_type in ("bool", "percentage", "float"):
+                    tables[column] = tables[column].astype('float64')
 
             self.dataframe = pd.merge(left=records, right=tables, on=self.url_key)
             self.dataframe.dropna(subset=[self.weight_key], axis='index', how='any', inplace=True)
