@@ -23,7 +23,7 @@ class DomainAnalyser(object):
                  cache_file="tables_df.pkl",
                  cache_directory=None,
                  output_file=None,
-                 reset=False,
+                 reset=None,
                  records_filename="records_cache.sqlite",
                  internet_nl_filename="internet_nl.sqlite",
                  statistics: dict = None,
@@ -119,7 +119,8 @@ class DomainAnalyser(object):
             df_weights = dataframe.loc[:, list(weight_cols)]
 
             try:
-                data, column_list = get_records_select(dataframe=dataframe, variables=None,
+                data, column_list = get_records_select(dataframe=dataframe,
+                                                       variables=self.variables,
                                                        var_type=var_type, column=column,
                                                        column_list=column_list,
                                                        output_format="statline", var_filter=None,
@@ -153,7 +154,7 @@ class DomainAnalyser(object):
 
             cache_file = self.cache_directory / Path(file_base + ".pkl")
 
-            if cache_file.exists() and not self.reset:
+            if cache_file.exists() and self.reset is None:
                 _logger.info(f"Reading stats from cache {cache_file}")
                 with open(str(cache_file), "rb") as stream:
                     all_stats = pickle.load(stream)
@@ -169,7 +170,7 @@ class DomainAnalyser(object):
             _logger.info("Done with statistics")
 
     def read_data(self):
-        if not self.cache_file.exists() or self.reset:
+        if not self.cache_file.exists() or self.reset == 0:
 
             table_names = ["records_df_2", "info_records_df"]
             index_name = self.be_id

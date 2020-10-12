@@ -32,7 +32,7 @@ def parse_args(args):
                         , action="store_const", const=logging.DEBUG)
     parser.add_argument("--working_directory", help="Directory relative to what we work")
     parser.add_argument("--output_filename", help="Name of the output")
-    parser.add_argument("--reset", help="Reset the cached data", action="store_true")
+    parser.add_argument("--reset", choices={"0", "1"}, default=None, help="Reset the cached data")
 
     parsed_arguments = parser.parse_args(args)
 

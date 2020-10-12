@@ -47,7 +47,7 @@ variables:
       type: bool
       label: "Ipv6 Ws Reach status"
       description: "What is the status of Ipv6 reached"
-    test_web_https_tls_cipherorder_verdict:
+    tests_web_https_tls_cipherorder_verdict:
       type: dict
       tranlate:
         bad: 0
