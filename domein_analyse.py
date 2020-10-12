@@ -56,6 +56,7 @@ def main(argv):
     translations = settings["translations"]
     gk_data = settings["gk_data"]
     variables = settings["variables"]
+    module_info = settings["module_info"]
     weights = settings["weight"]
 
     if args.output_filename is None:
@@ -77,6 +78,7 @@ def main(argv):
             statistics=statistics,
             gk_data=gk_data,
             variables=variables,
+            module_info=module_info,
             weights=weights,
             translations=translations,
         )

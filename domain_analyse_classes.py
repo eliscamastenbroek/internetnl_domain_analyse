@@ -13,7 +13,8 @@ from utils import read_tables_from_sqlite, get_domain, fill_booleans
 from ict_analyser.utils import (SampleStatistics,
                                 prepare_df_for_statistics,
                                 get_records_select, rename_all_variables,
-                                impose_variable_defaults, VariableProperties)
+                                impose_variable_defaults, VariableProperties,
+                                reorganise_stat_df, standard_output)
 
 _logger = logging.getLogger(__name__)
 
@@ -29,6 +30,7 @@ class DomainAnalyser(object):
                  statistics: dict = None,
                  gk_data: dict = None,
                  variables: dict = None,
+                 module_info: dict = None,
                  weights=None,
                  url_key="website_url",
                  translations=None,
@@ -47,7 +49,7 @@ class DomainAnalyser(object):
         self.gk_data = gk_data
         self.module_key = module_key
         self.variable_key = variable_key
-        self.variables = self.variable_dict2fd(variables)
+        self.variables = self.variable_dict2fd(variables, module_info)
 
         self.url_key = url_key
         self.be_id = "be_id"
@@ -73,7 +75,7 @@ class DomainAnalyser(object):
         self.calculate_statistics()
         self.write_statistics()
 
-    def variable_dict2fd(self, variables) -> pd.DataFrame:
+    def variable_dict2fd(self, variables, module_info=None) -> pd.DataFrame:
         """
         Converteer de directory met variable info naar een data frame
         Args:
@@ -88,7 +90,8 @@ class DomainAnalyser(object):
                                         0: "properties"})
         var_df.set_index(self.variable_key, drop=True, inplace=True)
 
-        var_df = impose_variable_defaults(var_df)
+        var_df = impose_variable_defaults(var_df, module_info=module_info,
+                                          module_key=self.module_key)
         return var_df
 
     def write_statistics(self):
@@ -98,6 +101,13 @@ class DomainAnalyser(object):
         for file_base, all_stats in self.all_stats_per_format.items():
             data = pd.DataFrame.from_dict(all_stats)
             data.to_sql(name=file_base, con=connection, if_exists="replace")
+
+            stat_df = reorganise_stat_df(records_stats=data, variables=self.variables,
+                                         module_key=self.module_key, variable_key=self.variable_key)
+            standard_output(stats_df=stat_df,
+                            file_base=file_base,
+                            file_type="xls", index_variables=[self.module_key, "vraag", "optie"],
+                            output_directory=".")
 
     def calculate_statistics_one_breakdown(self, group_by):
 

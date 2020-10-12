@@ -32,10 +32,10 @@ translations:
     ok: 1
     info: 0
 variables:
-#  score:
-#    percentage:
-#      type: percentage
-#      label: "Score"
+  score:
+    percentage:
+      type: percentage
+      label: "Score"
   results:
     categories_web_ipv6_verdict:
       type: bool
@@ -62,6 +62,15 @@ variables:
         4: Warning
         5: Security level bad
       label: Web Https Cipher order verdict
+module_info:
+  score:
+    include: true
+    label: Totaal score
+    description: Totale score van alle resultaten
+  results:
+    include: true
+    label: Scan resutls
+    description: Micro variabeles scan result
 gk_data:
     gk3_label:
       GK002_010:  0
