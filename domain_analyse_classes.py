@@ -118,12 +118,16 @@ class DomainAnalyser(object):
                 list([var_weight_key, schaal_factor_key, units_schaal_factor_key]))
             df_weights = dataframe.loc[:, list(weight_cols)]
 
-            data, column_list = get_records_select(dataframe=dataframe, variables=None,
+            try:
+                data, column_list = get_records_select(dataframe=dataframe, variables=None,
                                                    var_type=var_type, column=column,
                                                    column_list=column_list,
                                                    output_format="statline", var_filter=None,
                                                    var_gewicht_key=var_weight_key,
                                                    schaal_factor_key=schaal_factor_key)
+            except KeyError:
+                _logger.warning(f"Failed to get selection of {column}. Skipping")
+                continue
 
             stats = SampleStatistics(group_keys=group_by,
                                      records_df_selection=data,
@@ -186,7 +190,12 @@ class DomainAnalyser(object):
                 tables = fill_booleans(tables, self.translations)
 
             for column in tables:
-                var_props = self.variables.loc[column, :]
+                try:
+                    var_props = self.variables.loc[column, :]
+                except KeyError:
+                    _logger.debug("Column {} not yet defined. Skipping")
+                    continue
+
                 var_type = var_props.get("type")
                 var_translate = var_props.get("translateopts")
 

@@ -19,29 +19,49 @@ index:
   be_id: be_id
 weight: ratio_units
 translations:
-  'yes': 1  # the strings yes en no worden naar bools vertaald. Zet '' om als string te houden
-  'no': 0
-  passed: 1
-  good: 1
-  seclevel-bad: 1
-  ok: 1
-  failed: 0
-  bad: 0
-  na: nan
-  undetermined: nan
-  not-tested: -1
-  not_tested: -1
-  warning: -2
+  yes_no:
+    'yes': 1  # the strings yes en no worden naar bools vertaald. Zet '' om als string te houden
+    'no': 0
+  passed_failed:
+    passed: 1
+    failed: 0
+  good_bad:
+    good: 1
+    bad: 0
+  ok_info:
+    ok: 1
+    info: 0
 variables:
-  percentage:
-    type: percentage
-    label: "Score"
-  categories_web_ipv6_verdict:
-    type: bool
-    label: "Ipv6"
-  categories_web_dnssec_verdict:
-    type: bool
-    label: "dnssec"
+  score:
+    percentage:
+      type: percentage
+      label: "Score"
+  results:
+    categories_web_ipv6_verdict:
+      type: bool
+      label: "Ipv6"
+    categories_web_dnssec_verdict:
+      type: bool
+      label: "dnssec"
+    tests_web_ipv6_ws_reach_status:
+      type: bool
+      label: "Ipv6 Ws Reach status"
+      description: "What is the status of Ipv6 reached"
+    test_web_https_tls_cipherorder_verdict:
+      type: dict
+      tranlate:
+        bad: 0
+        good: 1
+        not-tested: 2
+        warning: 3
+        seclevel-bad: 4
+      options:
+        0: Bad
+        1: Good
+        2: Not tested
+        3: Warning
+        4: Security level bad
+      label: Web Https Cipher order verdict
 gk_data:
     gk3_label:
       GK002_010:  0

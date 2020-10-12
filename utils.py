@@ -1,3 +1,4 @@
+import numpy as np
 from tldextract import tldextract
 import logging
 import pandas as pd
@@ -34,3 +35,21 @@ def get_domain(url):
     else:
         domain = tld.domain.lower()
     return domain
+
+
+def fill_booleans(tables, translations):
+    for col in tables.columns:
+        unique_values = tables[col].unique()
+        if len(unique_values) <= 3:
+            for trans_key, trans_prop in translations.items():
+                bool_keys = set(trans_prop.keys())
+                intersection = bool_keys.intersection(unique_values)
+                if intersection:
+                    nan_val = set(unique_values).difference(bool_keys)
+                    if nan_val:
+                        trans_prop[list(nan_val)[0]] = np.nan
+                    for key, val in trans_prop.items():
+                        mask = tables[col] == key
+                        if any(mask):
+                            tables.loc[mask, col] = float(val)
+    return tables
