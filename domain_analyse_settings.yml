@@ -32,10 +32,10 @@ translations:
     ok: 1
     info: 0
 variables:
-  score:
-    percentage:
-      type: percentage
-      label: "Score"
+#  score:
+#    percentage:
+#      type: percentage
+#      label: "Score"
   results:
     categories_web_ipv6_verdict:
       type: bool
@@ -49,18 +49,18 @@ variables:
       description: "What is the status of Ipv6 reached"
     tests_web_https_tls_cipherorder_verdict:
       type: dict
-      tranlate:
-        bad: 0
-        good: 1
-        not-tested: 2
-        warning: 3
-        seclevel-bad: 4
+      translate:
+        bad: 1
+        good: 2
+        not-tested: 3
+        warning: 4
+        seclevel-bad: 5
       options:
-        0: Bad
-        1: Good
-        2: Not tested
-        3: Warning
-        4: Security level bad
+        1: Bad
+        2: Good
+        3: Not tested
+        4: Warning
+        5: Security level bad
       label: Web Https Cipher order verdict
 gk_data:
     gk3_label:

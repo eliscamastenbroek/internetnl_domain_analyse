@@ -12,8 +12,8 @@ from utils import read_tables_from_sqlite, get_domain, fill_booleans
 
 from ict_analyser.utils import (SampleStatistics,
                                 prepare_df_for_statistics,
-                                get_records_select,
-                                impose_variable_defaults)
+                                get_records_select, rename_all_variables,
+                                impose_variable_defaults, VariableProperties)
 
 _logger = logging.getLogger(__name__)
 
@@ -59,7 +59,10 @@ class DomainAnalyser(object):
 
         self.cache_directory = cache_directory
         self.cache_file = self.cache_directory / Path(cache_file)
-        self.reset = reset
+        if reset is None:
+            self.reset = None
+        else:
+            self.reset = int(reset)
         self.weight_key = weights
 
         self.dataframe = None
@@ -106,11 +109,13 @@ class DomainAnalyser(object):
 
         for var_key, var_prop in self.variables.iterrows():
             _logger.info(f"{var_key}")
+            var_prop_klass = VariableProperties(variables=self.variables, column=var_key)
 
             column = var_key
             column_list = list([var_key])
 
             var_type = var_prop["type"]
+            var_filter = var_prop["filter"]
             var_weight_key = var_prop["gewicht"]
             schaal_factor_key = "_".join(["ratio", var_weight_key])
             units_schaal_factor_key = "_".join(["ratio", "units"])
@@ -121,9 +126,11 @@ class DomainAnalyser(object):
             try:
                 data, column_list = get_records_select(dataframe=dataframe,
                                                        variables=self.variables,
-                                                       var_type=var_type, column=column,
+                                                       var_type=var_type,
+                                                       column=column,
                                                        column_list=column_list,
-                                                       output_format="statline", var_filter=None,
+                                                       output_format="statline",
+                                                       var_filter=var_filter,
                                                        var_gewicht_key=var_weight_key,
                                                        schaal_factor_key=schaal_factor_key)
             except KeyError:
@@ -190,6 +197,8 @@ class DomainAnalyser(object):
             if self.translations is not None:
                 tables = fill_booleans(tables, self.translations)
 
+            rename_all_variables(tables, self.variables)
+
             for column in tables:
                 try:
                     var_props = self.variables.loc[column, :]
@@ -217,6 +226,9 @@ class DomainAnalyser(object):
 
             self.dataframe = pd.merge(left=records, right=tables, on=self.url_key)
             self.dataframe.dropna(subset=[self.weight_key], axis='index', how='any', inplace=True)
+            mask = self.dataframe[self.be_id].duplicated()
+            self.dataframe = self.dataframe[~mask]
+            self.dataframe.set_index(self.be_id)
             _logger.info(f"Writing results to cache {self.cache_file}")
             with open(str(self.cache_file), "wb") as stream:
                 pickle.dump(self.dataframe, stream)
