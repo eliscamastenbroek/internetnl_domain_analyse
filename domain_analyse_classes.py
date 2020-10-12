@@ -120,11 +120,11 @@ class DomainAnalyser(object):
 
             try:
                 data, column_list = get_records_select(dataframe=dataframe, variables=None,
-                                                   var_type=var_type, column=column,
-                                                   column_list=column_list,
-                                                   output_format="statline", var_filter=None,
-                                                   var_gewicht_key=var_weight_key,
-                                                   schaal_factor_key=schaal_factor_key)
+                                                       var_type=var_type, column=column,
+                                                       column_list=column_list,
+                                                       output_format="statline", var_filter=None,
+                                                       var_gewicht_key=var_weight_key,
+                                                       schaal_factor_key=schaal_factor_key)
             except KeyError:
                 _logger.warning(f"Failed to get selection of {column}. Skipping")
                 continue
