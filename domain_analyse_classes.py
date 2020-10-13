@@ -232,16 +232,13 @@ class DomainAnalyser(object):
         """ write the combined data frame to sqlite lite """
 
         count_per_lower_col = Counter([col.lower() for col in self.dataframe.columns])
-        for col, multiplicity in count_per_lower_col.items():
+        for col_lower, multiplicity in count_per_lower_col.items():
             if multiplicity > 1:
-                drop_col = None
-                for col2 in self.dataframe.columns:
-                    if col2.lower() == col:
-                        drop_col = col2
+                for col in self.dataframe.columns:
+                    if col.lower() == col_lower:
+                        _logger.info(f"Dropping duplicated column {col}")
+                        self.dataframe.drop([col], axis=1, inplace=True)
                         break
-                if drop_col is not None:
-                    _logger.info(f"Dropping duplicated column {drop_col}")
-                    self.dataframe.drop([drop_col], axis=1, inplace=True)
 
         output_file_name = self.cache_file.with_suffix(".sqlite")
         _logger.info(f"Writing dataframe to {output_file_name}")
