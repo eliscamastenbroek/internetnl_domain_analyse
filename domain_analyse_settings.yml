@@ -36,8 +36,6 @@ translations:
   ok_info:
     ok: 1
     info: 0
-variable_templates:
-
 variables:
   score:
     percentage:
@@ -60,7 +58,7 @@ variables:
       options:
         1: Passed
         2: Failed
-        2: Unreachable
+        3: Unreachable
     categories_web_appsecpriv_verdict:
       type: dict
       label: Web App Sec Priv
@@ -291,8 +289,8 @@ variables:
       type: dict
       label: "Web app sec priv x content type opt"
       translate:
-        yes: 1
-        no: 2
+        "yes": 1
+        "no": 2
         undetermined: 3
       options:
         1: Yes
@@ -311,3 +309,29 @@ module_info:
     include: true
     label: Test
     description: Micro variabeles scan result
+breakdown_labels:
+  internet_gk_vanaf_2:
+    WP19082: 2        # 21  # 2 wp
+    WP19083: 3-4      # 22  # 3 tot 5 wp
+    WP19085: 5-9      # 5 tot 10 wp
+    WP19089: 10-19    # 10 tot 20 wp
+    WP19092: 20-49    # 20 tot 50 wp
+    WP19096: 50-99    # 60  # 50 tot 100 wp
+    WP19100: 100-249  # 100 tot 250 wp
+    WP19108: 250-499  # 250 tot 500 wp
+    WP19109: 500-     # 500 of meer
+  statline_gk_all:
+    WP19115: Totaal NL  # bedrijfsgrootte, 2 en meer WP
+  statline_sbi_digit1:
+    "C": "Industrie"
+    "D-E": "Energie/water/afval"
+    "F": "Bouwnijverheid"
+    "G": "Handel"
+    "H": "Vervoer/Opslag"
+    "I": "Horeca"
+    "J": "Informatie/Communicatie"
+    "K": "Financiële dienstverlening"
+    "L": "Verhuur/handel ontr.goed"
+    "M": "Special. zakelijke dienstver."
+    "N": "Verhuur en overige zakelijke diensten"
+    "Q": "Gezondheid en welzijnszorg"

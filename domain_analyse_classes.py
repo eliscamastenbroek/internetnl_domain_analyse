@@ -34,6 +34,7 @@ class DomainAnalyser(object):
                  weights=None,
                  url_key="website_url",
                  translations=None,
+                 breakdown_labels=None,
                  module_key="module",
                  variable_key="variable",
                  sheet_renames=None,
@@ -60,6 +61,7 @@ class DomainAnalyser(object):
         self.be_id = "be_id"
         self.mi_labels = ["sbi", "gk_sbs", self.be_id]
         self.translations = translations
+        self.breakdown_labels = breakdown_labels
 
         self.records_filename = records_filename
         self.internet_nl_filename = internet_nl_filename
@@ -118,6 +120,13 @@ class DomainAnalyser(object):
                                              module_key=self.module_key,
                                              variable_key=self.variable_key,
                                              n_digits=self.n_digits)
+                if self.breakdown_labels:
+                    try:
+                        labels = self.breakdown_labels[file_base]
+                    except KeyError:
+                        _logger.info(f"No breakdown labels for {file_base}")
+                    else:
+                        stat_df.rename(columns=labels, inplace=True)
                 sheet_name = file_base
                 if self.sheet_renames is not None:
                     for rename_key, sheet_rename in self.sheet_renames.items():

@@ -57,6 +57,7 @@ def main(argv):
 
     statistics = settings["statistics"]
     translations = settings["translations"]
+    breakdown_labels = settings["breakdown_labels"]
     variables = settings["variables"]
     module_info = settings["module_info"]
     weights = settings["weight"]
@@ -82,6 +83,7 @@ def main(argv):
             module_info=module_info,
             weights=weights,
             translations=translations,
+            breakdown_labels=breakdown_labels,
             sheet_renames=sheet_renames,
             n_digits=n_digits,
         )
