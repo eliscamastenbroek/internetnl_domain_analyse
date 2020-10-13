@@ -24,9 +24,6 @@ index:
   be_id: be_id
 weight: ratio_units
 translations:
-  yes_no:
-    'yes': 1  # the strings yes en no worden naar bools vertaald. Zet '' om als string te houden
-    'no': 0
   passed_failed:
     passed: 1
     failed: 0
@@ -287,14 +284,14 @@ variables:
       options: *options_good_bad_nt
     custom_tls_1_3_support:
       type: dict
-      label: "Web app sec priv x content type opt"
+      label: "Custom Tls 1.3 support"
       translate:
         "yes": 1
         "no": 2
         undetermined: 3
       options:
-        1: Yes
-        2: No
+        1: "Yes"
+        2: "No"
         3: Undetermined
 module_info:
   score:
