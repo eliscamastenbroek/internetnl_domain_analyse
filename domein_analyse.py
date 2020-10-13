@@ -53,10 +53,10 @@ def main(argv):
     cache_directory.mkdir(exist_ok=True)
 
     sheet_renames = general_settings["sheet_renames"]
+    n_digits = general_settings["n_digits"]
 
     statistics = settings["statistics"]
     translations = settings["translations"]
-    gk_data = settings["gk_data"]
     variables = settings["variables"]
     module_info = settings["module_info"]
     weights = settings["weight"]
@@ -78,12 +78,12 @@ def main(argv):
             output_file=output_file,
             cache_directory=cache_directory,
             statistics=statistics,
-            gk_data=gk_data,
             variables=variables,
             module_info=module_info,
             weights=weights,
             translations=translations,
             sheet_renames=sheet_renames,
+            n_digits=n_digits,
         )
 
 

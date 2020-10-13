@@ -29,7 +29,6 @@ class DomainAnalyser(object):
                  records_filename="records_cache.sqlite",
                  internet_nl_filename="internet_nl.sqlite",
                  statistics: dict = None,
-                 gk_data: dict = None,
                  variables: dict = None,
                  module_info: dict = None,
                  weights=None,
@@ -37,7 +36,8 @@ class DomainAnalyser(object):
                  translations=None,
                  module_key="module",
                  variable_key="variable",
-                 sheet_renames=None
+                 sheet_renames=None,
+                 n_digits=None,
                  ):
 
         _logger.info(f"Runing here {os.getcwd()}")
@@ -48,10 +48,11 @@ class DomainAnalyser(object):
             self.output_file = output_file
 
         self.statistics = statistics
-        self.gk_data = gk_data
         self.module_key = module_key
         self.variable_key = variable_key
+        self.module_info = module_info
         self.variables = self.variable_dict2fd(variables, module_info)
+        self.n_digits = n_digits
 
         self.sheet_renames = sheet_renames
 
@@ -79,11 +80,12 @@ class DomainAnalyser(object):
         self.calculate_statistics()
         self.write_statistics()
 
-    def variable_dict2fd(self, variables, module_info=None) -> pd.DataFrame:
+    def variable_dict2fd(self, variables, module_info: dict = None) -> pd.DataFrame:
         """
         Converteer de directory met variable info naar een data frame
         Args:
             variables:  dict met variable info
+            module_info: dict met module informatie
 
         Returns:
             dataframe
@@ -114,7 +116,8 @@ class DomainAnalyser(object):
 
                 stat_df = reorganise_stat_df(records_stats=data, variables=self.variables,
                                              module_key=self.module_key,
-                                             variable_key=self.variable_key)
+                                             variable_key=self.variable_key,
+                                             n_digits=self.n_digits)
                 sheet_name = file_base
                 if self.sheet_renames is not None:
                     for rename_key, sheet_rename in self.sheet_renames.items():
@@ -143,6 +146,10 @@ class DomainAnalyser(object):
 
             column = var_key
             column_list = list([var_key])
+            var_module = var_prop["module"]
+            module = self.module_info[var_module]
+            if not module.get("include", True):
+                continue
 
             var_type = var_prop["type"]
             var_filter = var_prop["filter"]
@@ -225,7 +232,7 @@ class DomainAnalyser(object):
             tables[self.url_key] = [get_domain(url) for url in tables[self.url_key]]
 
             if self.translations is not None:
-                tables = fill_booleans(tables, self.translations)
+                tables = fill_booleans(tables, self.translations, variables=self.variables)
 
             rename_all_variables(tables, self.variables)
 

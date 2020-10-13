@@ -2,6 +2,7 @@ general:
   working_directory:
   output: intetn_nl_stats.sqlite
   cache_directory: cache
+  n_digits: 1
   sheet_renames:
     statline:
       pattern: "statline_"
@@ -35,49 +36,278 @@ translations:
   ok_info:
     ok: 1
     info: 0
+variable_templates:
+
 variables:
   score:
     percentage:
       type: percentage
       label: "Score"
-  results:
+  categories:
     categories_web_ipv6_verdict:
       type: bool
-      label: "Ipv6"
+      label: "Web Ipv6"
     categories_web_dnssec_verdict:
       type: bool
       label: "dnssec"
-    tests_web_ipv6_ws_reach_status:
+    categories_web_https_verdict:
+      type: dict
+      label: Web Https
+      translate:
+        passed: 1
+        failed: 2
+        unreachable: 3
+      options:
+        1: Passed
+        2: Failed
+        2: Unreachable
+    categories_web_appsecpriv_verdict:
+      type: dict
+      label: Web App Sec Priv
+      translate:
+        passed: 1
+        warning: 2
+      options:
+        1: Passed
+        2: Warning
+  tests:
+    tests_web_ipv6_ns_address_verdict:
+      type: dict
+      label: Web Ipv6 ns address
+      translate: &translate_good_bad_other
+        good: 1
+        bad: 2
+        other: 3
+      options: &options_good_bad_other
+        1: Good
+        2: Bad
+        3: Other
+    tests_web_ipv6_ns_reach_verdict:
+      type: dict
+      label: Web Ipv6 ns Reach
+      translate: &translate_good_bad_nt
+        good: 1
+        bad: 2
+        "not-tested": 3
+      options: &options_good_bad_nt
+        1: Good
+        2: Bad
+        3: Not tested
+    tests_web_ipv6_ws_address_verdict:
       type: bool
-      label: "Ipv6 Ws Reach status"
-      description: "What is the status of Ipv6 reached"
+    tests_web_ipv6_ws_reach_verdict:
+      type: dict
+      label: "Ipv6 Ws Reach"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    tests_web_ipv6_ws_similar_verdict:
+      type: dict
+      label: "Ipv6 Ws Similar"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    tests_web_dnssec_exist_verdict:
+      type: dict
+      label: Web dnssec exist
+      translate: &translate_good_bad_server_failed
+        good: 1
+        bad: 2
+        servfail: 3
+      options: &options_good_bad_server_failed
+        1: Good
+        2: Bad
+        3: Server Failed
+    tests_web_dnssec_valid_verdict:
+      type: dict
+      label: "Web dnssec valid"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    tests_web_https_http_available_verdict:
+      type: dict
+      label: Web Https Http Available
+      translate: *translate_good_bad_other
+      options: *options_good_bad_other
+    tests_web_https_http_redirect_verdict:
+      type: dict
+      label: Web Https Http redirect
+      translate: &translate_good_bad_not_tested_other
+        good: 1
+        bad: 2
+        "not-tested": 3
+        other: 4
+      options: &options_good_bad_not_tested_other
+        1: Good
+        2: Bad
+        3: Not tested
+        4: Other
+    tests_web_https_http_hsts_verdict:
+      type: dict
+      label: Web Https Http redirect
+      translate: *translate_good_bad_not_tested_other
+      options: *options_good_bad_not_tested_other
+    tests_web_https_http_compress_verdict:
+      type: dict
+      label: "Web Https Http compression"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    tests_web_https_tls_keyexchange_verdict:
+      type: dict
+      label: "Web Https Tls Key exchange"
+      translate: &translate_good_bad_phaseout_na_nt
+        good: 1
+        bad: 2
+        na: 3
+        "phase-out": 4
+        "not-tested": 5
+      options: &options_good_bad_phaseout_na_nt
+        1: Good
+        2: Bad
+        3: phase-out
+        4: na
+        5: Not tested
+    tests_web_https_tls_ciphers_verdict:
+      type: dict
+      label: "Web Https Tls Ciphers"
+      translate: *translate_good_bad_phaseout_na_nt
+      options: *options_good_bad_phaseout_na_nt
     tests_web_https_tls_cipherorder_verdict:
       type: dict
+      label: Web Https Cipher Order
+      translate: &translate_good_bad_warning_sec_na_nt
+        good: 1
+        bad: 2
+        warning: 3
+        seclevel-bad: 4
+        na: 5
+        not-tested: 6
+      options: &options_good_bad_warning_sec_na_nt
+        1: Good
+        2: Bad
+        3: Warning
+        4: Security level bad
+        5: Not available
+        6: Not tested
+    tests_web_https_tls_version_verdict:
+      type: dict
+      label: "Web Https Tls Version exchange"
+      translate: *translate_good_bad_phaseout_na_nt
+      options: *options_good_bad_phaseout_na_nt
+    tests_web_https_tls_compress_verdict:
+      type: dict
+      label: "Web Https Tls Compression"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    tests_web_https_tls_secreneg_verdict:
+      type: dict
+      label: "Web Https Tls Secret neg"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    tests_web_https_tls_clientreneg_verdict:
+      type: dict
+      label: "Web Https Tls Client reneg"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    tests_web_https_cert_chain_verdict:
+      type: dict
+      label: "Web Https Cert Chain"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    tests_web_https_cert_pubkey_verdict:
+      type: dict
+      label: "Web Https Cert Pubkey"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    tests_web_https_cert_sig_verdict:
+      type: dict
+      label: "Web Https Cert Sig"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    tests_web_https_cert_domain_verdict:
+      type: dict
+      label: "Web Https Cert Domain"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    tests_web_https_dane_exist_verdict:
+      type: dict
+      label: "Web Https Dane Exist"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    tests_web_https_dane_valid_verdict:
+      type: dict
+      label: "Web Https Dane Valid"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    tests_web_https_tls_0rtt_verdict:
+      type: dict
+      label: "Web Https Tls 0rtt"
+      translate: &translate_good_bad_na_nt
+        good: 1
+        bad: 2
+        na: 3
+        "not-tested": 4
+      options: &options_good_bad_na_nt
+        1: Good
+        2: Bad
+        3: na
+        4: Not tested
+    tests_web_https_tls_ocsp_verdict:
+      type: dict
+      label: "Web Https Tls ocsp"
+      translate: &translate_good_ok_bad_nt
+        good: 1
+        ok: 2
+        bad: 3
+        "not-tested": 4
+      options: &options_good_ok_bad_nt
+        1: Good
+        2: Ok
+        3: Bad
+        4: Not tested
+    tests_web_https_tls_keyexchangehash_verdict:
+      type: dict
+      label: "Web Https Tls Key exchange"
+      translate: *translate_good_bad_phaseout_na_nt
+      options: *options_good_bad_phaseout_na_nt
+    tests_web_appsecpriv_x_frame_options_verdict:
+      type: dict
+      label: "Web Https Tls Key exchange"
+      translate: *translate_good_bad_phaseout_na_nt
+      options: *options_good_bad_phaseout_na_nt
+    tests_web_appsecpriv_referrer_policy_verdict:
+      type: dict
+      label: "Web app sec priv referred policy"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    tests_web_appsecpriv_csp_verdict:
+      type: dict
+      label: "Web app sec priv csp"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    tests_web_appsecpriv_x_content_type_options_verdict:
+      type: dict
+      label: "Web app sec priv x content type opt"
+      translate: *translate_good_bad_nt
+      options: *options_good_bad_nt
+    custom_tls_1_3_support:
+      type: dict
+      label: "Web app sec priv x content type opt"
       translate:
-        bad: 1
-        good: 2
-        not-tested: 3
-        warning: 4
-        seclevel-bad: 5
+        yes: 1
+        no: 2
+        undetermined: 3
       options:
-        1: Bad
-        2: Good
-        3: Not tested
-        4: Warning
-        5: Security level bad
-      label: Web Https Cipher order verdict
+        1: Yes
+        2: No
+        3: Undetermined
 module_info:
   score:
     include: true
     label: Totaal score
     description: Totale score van alle resultaten
-  results:
+  categories:
     include: true
-    label: Scan resutls
+    label: Categories
     description: Micro variabeles scan result
-gk_data:
-    gk3_label:
-      GK002_010:  0
-      GK010_050: 40
-      GK050_250: 60
-      GK250_: 82
+  tests:
+    include: true
+    label: Test
+    description: Micro variabeles scan result
