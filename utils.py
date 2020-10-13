@@ -3,6 +3,7 @@ from tldextract import tldextract
 import logging
 import pandas as pd
 import sqlite3
+from ict_analyser.utils import (reorganise_stat_df, standard_output)
 
 _logger = logging.getLogger(__name__)
 
@@ -63,3 +64,24 @@ def fill_booleans(tables, translations, variables):
                             if any(mask):
                                 tables.loc[mask, col] = float(val)
     return tables
+
+
+def prepare_stat_data_for_write(all_stats, file_base, variables, module_key, variable_key,
+                                breakdown_labels=None, n_digits=3, connection=None):
+    data = pd.DataFrame.from_dict(all_stats)
+    if connection is not None:
+        data.to_sql(name=file_base, con=connection, if_exists="replace")
+
+    stat_df = reorganise_stat_df(records_stats=data, variables=variables,
+                                 module_key=module_key,
+                                 variable_key=variable_key,
+                                 n_digits=n_digits)
+    if breakdown_labels is not None:
+        try:
+            labels = breakdown_labels[file_base]
+        except KeyError:
+            _logger.info(f"No breakdown labels for {file_base}")
+        else:
+            stat_df.rename(columns=labels, inplace=True)
+
+    return stat_df

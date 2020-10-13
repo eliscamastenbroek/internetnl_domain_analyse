@@ -2,6 +2,7 @@ import sys
 from collections import Counter
 import yaml
 import re
+import matplotlib.pyplot as plt
 import logging
 import os
 import pickle
@@ -10,13 +11,13 @@ from pathlib import Path
 
 import pandas as pd
 
-from utils import read_tables_from_sqlite, get_domain, fill_booleans
+from utils import read_tables_from_sqlite, get_domain, fill_booleans, prepare_stat_data_for_write
 
 from ict_analyser.utils import (SampleStatistics,
                                 prepare_df_for_statistics,
                                 get_records_select, rename_all_variables,
                                 impose_variable_defaults, VariableProperties,
-                                reorganise_stat_df, standard_output)
+                                )
 
 _logger = logging.getLogger(__name__)
 
@@ -40,7 +41,10 @@ class DomainAnalyser(object):
                  variable_key="variable",
                  sheet_renames=None,
                  n_digits=None,
-                 write_dataframe_to_sqlite=False
+                 write_dataframe_to_sqlite=False,
+                 statistics_to_xls=False,
+                 plot_statistics=False,
+                 plot_info=None
                  ):
 
         _logger.info(f"Runing here {os.getcwd()}")
@@ -78,15 +82,20 @@ class DomainAnalyser(object):
 
         self.dataframe = None
         self.all_stats_per_format = dict()
+        self.plot_info = plot_info
 
-        self.read_data()
+        if (self.reset is not None and self.reset <= 1) or not self.cache_file.exists():
+            self.read_data()
 
         if write_dataframe_to_sqlite:
             self.write_data()
             sys.exit(0)
 
         self.calculate_statistics()
-        self.write_statistics()
+        if statistics_to_xls:
+            self.write_statistics()
+        if plot_statistics:
+            self.make_plots()
 
     def variable_dict2fd(self, variables, module_info: dict = None) -> pd.DataFrame:
         """
@@ -119,20 +128,21 @@ class DomainAnalyser(object):
             _logger.info(f"Start writing standard output to {excel_file}")
 
             for file_base, all_stats in self.all_stats_per_format.items():
-                data = pd.DataFrame.from_dict(all_stats)
-                data.to_sql(name=file_base, con=connection, if_exists="replace")
 
-                stat_df = reorganise_stat_df(records_stats=data, variables=self.variables,
-                                             module_key=self.module_key,
-                                             variable_key=self.variable_key,
-                                             n_digits=self.n_digits)
-                if self.breakdown_labels:
-                    try:
-                        labels = self.breakdown_labels[file_base]
-                    except KeyError:
-                        _logger.info(f"No breakdown labels for {file_base}")
-                    else:
-                        stat_df.rename(columns=labels, inplace=True)
+                stat_df = prepare_stat_data_for_write(file_base=file_base,
+                                                      all_stats=all_stats,
+                                                      variables=self.variables,
+                                                      variable_key=self.variable_key,
+                                                      module_key=self.module_key,
+                                                      breakdown_labels=self.breakdown_labels,
+                                                      n_digits=self.n_digits,
+                                                      connection=connection
+                                                      )
+
+                cache_file = file_base + "_cache_for_plot.pkl"
+                with open(cache_file, "wb") as stream:
+                    pickle.dump(stat_df, stream)
+
                 sheet_name = file_base
                 if self.sheet_renames is not None:
                     for rename_key, sheet_rename in self.sheet_renames.items():
@@ -226,7 +236,7 @@ class DomainAnalyser(object):
 
             stat_df = pd.concat(list(all_stats.values()), axis=1, sort=False)
             self.all_stats_per_format[file_base] = stat_df
-            _logger.info("Done with statistics")
+            _logger.debug("Done with statistics")
 
     def write_data(self):
         """ write the combined data frame to sqlite lite """
@@ -306,3 +316,35 @@ class DomainAnalyser(object):
             _logger.info(f"Reading tables from cache {self.cache_file}")
             with open(str(self.cache_file), "rb") as stream:
                 self.dataframe = pickle.load(stream)
+
+    def make_plots(self):
+        _logger.info("Making the plot")
+
+        for plot_key, plot_prop in self.plot_info.items():
+            if not plot_prop.get("do_it", True):
+                continue
+
+            cache_file = plot_key + "_cache_for_plot.pkl"
+            _logger.debug(f"Reading {cache_file}")
+            with open(cache_file, "rb") as stream:
+                stats_df = pickle.load(stream)
+
+            _logger.info(f"Plotting {plot_key}")
+
+            for module_name, module_df in stats_df.groupby(level=0):
+                _logger.debug(f"Module {module_name}")
+                all_plot_df = dict()
+                for question_name, question_df in module_df.groupby(level=1):
+                    _logger.debug(f"Question {question_name}")
+                    mask_total = None
+                    for optie in ("Passed", "Yes", "Good"):
+                        mask = question_df.index.get_level_values(2) == optie
+                        if mask_total is None:
+                            mask_total = mask
+                        else:
+                            mask_total = mask | mask_total
+                    plot_df = question_df.loc[(module_name, question_df, mask)]
+                    title = ":".join([module_name, question_name])
+                    all_plot_df[title] = plot_df
+
+                _logger.debug("Done")

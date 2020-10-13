@@ -33,6 +33,9 @@ def parse_args(args):
     parser.add_argument("--working_directory", help="Directory relative to what we work")
     parser.add_argument("--output_filename", help="Name of the output")
     parser.add_argument("--reset", choices={"0", "1"}, default=None, help="Reset the cached data")
+    parser.add_argument("--plot", help="Make the plots of the statistics", action="store_true")
+    parser.add_argument("--statistics_to_xls", help="Write the statistics ot an excel file",
+                        action="store_true")
     parser.add_argument("--write_dataframe_to_sqlite", action="store_true",
                         help="Store combined data frame to sqlite and quit")
 
@@ -63,6 +66,7 @@ def main(argv):
     variables = settings["variables"]
     module_info = settings["module_info"]
     weights = settings["weight"]
+    plot_info = settings["plots"]
 
     if args.output_filename is None:
         output_file = general_settings.get("output", "internet_nl_stats")
@@ -88,7 +92,10 @@ def main(argv):
             breakdown_labels=breakdown_labels,
             sheet_renames=sheet_renames,
             n_digits=n_digits,
-            write_dataframe_to_sqlite=args.write_dataframe_to_sqlite
+            write_dataframe_to_sqlite=args.write_dataframe_to_sqlite,
+            statistics_to_xls=args.statistics_to_xls,
+            plot_statistics=args.plot,
+            plot_info = plot_info
         )
 
 
