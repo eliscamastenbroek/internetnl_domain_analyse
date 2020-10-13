@@ -33,6 +33,8 @@ def parse_args(args):
     parser.add_argument("--working_directory", help="Directory relative to what we work")
     parser.add_argument("--output_filename", help="Name of the output")
     parser.add_argument("--reset", choices={"0", "1"}, default=None, help="Reset the cached data")
+    parser.add_argument("--write_dataframe_to_sqlite", action="store_true",
+                        help="Store combined data frame to sqlite and quit")
 
     parsed_arguments = parser.parse_args(args)
 
@@ -86,6 +88,7 @@ def main(argv):
             breakdown_labels=breakdown_labels,
             sheet_renames=sheet_renames,
             n_digits=n_digits,
+            write_dataframe_to_sqlite=args.write_dataframe_to_sqlite
         )
 
 

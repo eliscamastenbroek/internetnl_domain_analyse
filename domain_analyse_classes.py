@@ -1,4 +1,5 @@
-from tldextract import tldextract
+import sys
+from collections import Counter
 import yaml
 import re
 import logging
@@ -39,6 +40,7 @@ class DomainAnalyser(object):
                  variable_key="variable",
                  sheet_renames=None,
                  n_digits=None,
+                 write_dataframe_to_sqlite=False
                  ):
 
         _logger.info(f"Runing here {os.getcwd()}")
@@ -78,6 +80,10 @@ class DomainAnalyser(object):
         self.all_stats_per_format = dict()
 
         self.read_data()
+
+        if write_dataframe_to_sqlite:
+            self.write_data()
+            sys.exit(0)
 
         self.calculate_statistics()
         self.write_statistics()
@@ -221,6 +227,26 @@ class DomainAnalyser(object):
             stat_df = pd.concat(list(all_stats.values()), axis=1, sort=False)
             self.all_stats_per_format[file_base] = stat_df
             _logger.info("Done with statistics")
+
+    def write_data(self):
+        """ write the combined data frame to sqlite lite """
+
+        count_per_lower_col = Counter([col.lower() for col in self.dataframe.columns])
+        for col, multiplicity in count_per_lower_col.items():
+            if multiplicity > 1:
+                drop_col = None
+                for col2 in self.dataframe.columns:
+                    if col2.lower() == col:
+                        drop_col = col2
+                        break
+                if drop_col is not None:
+                    _logger.info(f"Dropping duplicated column {drop_col}")
+                    self.dataframe.drop([drop_col], axis=1, inplace=True)
+
+        output_file_name = self.cache_file.with_suffix(".sqlite")
+        _logger.info(f"Writing dataframe to {output_file_name}")
+        with sqlite3.connect(str(output_file_name)) as connection:
+            self.dataframe.to_sql(name="dataframe", con=connection, if_exists="replace")
 
     def read_data(self):
         if not self.cache_file.exists() or self.reset == 0:
