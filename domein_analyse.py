@@ -52,6 +52,8 @@ def main(argv):
     cache_directory = Path(general_settings.get("cache_directory", "."))
     cache_directory.mkdir(exist_ok=True)
 
+    sheet_renames = general_settings["sheet_renames"]
+
     statistics = settings["statistics"]
     translations = settings["translations"]
     gk_data = settings["gk_data"]
@@ -81,6 +83,7 @@ def main(argv):
             module_info=module_info,
             weights=weights,
             translations=translations,
+            sheet_renames=sheet_renames,
         )
 
 

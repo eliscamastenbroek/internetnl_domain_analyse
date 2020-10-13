@@ -2,6 +2,10 @@ general:
   working_directory:
   output: intetn_nl_stats.sqlite
   cache_directory: cache
+  sheet_renames:
+    statline:
+      pattern: "statline_"
+      replace: ""
 statistics:
   internet_gk_vanaf_2: # bedrijfsgrootte, per gk vanaf 2
     do_it: true

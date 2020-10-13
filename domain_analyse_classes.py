@@ -1,5 +1,6 @@
 from tldextract import tldextract
 import yaml
+import re
 import logging
 import os
 import pickle
@@ -35,7 +36,8 @@ class DomainAnalyser(object):
                  url_key="website_url",
                  translations=None,
                  module_key="module",
-                 variable_key="variable"
+                 variable_key="variable",
+                 sheet_renames=None
                  ):
 
         _logger.info(f"Runing here {os.getcwd()}")
@@ -50,6 +52,8 @@ class DomainAnalyser(object):
         self.module_key = module_key
         self.variable_key = variable_key
         self.variables = self.variable_dict2fd(variables, module_info)
+
+        self.sheet_renames = sheet_renames
 
         self.url_key = url_key
         self.be_id = "be_id"
@@ -98,16 +102,32 @@ class DomainAnalyser(object):
         _logger.info("Writing statistics")
         connection = sqlite3.connect(self.output_file)
 
-        for file_base, all_stats in self.all_stats_per_format.items():
-            data = pd.DataFrame.from_dict(all_stats)
-            data.to_sql(name=file_base, con=connection, if_exists="replace")
+        excel_file = Path(self.output_file).with_suffix(".xlsx")
+        sheets = list()
+        cnt = 0
+        with pd.ExcelWriter(str(excel_file), engine="openpyxl") as writer:
+            _logger.info(f"Start writing standard output to {excel_file}")
 
-            stat_df = reorganise_stat_df(records_stats=data, variables=self.variables,
-                                         module_key=self.module_key, variable_key=self.variable_key)
-            standard_output(stats_df=stat_df,
-                            file_base=file_base,
-                            file_type="xls", index_variables=[self.module_key, "vraag", "optie"],
-                            output_directory=".")
+            for file_base, all_stats in self.all_stats_per_format.items():
+                data = pd.DataFrame.from_dict(all_stats)
+                data.to_sql(name=file_base, con=connection, if_exists="replace")
+
+                stat_df = reorganise_stat_df(records_stats=data, variables=self.variables,
+                                             module_key=self.module_key,
+                                             variable_key=self.variable_key)
+                sheet_name = file_base
+                if self.sheet_renames is not None:
+                    for rename_key, sheet_rename in self.sheet_renames.items():
+                        pat = sheet_rename["pattern"]
+                        rep = sheet_rename["replace"]
+                        sheet_name = re.sub(pat, rep, sheet_name)
+                if len(sheet_name) > 32:
+                    sheet_name = sheet_name[:32]
+                if sheet_name in sheets:
+                    sheet_name = sheet_name[:30] + "{:02d}".format(cnt)
+                cnt += 1
+                sheets.append(sheets)
+                stat_df.to_excel(writer, sheet_name)
 
     def calculate_statistics_one_breakdown(self, group_by):
 
