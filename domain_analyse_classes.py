@@ -342,10 +342,17 @@ class DomainAnalyser(object):
                 _logger.warning("Run script with option '--statistics_to_xls'  first")
                 sys.exit(-1)
 
+            if plot_prop.get("use_breakdown_keys", False):
+                breakdown = self.breakdown_labels[plot_key]
+                renames = {v: k for k, v in breakdown.items()}
+                stats_df.rename(columns=renames, inplace=True)
+
+            legend_title = plot_prop.get("legend_title")
+
             _logger.info(f"Plotting {plot_key}")
 
             for module_name, module_df in stats_df.groupby(level=0):
-                _logger.debug(f"Module {module_name}")
+                _logger.info(f"Module {module_name}")
                 all_plot_df = dict()
                 for question_name, question_df in module_df.groupby(level=1):
                     _logger.debug(f"Question {question_name}")
@@ -356,6 +363,10 @@ class DomainAnalyser(object):
                             mask_total = mask
                         else:
                             mask_total = mask | mask_total
+                    if mask_total.sum() == 0:
+                        # if all options values are false, we have not a dict. Include all
+                        mask_total = ~mask_total
+
                     plot_df = question_df.loc[(module_name, question_name, mask_total)].copy()
                     # plot_df = plot_df.droplevel(0)
                     names = plot_df.index.names
@@ -378,9 +389,11 @@ class DomainAnalyser(object):
                         ax.set_title(title)
                         ax.set_xlabel("")
                         ax.set_ylabel("% enterprises")
+                        if legend_title is not None:
+                            ax.legend(title=legend_title)
                         image_name = re.sub("\s", "_", title.replace(" - ", "_")) + ".png"
-                        image_file = self.image_directory / Path(image_name)
+                        image_file = self.image_directory / Path("_".join([plot_key, image_name]))
                         _logger.info(f"Saving plot {image_file}")
                         fig.savefig(image_file.as_posix())
 
-                _logger.debug("Done")
+                        _logger.debug("Done")
