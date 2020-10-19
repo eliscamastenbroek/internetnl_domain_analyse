@@ -55,7 +55,8 @@ def main(argv):
 
     general_settings = settings["general"]
     cache_directory = Path(general_settings.get("cache_directory", "."))
-    cache_directory.mkdir(exist_ok=True)
+
+    image_directory = Path(general_settings.get("image_directory", "."))
 
     sheet_renames = general_settings["sheet_renames"]
     n_digits = general_settings["n_digits"]
@@ -79,11 +80,14 @@ def main(argv):
         working_directory = Path(args.working_directory)
 
     with path.Path(str(working_directory)):
+        cache_directory.mkdir(exist_ok=True)
+        image_directory.mkdir(exist_ok=True)
         _logger.info(f"Running domain analyser in {os.getcwd()}")
         DomainAnalyser(
             reset=args.reset,
             output_file=output_file,
             cache_directory=cache_directory,
+            image_directory=image_directory,
             statistics=statistics,
             variables=variables,
             module_info=module_info,
@@ -95,7 +99,7 @@ def main(argv):
             write_dataframe_to_sqlite=args.write_dataframe_to_sqlite,
             statistics_to_xls=args.statistics_to_xls,
             plot_statistics=args.plot,
-            plot_info = plot_info
+            plot_info=plot_info
         )
 
 

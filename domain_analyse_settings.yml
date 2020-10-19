@@ -1,6 +1,7 @@
 general:
   working_directory:
   output: intetn_nl_stats.sqlite
+  image_directory: images
   cache_directory: cache
   n_digits: 1
   sheet_renames:
@@ -143,7 +144,7 @@ variables:
         4: Other
     tests_web_https_http_hsts_verdict:
       type: dict
-      label: Web Https Http redirect
+      label: Web Https Http hsts
       translate: *translate_good_bad_not_tested_other
       options: *options_good_bad_not_tested_other
     tests_web_https_http_compress_verdict:
@@ -190,7 +191,7 @@ variables:
         6: Not tested
     tests_web_https_tls_version_verdict:
       type: dict
-      label: "Web Https Tls Version exchange"
+      label: "Web Https Tls Version"
       translate: *translate_good_bad_phaseout_na_nt
       options: *options_good_bad_phaseout_na_nt
     tests_web_https_tls_compress_verdict:
@@ -266,12 +267,12 @@ variables:
         4: Not tested
     tests_web_https_tls_keyexchangehash_verdict:
       type: dict
-      label: "Web Https Tls Key exchange"
+      label: "Web Https Tls Key exchange hash"
       translate: *translate_good_bad_phaseout_na_nt
       options: *options_good_bad_phaseout_na_nt
     tests_web_appsecpriv_x_frame_options_verdict:
       type: dict
-      label: "Web Https Tls Key exchange"
+      label: "Web Appsec Priv x frame options"
       translate: *translate_good_bad_phaseout_na_nt
       options: *options_good_bad_phaseout_na_nt
     tests_web_appsecpriv_referrer_policy_verdict:

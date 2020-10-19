@@ -21,11 +21,15 @@ from ict_analyser.utils import (SampleStatistics,
 
 _logger = logging.getLogger(__name__)
 
+mpl_logger = logging.getLogger("matplotlib")
+mpl_logger.setLevel(logging.WARNING)
+
 
 class DomainAnalyser(object):
     def __init__(self,
                  cache_file="tables_df.pkl",
                  cache_directory=None,
+                 image_directory=None,
                  output_file=None,
                  reset=None,
                  records_filename="records_cache.sqlite",
@@ -73,7 +77,8 @@ class DomainAnalyser(object):
         self.internet_nl_filename = internet_nl_filename
 
         self.cache_directory = cache_directory
-        self.cache_file = self.cache_directory / Path(cache_file)
+        self.image_directory = image_directory
+        self.cache_file = Path(cache_file)
         if reset is None:
             self.reset = None
         else:
@@ -139,7 +144,7 @@ class DomainAnalyser(object):
                                                       connection=connection
                                                       )
 
-                cache_file = file_base + "_cache_for_plot.pkl"
+                cache_file = self.make_plot_cache_file_name(file_base)
                 with open(cache_file, "wb") as stream:
                     pickle.dump(stat_df, stream)
 
@@ -317,6 +322,9 @@ class DomainAnalyser(object):
             with open(str(self.cache_file), "rb") as stream:
                 self.dataframe = pickle.load(stream)
 
+    def make_plot_cache_file_name(self, file_base):
+        return self.cache_directory / Path(file_base + "_cache_for_plot.pkl")
+
     def make_plots(self):
         _logger.info("Making the plot")
 
@@ -324,10 +332,15 @@ class DomainAnalyser(object):
             if not plot_prop.get("do_it", True):
                 continue
 
-            cache_file = plot_key + "_cache_for_plot.pkl"
+            cache_file = self.make_plot_cache_file_name(plot_key)
             _logger.debug(f"Reading {cache_file}")
-            with open(cache_file, "rb") as stream:
-                stats_df = pickle.load(stream)
+            try:
+                with open(cache_file, "rb") as stream:
+                    stats_df = pickle.load(stream)
+            except FileNotFoundError as err:
+                _logger.warning(err)
+                _logger.warning("Run script with option '--statistics_to_xls'  first")
+                sys.exit(-1)
 
             _logger.info(f"Plotting {plot_key}")
 
@@ -343,8 +356,31 @@ class DomainAnalyser(object):
                             mask_total = mask
                         else:
                             mask_total = mask | mask_total
-                    plot_df = question_df.loc[(module_name, question_df, mask)]
-                    title = ":".join([module_name, question_name])
+                    plot_df = question_df.loc[(module_name, question_name, mask_total)].copy()
+                    # plot_df = plot_df.droplevel(0)
+                    names = plot_df.index.names
+                    plot_df.reset_index(inplace=True)
+                    x_axis_label = "x_axis_label"
+                    plot_df[x_axis_label] = plot_df[names[1]] + ": " + plot_df[names[2]]
+                    plot_df.drop(names, axis=1, inplace=True)
+                    plot_df.set_index(x_axis_label, inplace=True)
+                    title = " - ".join([module_name, question_name])
                     all_plot_df[title] = plot_df
+
+                    fig, ax = plt.subplots()
+                    try:
+                        plot_df.plot(kind="bar", ax=ax, rot=0)
+                    except IndexError as err:
+                        _logger.warning(err)
+                        _logger.warning(f"skip {title}")
+                        pass
+                    else:
+                        ax.set_title(title)
+                        ax.set_xlabel("")
+                        ax.set_ylabel("% enterprises")
+                        image_name = re.sub("\s", "_", title.replace(" - ", "_")) + ".png"
+                        image_file = self.image_directory / Path(image_name)
+                        _logger.info(f"Saving plot {image_file}")
+                        fig.savefig(image_file.as_posix())
 
                 _logger.debug("Done")
