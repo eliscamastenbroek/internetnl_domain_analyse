@@ -40,6 +40,8 @@ def parse_args(args):
                         help="Store combined data frame to sqlite and quit")
     parser.add_argument("--show_plots", action="store_true",
                         help="Show each plot before continuing")
+    parser.add_argument("--image_type", default=".pdf", choices={".pdf", ".png", ".jpg"},
+                        help="Type of the images")
 
     parsed_arguments = parser.parse_args(args)
 
@@ -102,7 +104,7 @@ def main(argv):
             statistics_to_xls=args.statistics_to_xls,
             plot_statistics=args.plot,
             plot_info=plot_info,
-            show_plots = args.show_plots
+            show_plots=args.show_plots
         )
 
 

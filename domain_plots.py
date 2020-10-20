@@ -11,7 +11,7 @@ sns.set_style('whitegrid')
 
 
 def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory, show_plots=False,
-                  figsize=None):
+                  figsize=None, image_type=".pdf"):
     """ create a bar plot from the question 'plot_df'"""
     figure_properties = CBSPlotSettings()
 
@@ -53,7 +53,7 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
 
         image_name = re.sub("\s", "_", plot_title.replace(" - ", "_"))
         image_name = re.sub(":_.*$", "", image_name)
-        image_file = image_directory / Path("_".join([plot_key, image_name + ".png"]))
+        image_file = image_directory / Path("_".join([plot_key, image_name + image_type]))
         _logger.info(f"Saving plot {image_file}")
         fig.savefig(image_file.as_posix())
 

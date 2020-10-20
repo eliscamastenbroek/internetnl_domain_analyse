@@ -53,7 +53,8 @@ class DomainAnalyser(object):
                  statistics_to_xls=False,
                  plot_statistics=False,
                  plot_info=None,
-                 show_plots=False
+                 show_plots=False,
+                 image_type=".pdf"
                  ):
 
         _logger.info(f"Runing here {os.getcwd()}")
@@ -82,6 +83,7 @@ class DomainAnalyser(object):
         self.internet_nl_filename = internet_nl_filename
 
         self.show_plots = show_plots
+        self.image_type = image_type
 
         self.cache_directory = cache_directory
         self.image_directory = image_directory
@@ -369,4 +371,5 @@ class DomainAnalyser(object):
                                   question_name=question_name,
                                   image_directory=self.image_directory,
                                   show_plots=self.show_plots,
-                                  figsize=figsize)
+                                  figsize=figsize,
+                                  image_type=self.image_type)

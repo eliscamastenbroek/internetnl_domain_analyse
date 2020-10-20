@@ -2,6 +2,7 @@ general:
   working_directory:
   output: intetn_nl_stats.sqlite
   image_directory: images
+  image_type: .pdf
   cache_directory: cache
   n_digits: 1
   sheet_renames:
