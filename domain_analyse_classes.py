@@ -1,23 +1,27 @@
-import sys
-from collections import Counter
-import yaml
-import re
-import matplotlib.pyplot as plt
 import logging
 import os
 import pickle
+import re
 import sqlite3
+import sys
+from collections import Counter
 from pathlib import Path
 
 import pandas as pd
+import yaml
 
-from utils import read_tables_from_sqlite, get_domain, fill_booleans, prepare_stat_data_for_write
 
+from domain_plots import make_bar_plot
 from ict_analyser.utils import (SampleStatistics,
                                 prepare_df_for_statistics,
                                 get_records_select, rename_all_variables,
                                 impose_variable_defaults, VariableProperties,
                                 )
+from utils import (read_tables_from_sqlite,
+                   get_domain,
+                   fill_booleans,
+                   prepare_stat_data_for_write,
+                   get_option_mask)
 
 _logger = logging.getLogger(__name__)
 
@@ -48,7 +52,8 @@ class DomainAnalyser(object):
                  write_dataframe_to_sqlite=False,
                  statistics_to_xls=False,
                  plot_statistics=False,
-                 plot_info=None
+                 plot_info=None,
+                 show_plots=False
                  ):
 
         _logger.info(f"Runing here {os.getcwd()}")
@@ -75,6 +80,8 @@ class DomainAnalyser(object):
 
         self.records_filename = records_filename
         self.internet_nl_filename = internet_nl_filename
+
+        self.show_plots = show_plots
 
         self.cache_directory = cache_directory
         self.image_directory = image_directory
@@ -342,58 +349,24 @@ class DomainAnalyser(object):
                 _logger.warning("Run script with option '--statistics_to_xls'  first")
                 sys.exit(-1)
 
+            figsize = plot_prop.get("figsize")
+
             if plot_prop.get("use_breakdown_keys", False):
                 breakdown = self.breakdown_labels[plot_key]
                 renames = {v: k for k, v in breakdown.items()}
                 stats_df.rename(columns=renames, inplace=True)
 
-            legend_title = plot_prop.get("legend_title")
-
             _logger.info(f"Plotting {plot_key}")
 
             for module_name, module_df in stats_df.groupby(level=0):
                 _logger.info(f"Module {module_name}")
-                all_plot_df = dict()
                 for question_name, question_df in module_df.groupby(level=1):
                     _logger.debug(f"Question {question_name}")
-                    mask_total = None
-                    for optie in ("Passed", "Yes", "Good"):
-                        mask = question_df.index.get_level_values(2) == optie
-                        if mask_total is None:
-                            mask_total = mask
-                        else:
-                            mask_total = mask | mask_total
-                    if mask_total.sum() == 0:
-                        # if all options values are false, we have not a dict. Include all
-                        mask_total = ~mask_total
 
-                    plot_df = question_df.loc[(module_name, question_name, mask_total)].copy()
-                    # plot_df = plot_df.droplevel(0)
-                    names = plot_df.index.names
-                    plot_df.reset_index(inplace=True)
-                    x_axis_label = "x_axis_label"
-                    plot_df[x_axis_label] = plot_df[names[1]] + ": " + plot_df[names[2]]
-                    plot_df.drop(names, axis=1, inplace=True)
-                    plot_df.set_index(x_axis_label, inplace=True)
-                    title = " - ".join([module_name, question_name])
-                    all_plot_df[title] = plot_df
-
-                    fig, ax = plt.subplots()
-                    try:
-                        plot_df.plot(kind="bar", ax=ax, rot=0)
-                    except IndexError as err:
-                        _logger.warning(err)
-                        _logger.warning(f"skip {title}")
-                        pass
-                    else:
-                        ax.set_title(title)
-                        ax.set_xlabel("")
-                        ax.set_ylabel("% enterprises")
-                        if legend_title is not None:
-                            ax.legend(title=legend_title)
-                        image_name = re.sub("\s", "_", title.replace(" - ", "_")) + ".png"
-                        image_file = self.image_directory / Path("_".join([plot_key, image_name]))
-                        _logger.info(f"Saving plot {image_file}")
-                        fig.savefig(image_file.as_posix())
-
-                        _logger.debug("Done")
+                    mask = get_option_mask(question_df=question_df, variables=self.variables)
+                    plot_df = question_df.loc[(module_name, question_name, mask)].copy()
+                    make_bar_plot(plot_df=plot_df, plot_key=plot_key, module_name=module_name,
+                                  question_name=question_name,
+                                  image_directory=self.image_directory,
+                                  show_plots=self.show_plots,
+                                  figsize=figsize)

@@ -38,6 +38,8 @@ def parse_args(args):
                         action="store_true")
     parser.add_argument("--write_dataframe_to_sqlite", action="store_true",
                         help="Store combined data frame to sqlite and quit")
+    parser.add_argument("--show_plots", action="store_true",
+                        help="Show each plot before continuing")
 
     parsed_arguments = parser.parse_args(args)
 
@@ -99,7 +101,8 @@ def main(argv):
             write_dataframe_to_sqlite=args.write_dataframe_to_sqlite,
             statistics_to_xls=args.statistics_to_xls,
             plot_statistics=args.plot,
-            plot_info=plot_info
+            plot_info=plot_info,
+            show_plots = args.show_plots
         )
 
 

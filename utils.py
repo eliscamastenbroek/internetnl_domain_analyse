@@ -1,3 +1,4 @@
+import re
 import numpy as np
 from tldextract import tldextract
 import logging
@@ -85,3 +86,22 @@ def prepare_stat_data_for_write(all_stats, file_base, variables, module_key, var
             stat_df.rename(columns=labels, inplace=True)
 
     return stat_df
+
+
+def get_option_mask(question_df, variables):
+    """  get the mask to filter the positive options from a question """
+    original_name = re.sub(r"_\d\.0$", "", question_df["variable"].values[0])
+    question_type = variables.loc[original_name, "type"]
+    mask_total = None
+    if question_type == "dict":
+        for optie in ("Passed", "Yes", "Good"):
+            mask = question_df.index.get_level_values(2) == optie
+            if mask_total is None:
+                mask_total = mask
+            else:
+                mask_total = mask | mask_total
+    else:
+        mask_total = pd.Series(True, index=question_df.index)
+
+    return mask_total
+
