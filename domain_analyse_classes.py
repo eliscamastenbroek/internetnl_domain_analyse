@@ -10,7 +10,6 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
-
 from domain_plots import make_bar_plot
 from ict_analyser.utils import (SampleStatistics,
                                 prepare_df_for_statistics,
@@ -22,6 +21,8 @@ from utils import (read_tables_from_sqlite,
                    fill_booleans,
                    prepare_stat_data_for_write,
                    get_option_mask)
+
+from latex_output import make_latex_overview
 
 _logger = logging.getLogger(__name__)
 
@@ -98,6 +99,8 @@ class DomainAnalyser(object):
         self.all_stats_per_format = dict()
         self.plot_info = plot_info
 
+        self.all_plots = None
+
         if (self.reset is not None and self.reset <= 1) or not self.cache_file.exists():
             self.read_data()
 
@@ -108,8 +111,19 @@ class DomainAnalyser(object):
         self.calculate_statistics()
         if statistics_to_xls:
             self.write_statistics()
+
+        self.image_files = Path("image_files.pkl")
+        self.cache_image_file_list = self.cache_directory / self.image_files
         if plot_statistics:
             self.make_plots()
+            with open(self.cache_image_file_list, "wb") as stream:
+                pickle.dump(self.all_plots, stream)
+
+        if self.all_plots is None:
+            with open(self.cache_image_file_list, "rb") as stream:
+                self.all_plots = pickle.load(stream)
+        make_latex_overview(all_plots=self.all_plots, variables=self.variables,
+                            image_directory=self.image_directory, image_files=self.image_files)
 
     def variable_dict2fd(self, variables, module_info: dict = None) -> pd.DataFrame:
         """
@@ -337,6 +351,8 @@ class DomainAnalyser(object):
     def make_plots(self):
         _logger.info("Making the plot")
 
+        self.all_plots = dict()
+
         for plot_key, plot_prop in self.plot_info.items():
             if not plot_prop.get("do_it", True):
                 continue
@@ -351,6 +367,7 @@ class DomainAnalyser(object):
                 _logger.warning("Run script with option '--statistics_to_xls'  first")
                 sys.exit(-1)
 
+            label = plot_prop.get("label", plot_key)
             figsize = plot_prop.get("figsize")
 
             if plot_prop.get("use_breakdown_keys", False):
@@ -365,11 +382,23 @@ class DomainAnalyser(object):
                 for question_name, question_df in module_df.groupby(level=1):
                     _logger.debug(f"Question {question_name}")
 
-                    mask = get_option_mask(question_df=question_df, variables=self.variables)
+                    original_name = re.sub(r"_\d\.0$", "", question_df["variable"].values[0])
+                    question_type = self.variables.loc[original_name, "type"]
+
+                    if original_name not in self.all_plots.keys():
+                        _logger.debug(f"Initialize dict for {original_name}")
+                        self.all_plots[original_name] = dict()
+
+                    mask = get_option_mask(question_df=question_df, variables=self.variables,
+                                           question_type=question_type)
                     plot_df = question_df.loc[(module_name, question_name, mask)].copy()
-                    make_bar_plot(plot_df=plot_df, plot_key=plot_key, module_name=module_name,
-                                  question_name=question_name,
-                                  image_directory=self.image_directory,
-                                  show_plots=self.show_plots,
-                                  figsize=figsize,
-                                  image_type=self.image_type)
+                    image_file = make_bar_plot(plot_df=plot_df, plot_key=plot_key,
+                                               module_name=module_name,
+                                               question_name=question_name,
+                                               image_directory=self.image_directory,
+                                               show_plots=self.show_plots,
+                                               figsize=figsize,
+                                               image_type=self.image_type)
+
+                    _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
+                    self.all_plots[original_name][label] = image_file

@@ -88,10 +88,8 @@ def prepare_stat_data_for_write(all_stats, file_base, variables, module_key, var
     return stat_df
 
 
-def get_option_mask(question_df, variables):
+def get_option_mask(question_df, variables, question_type):
     """  get the mask to filter the positive options from a question """
-    original_name = re.sub(r"_\d\.0$", "", question_df["variable"].values[0])
-    question_type = variables.loc[original_name, "type"]
     mask_total = None
     if question_type == "dict":
         for optie in ("Passed", "Yes", "Good"):

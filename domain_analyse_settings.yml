@@ -24,6 +24,7 @@ statistics:
       sbi: sbi_digit1_statline
 plots:
   internet_gk_vanaf_2: # bedrijfsgrootte, per gk vanaf 2
+    label: "Bedrijfsgrootteklasse"
     legend_title: "# Werknemers"
     figsize:
       - 6.5
@@ -33,6 +34,7 @@ plots:
   statline_sbi_digit1:
     do_it: true
     use_breakdown_keys: true
+    label: "Branche"
     legend_title: Branche
     figsize:
       - 6.5
