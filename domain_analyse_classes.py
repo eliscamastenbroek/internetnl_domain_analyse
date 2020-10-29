@@ -35,6 +35,7 @@ class DomainAnalyser(object):
                  cache_file="tables_df.pkl",
                  cache_directory=None,
                  image_directory=None,
+                 tex_prepend_path=None,
                  output_file=None,
                  reset=None,
                  records_filename="records_cache.sqlite",
@@ -55,7 +56,8 @@ class DomainAnalyser(object):
                  plot_statistics=False,
                  plot_info=None,
                  show_plots=False,
-                 image_type=".pdf"
+                 image_type=".pdf",
+                 max_plots=None,
                  ):
 
         _logger.info(f"Runing here {os.getcwd()}")
@@ -84,10 +86,12 @@ class DomainAnalyser(object):
         self.internet_nl_filename = internet_nl_filename
 
         self.show_plots = show_plots
+        self.max_plots = max_plots
         self.image_type = image_type
 
         self.cache_directory = cache_directory
         self.image_directory = image_directory
+        self.tex_prepend_path = tex_prepend_path
         self.cache_file = Path(cache_file)
         if reset is None:
             self.reset = None
@@ -123,7 +127,8 @@ class DomainAnalyser(object):
             with open(self.cache_image_file_list, "rb") as stream:
                 self.all_plots = pickle.load(stream)
         make_latex_overview(all_plots=self.all_plots, variables=self.variables,
-                            image_directory=self.image_directory, image_files=self.image_files)
+                            image_directory=self.image_directory, image_files=self.image_files,
+                            tex_prepend_path=self.tex_prepend_path)
 
     def variable_dict2fd(self, variables, module_info: dict = None) -> pd.DataFrame:
         """
@@ -348,6 +353,18 @@ class DomainAnalyser(object):
     def make_plot_cache_file_name(self, file_base):
         return self.cache_directory / Path(file_base + "_cache_for_plot.pkl")
 
+    def get_plot_cache(self, plot_key):
+        cache_file = self.make_plot_cache_file_name(plot_key)
+        _logger.debug(f"Reading {cache_file}")
+        try:
+            with open(cache_file, "rb") as stream:
+                stats_df = pickle.load(stream)
+        except FileNotFoundError as err:
+            _logger.warning(err)
+            _logger.warning("Run script with option '--statistics_to_xls'  first")
+            sys.exit(-1)
+        return stats_df
+
     def make_plots(self):
         _logger.info("Making the plot")
 
@@ -357,15 +374,13 @@ class DomainAnalyser(object):
             if not plot_prop.get("do_it", True):
                 continue
 
-            cache_file = self.make_plot_cache_file_name(plot_key)
-            _logger.debug(f"Reading {cache_file}")
-            try:
-                with open(cache_file, "rb") as stream:
-                    stats_df = pickle.load(stream)
-            except FileNotFoundError as err:
-                _logger.warning(err)
-                _logger.warning("Run script with option '--statistics_to_xls'  first")
-                sys.exit(-1)
+            stats_df = self.get_plot_cache(plot_key)
+
+            reference_lines = plot_prop.get("reference_lines")
+            if reference_lines is not None:
+                for ref_key, ref_prop in reference_lines.items():
+                    ref_stat = self.get_plot_cache(ref_key)
+                    reference_lines[ref_key]["data"] = ref_stat
 
             label = plot_prop.get("label", plot_key)
             figsize = plot_prop.get("figsize")
@@ -377,8 +392,12 @@ class DomainAnalyser(object):
 
             _logger.info(f"Plotting {plot_key}")
 
+            plot_count = 0
+            stop_plotting = False
             for module_name, module_df in stats_df.groupby(level=0):
                 _logger.info(f"Module {module_name}")
+                if stop_plotting:
+                    break
                 for question_name, question_df in module_df.groupby(level=1):
                     _logger.debug(f"Question {question_name}")
 
@@ -391,14 +410,39 @@ class DomainAnalyser(object):
 
                     mask = get_option_mask(question_df=question_df, variables=self.variables,
                                            question_type=question_type)
+
                     plot_df = question_df.loc[(module_name, question_name, mask)].copy()
-                    image_file = make_bar_plot(plot_df=plot_df, plot_key=plot_key,
+
+                    if reference_lines is not None:
+                        for ref_key, ref_prop in reference_lines.items():
+                            ref_stat_df = reference_lines[ref_key]["data"]
+                            ref_quest_df = None
+                            for ref_quest_name, ref_quest_df in ref_stat_df.groupby(level=1):
+                                if ref_quest_name == question_name:
+                                    break
+                            if ref_quest_df is not None:
+                                mask2 = get_option_mask(question_df=ref_quest_df,
+                                                        variables=self.variables,
+                                                        question_type=question_type)
+                                ref_df = ref_quest_df.loc[(module_name, question_name, mask2)].copy()
+                                reference_lines[ref_key]["plot_df"] = ref_df
+
+                    _logger.info(f"Plot nr {plot_count}")
+                    image_file = make_bar_plot(plot_df=plot_df,
+                                               plot_key=plot_key,
                                                module_name=module_name,
                                                question_name=question_name,
                                                image_directory=self.image_directory,
                                                show_plots=self.show_plots,
                                                figsize=figsize,
-                                               image_type=self.image_type)
+                                               image_type=self.image_type,
+                                               reference_lines=reference_lines)
 
                     _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
                     self.all_plots[original_name][label] = image_file
+
+                    plot_count += 1
+                    if self.max_plots is not None and plot_count == self.max_plots:
+                        _logger.info(f"Maximum number of plot ({self.max_plots}) reached")
+                        stop_plotting = True
+                        break

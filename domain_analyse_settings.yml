@@ -1,7 +1,8 @@
 general:
   working_directory:
-  output: intetn_nl_stats.sqlite
+  output: internet_nl_stats.sqlite
   image_directory: images
+  tex_prepend_path: figures/scan_results
   image_type: .pdf
   cache_directory: cache
   n_digits: 1
@@ -29,10 +30,13 @@ plots:
     figsize:
       - 6.5
       - 3.4
+    reference_lines:
+      statline_gk_all:
+        label: NL
   statline_gk_all: # bedrijfsgrootte,  2 en meer WP
     do_it: false
   statline_sbi_digit1:
-    do_it: true
+    do_it: false
     use_breakdown_keys: true
     label: "Branche"
     legend_title: Branche

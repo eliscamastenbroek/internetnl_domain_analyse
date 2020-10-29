@@ -3,6 +3,8 @@ import re
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import matplotlib.transforms as trn
+
 import seaborn as sns
 from cbs_utils.plotting import CBSPlotSettings
 
@@ -11,7 +13,7 @@ sns.set_style('whitegrid')
 
 
 def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory, show_plots=False,
-                  figsize=None, image_type=".pdf") -> str:
+                  figsize=None, image_type=".pdf", reference_lines=None) -> str:
     """ create a bar plot from the question 'plot_df'"""
     figure_properties = CBSPlotSettings()
 
@@ -33,6 +35,10 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     plot_df = plot_df.T
 
     fig, axis = plt.subplots(figsize=figsize)
+
+    line_iter = axis._get_lines
+    trans = trn.blended_transform_factory(axis.transAxes, axis.transData)
+
     try:
         plot_df.plot(kind="bar", ax=axis, rot=0, legend=None)
     except IndexError as err:
@@ -42,7 +48,10 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     else:
 
         yticks = axis.get_yticks()
-        axis.set_ylim((yticks[0], yticks[-1]))
+        min_y = yticks[0]
+        max_y = yticks[-1]
+        y_range = (max_y - min_y)
+        axis.set_ylim((min_y, max_y))
 
         axis.set_title(plot_title)
         axis.set_xlabel("")
@@ -50,6 +59,16 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
         axis.xaxis.grid(False)
         sns.despine(ax=axis, left=True)
         axis.tick_params(which="both", bottom=False)
+
+        if reference_lines is not None:
+            color = line_iter.get_next_color()
+            for ref_key, ref_line in reference_lines.items():
+                ref_label = ref_line["label"]
+                ref_plot_df = ref_line["plot_df"]
+                value = ref_plot_df.values[0][1]
+                color = line_iter.get_next_color()
+                axis.axhline(y=value, color=color, linestyle='-.')
+                axis.text(0.02, value + 0.02 * y_range, ref_label, color=color, transform=trans)
 
         image_name = re.sub("\s", "_", plot_title.replace(" - ", "_"))
         image_name = re.sub(":_.*$", "", image_name)

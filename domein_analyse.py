@@ -40,6 +40,8 @@ def parse_args(args):
                         help="Store combined data frame to sqlite and quit")
     parser.add_argument("--show_plots", action="store_true",
                         help="Show each plot before continuing")
+    parser.add_argument("--max_plots", action="store", type=int,
+                        help="Maximum number of plots. If not given, plot all")
     parser.add_argument("--image_type", default=".pdf", choices={".pdf", ".png", ".jpg"},
                         help="Type of the images")
 
@@ -61,6 +63,7 @@ def main(argv):
     cache_directory = Path(general_settings.get("cache_directory", "."))
 
     image_directory = Path(general_settings.get("image_directory", "."))
+    tex_prepend_path = Path(general_settings.get("tex_prepend_path", "."))
 
     sheet_renames = general_settings["sheet_renames"]
     n_digits = general_settings["n_digits"]
@@ -92,6 +95,7 @@ def main(argv):
             output_file=output_file,
             cache_directory=cache_directory,
             image_directory=image_directory,
+            tex_prepend_path=tex_prepend_path,
             statistics=statistics,
             variables=variables,
             module_info=module_info,
@@ -104,7 +108,8 @@ def main(argv):
             statistics_to_xls=args.statistics_to_xls,
             plot_statistics=args.plot,
             plot_info=plot_info,
-            show_plots=args.show_plots
+            show_plots=args.show_plots,
+            max_plots = args.max_plots
         )
 
 
