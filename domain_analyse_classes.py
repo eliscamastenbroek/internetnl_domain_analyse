@@ -6,11 +6,13 @@ import sqlite3
 import sys
 from collections import Counter
 from pathlib import Path
+import matplotlib.pyplot as plt
+import numpy as np
 
 import pandas as pd
 import yaml
 
-from domain_plots import make_bar_plot
+from domain_plots import make_bar_plot, make_cdf_plot
 from ict_analyser.analyser_tool.utils import (SampleStatistics,
                                               prepare_df_for_statistics,
                                               get_records_select,
@@ -99,6 +101,7 @@ class DomainAnalyser(object):
 
         self.dataframe = None
         self.all_stats_per_format = dict()
+        self.all_hist_per_format = dict()
 
         self.all_plots = None
 
@@ -182,6 +185,7 @@ class DomainAnalyser(object):
                                               units_key="units")
 
         all_stats = dict()
+        all_hist = dict()
 
         for var_key, var_prop in self.variables.iterrows():
             _logger.info(f"{var_key}")
@@ -228,13 +232,26 @@ class DomainAnalyser(object):
 
             _logger.debug(f"Storing {stats.records_weighted_mean_agg}")
             all_stats[var_key] = stats.records_weighted_mean_agg
+            try:
+                dd = data[var_key].values
+            except KeyError:
+                dd = data.values
+            try:
+                all_hist[var_key] = np.histogram(dd, weights=df_weights['ratio_units'].values,
+                                                 density=True, bins=100)
+            except ValueError as err:
+                _logger.warning("Fails for dicts. Skip for now")
+                all_hist[var_key] = None
+            else:
+                _logger.debug(f"Success with {var_key}")
 
-        return all_stats
+        return all_stats, all_hist
 
     def calculate_statistics(self):
         _logger.info("Calculating statistics")
 
         self.all_stats_per_format = dict()
+        self.all_hist_per_format = dict()
 
         for file_base, props in self.statistics.items():
             scan_data = props.get("scan_data", self.default_scan)
@@ -248,16 +265,17 @@ class DomainAnalyser(object):
             if cache_file.exists() and self.reset is None:
                 _logger.info(f"Reading stats from cache {cache_file}")
                 with open(str(cache_file), "rb") as stream:
-                    all_stats = pickle.load(stream)
+                    all_stats, all_hist = pickle.load(stream)
             else:
                 group_by = list(props["groupby"].values())
-                all_stats = self.calculate_statistics_one_breakdown(group_by=group_by)
+                all_stats, all_hist = self.calculate_statistics_one_breakdown(group_by=group_by)
                 _logger.info(f"Writing stats to cache {cache_file}")
                 with open(str(cache_file), "wb") as stream:
-                    pickle.dump(all_stats, stream)
+                    pickle.dump([all_stats, all_hist], stream)
 
             stat_df = pd.concat(list(all_stats.values()), axis=1, sort=False)
             self.all_stats_per_format[file_base] = stat_df
+            self.all_hist_per_format[file_base] = all_hist
             _logger.debug("Done with statistics")
 
     def write_data(self):
@@ -408,9 +426,14 @@ class DomainPlotter(object):
             stat_prop = self.statistics[plot_key]
             scan_data_key = stat_prop.get("scan_data", self.default_scan)
 
-            variables = self.scan_data[scan_data_key]["analyses"].variables
+            scan_data_analyses = self.scan_data[scan_data_key]["analyses"]
+            variables = scan_data_analyses.variables
+            module_info = scan_data_analyses.module_info
 
             stats_df = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key)
+
+            cdf_plot = plot_prop.get("cdf_plot", False)
+            bar_plot = plot_prop.get("bar_plot", True)
 
             reference_lines = plot_prop.get("reference_lines")
             if reference_lines is not None:
@@ -433,6 +456,13 @@ class DomainPlotter(object):
             plot_count = 0
             stop_plotting = False
             for module_name, module_df in stats_df.groupby(level=0):
+                do_this_module = True
+                for mod_key, mod_prop in module_info.items():
+                    if mod_prop.get('label') == module_name and not mod_prop.get('include', True):
+                        do_this_module = False
+                if not do_this_module:
+                    continue
+
                 _logger.info(f"Module {module_name}")
                 if stop_plotting:
                     break
@@ -470,19 +500,37 @@ class DomainPlotter(object):
                                 reference_lines[ref_key]["plot_df"] = ref_df
 
                     _logger.info(f"Plot nr {plot_count}")
-                    image_file = make_bar_plot(plot_df=plot_df,
-                                               plot_key=plot_key,
-                                               module_name=module_name,
-                                               question_name=question_name,
-                                               image_directory=self.image_directory,
-                                               show_plots=self.show_plots,
-                                               figsize=figsize,
-                                               image_type=self.image_type,
-                                               reference_lines=reference_lines,
-                                               xoff=xoff, yoff=yoff)
+                    if bar_plot:
+                        image_file = make_bar_plot(plot_df=plot_df,
+                                                   plot_key=plot_key,
+                                                   module_name=module_name,
+                                                   question_name=question_name,
+                                                   image_directory=self.image_directory,
+                                                   show_plots=self.show_plots,
+                                                   figsize=figsize,
+                                                   image_type=self.image_type,
+                                                   reference_lines=reference_lines,
+                                                   xoff=xoff, yoff=yoff)
 
-                    _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
-                    self.all_plots[original_name][label] = image_file
+                        _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
+                        self.all_plots[original_name][label] = image_file
+
+                    if cdf_plot:
+                        hist = scan_data_analyses.all_hist_per_format[plot_key][original_name]
+
+                        if hist is not None:
+                            make_cdf_plot(hist=hist,
+                                          plot_key=plot_key,
+                                          module_name=module_name,
+                                          question_name=question_name,
+                                          image_directory=self.image_directory,
+                                          show_plots=self.show_plots,
+                                          figsize=figsize,
+                                          image_type=self.image_type,
+                                          reference_lines=reference_lines,
+                                          xoff=xoff, yoff=yoff)
+                        if self.show_plots:
+                            plt.show()
 
                     plot_count += 1
                     if self.max_plots is not None and plot_count == self.max_plots:

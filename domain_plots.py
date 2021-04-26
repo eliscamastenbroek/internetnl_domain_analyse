@@ -1,15 +1,71 @@
 import logging
 import re
 from pathlib import Path
+import numpy as np
 
 import matplotlib.pyplot as plt
 import matplotlib.transforms as trn
 
 import seaborn as sns
-from cbs_utils.plotting import CBSPlotSettings
+from cbs_utils.plotting import CBSPlotSettings, add_axis_label_background, get_color_palette
 
 _logger = logging.getLogger(__name__)
 sns.set_style('whitegrid')
+
+
+def make_cdf_plot(hist,
+                  plot_key,
+                  module_name,
+                  question_name,
+                  image_directory,
+                  show_plots,
+                  figsize,
+                  image_type,
+                  reference_lines,
+                  xoff, yoff):
+    figure_properties = CBSPlotSettings()
+
+    if figsize is None:
+        figsize = figure_properties.fig_size
+
+    pdf = hist[0]
+    bins = hist[1]
+    fig, axis = plt.subplots(nrows=1, ncols=1)
+    fig.subplots_adjust(bottom=0.25, top=0.92, right=0.98)
+    axis.tick_params(which="both", bottom=True)
+
+    cdf = 100 * pdf.cumsum()
+
+    axis.bar(bins[:-1], cdf, width=1.0 * np.diff(bins), edgecolor=None, linewidth=0)
+
+    for percentile in [25, 50, 75]:
+        index = np.argmax(np.diff(cdf < percentile))
+        pval = cdf[index]
+        _logger.info(f"Adding line {percentile}: {index} {pval}")
+        axis.vlines(index, 0, pval, color="cbs:appelgroen")
+
+    # this triggers the drawing, otherwise we can not retrieve the xtick labels
+    fig.canvas.draw()
+
+    # yticks = axis.get_yticks()
+    # axis.set_ylim((yticks[0], yticks[-1]))
+
+    start, end = axis.get_ylim()
+    axis.yaxis.set_ticks(np.arange(start, end, 25))
+
+    axis.set_ylabel("Cumulatief % bedrijven", rotation="horizontal", horizontalalignment="left")
+    axis.yaxis.set_label_coords(-0.06, 1.05)
+    axis.xaxis.grid(False)
+    axis.set_xlabel(module_name, horizontalalignment="right")
+    axis.xaxis.set_label_coords(0.95, -0.15)
+    sns.despine(ax=axis, left=True)
+
+    labels = [_.get_text() for _ in axis.get_xticklabels()]
+    axis.set_xticklabels(labels, ha='center')
+
+    add_axis_label_background(fig=fig, axes=axis, loc="south")
+
+    _logger.debug(f"Figsize: {figsize}")
 
 
 def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory, show_plots=False,
