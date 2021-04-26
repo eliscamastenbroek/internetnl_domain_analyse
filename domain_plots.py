@@ -5,6 +5,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 import matplotlib.transforms as trn
+import pandas as pd
 
 import seaborn as sns
 from cbs_utils.plotting import CBSPlotSettings, add_axis_label_background, get_color_palette
@@ -14,6 +15,7 @@ sns.set_style('whitegrid')
 
 
 def make_cdf_plot(hist,
+                  grp_key,
                   plot_key,
                   module_name,
                   question_name,
@@ -29,6 +31,9 @@ def make_cdf_plot(hist,
         figsize = figure_properties.fig_size
 
     pdf = hist[0]
+    sum_pdf = pdf.sum()
+    _logger.info(f"Plot pdf gebaseerd op {sum_pdf} bedrijven (door gewichten)")
+    pdf /= sum_pdf
     bins = hist[1]
     fig, axis = plt.subplots(nrows=1, ncols=1)
     fig.subplots_adjust(bottom=0.25, top=0.92, right=0.98)
@@ -38,14 +43,20 @@ def make_cdf_plot(hist,
 
     axis.bar(bins[:-1], cdf, width=1.0 * np.diff(bins), edgecolor=None, linewidth=0)
 
+    stats = dict()
+    stats["mean"] = (pdf * bins[:-1]).sum()
     for percentile in [25, 50, 75]:
         index = np.argmax(np.diff(cdf < percentile))
         pval = cdf[index]
+        stats[f"p{percentile}"] = index
         _logger.info(f"Adding line {percentile}: {index} {pval}")
         axis.vlines(index, 0, pval, color="cbs:appelgroen")
+    stats_df = pd.DataFrame.from_dict(stats, orient="index", columns=["value"])
+    stats_df.index.rename("Stat", inplace=True)
 
     # this triggers the drawing, otherwise we can not retrieve the xtick labels
     fig.canvas.draw()
+    fig.canvas.set_window_title(f"{grp_key}  {plot_key}")
 
     # yticks = axis.get_yticks()
     # axis.set_ylim((yticks[0], yticks[-1]))
@@ -65,7 +76,26 @@ def make_cdf_plot(hist,
 
     add_axis_label_background(fig=fig, axes=axis, loc="south")
 
-    _logger.debug(f"Figsize: {figsize}")
+    plot_title = " - ".join(["cdf", module_name, question_name, plot_key, grp_key])
+    image_name = re.sub("\s", "_", plot_title.replace(" - ", "_"))
+    image_name = re.sub(":_.*$", "", image_name)
+    image_file = image_directory / Path("_".join([plot_key, image_name + image_type]))
+    image_file_name = image_file.as_posix()
+    _logger.info(f"Saving plot {image_file_name}")
+    fig.savefig(image_file)
+
+    stat_file = image_file.with_suffix(".out").as_posix()
+    _logger.info(f"Saving stats to {stat_file}")
+    stats_df.to_csv(stat_file)
+
+    if show_plots:
+        plt.show()
+
+    _logger.debug("Done")
+
+    plt.close()
+
+    return image_file_name
 
 
 def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory, show_plots=False,

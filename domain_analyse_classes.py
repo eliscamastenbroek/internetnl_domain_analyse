@@ -232,18 +232,20 @@ class DomainAnalyser(object):
 
             _logger.debug(f"Storing {stats.records_weighted_mean_agg}")
             all_stats[var_key] = stats.records_weighted_mean_agg
-            try:
-                dd = data[var_key].values
-            except KeyError:
-                dd = data.values
-            try:
-                all_hist[var_key] = np.histogram(dd, weights=df_weights['ratio_units'].values,
-                                                 density=True, bins=100)
-            except ValueError as err:
-                _logger.warning("Fails for dicts. Skip for now")
-                all_hist[var_key] = None
-            else:
-                _logger.debug(f"Success with {var_key}")
+            all_hist[var_key] = dict()
+            for grp_key, df in data.groupby(level=0, axis=0):
+                ww = df_weights.loc[grp_key, "ratio_units"].to_numpy()
+                dd = df.loc[grp_key, var_key].to_numpy()
+                try:
+                    all_hist[var_key][grp_key] = np.histogram(dd, weights=ww,
+                                                              density=False,
+                                                              bins=100,
+                                                              range=(0, 100))
+                except ValueError as err:
+                    _logger.warning("Fails for dicts. Skip for now")
+                    all_hist[var_key][grp_key] = None
+                else:
+                    _logger.debug(f"Success with {var_key}")
 
         return all_stats, all_hist
 
@@ -516,19 +518,21 @@ class DomainPlotter(object):
                         self.all_plots[original_name][label] = image_file
 
                     if cdf_plot:
-                        hist = scan_data_analyses.all_hist_per_format[plot_key][original_name]
+                        hist_info = scan_data_analyses.all_hist_per_format[plot_key][original_name]
 
-                        if hist is not None:
-                            make_cdf_plot(hist=hist,
-                                          plot_key=plot_key,
-                                          module_name=module_name,
-                                          question_name=question_name,
-                                          image_directory=self.image_directory,
-                                          show_plots=self.show_plots,
-                                          figsize=figsize,
-                                          image_type=self.image_type,
-                                          reference_lines=reference_lines,
-                                          xoff=xoff, yoff=yoff)
+                        if hist_info is not None:
+                            for grp_key, hist in hist_info.items():
+                                im_file_2 = make_cdf_plot(hist=hist,
+                                              plot_key=plot_key,
+                                              grp_key=grp_key,
+                                              module_name=module_name,
+                                              question_name=question_name,
+                                              image_directory=self.image_directory,
+                                              show_plots=self.show_plots,
+                                              figsize=figsize,
+                                              image_type=self.image_type,
+                                              reference_lines=reference_lines,
+                                              xoff=xoff, yoff=yoff)
                         if self.show_plots:
                             plt.show()
 
