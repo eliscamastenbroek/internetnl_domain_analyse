@@ -523,16 +523,16 @@ class DomainPlotter(object):
                         if hist_info is not None:
                             for grp_key, hist in hist_info.items():
                                 im_file_2 = make_cdf_plot(hist=hist,
-                                              plot_key=plot_key,
-                                              grp_key=grp_key,
-                                              module_name=module_name,
-                                              question_name=question_name,
-                                              image_directory=self.image_directory,
-                                              show_plots=self.show_plots,
-                                              figsize=figsize,
-                                              image_type=self.image_type,
-                                              reference_lines=reference_lines,
-                                              xoff=xoff, yoff=yoff)
+                                                          plot_key=plot_key,
+                                                          grp_key=grp_key,
+                                                          module_name=module_name,
+                                                          question_name=question_name,
+                                                          image_directory=self.image_directory,
+                                                          show_plots=self.show_plots,
+                                                          figsize=figsize,
+                                                          image_type=self.image_type,
+                                                          reference_lines=reference_lines,
+                                                          xoff=xoff, yoff=yoff)
                         if self.show_plots:
                             plt.show()
 
