@@ -1,5 +1,13 @@
 general:
   working_directory:
+  scan_data:
+    all_web:
+      do_it: true
+      data_file: data/internet_nl_web_all.sqlite
+    dtc_web:
+      do_it: true
+      data_file: data/internet_nl_web_dtc.sqlite
+  default_scan: all_web
   output: internet_nl_stats.sqlite
   image_directory: images
   tex_prepend_path: figures/scan_results
@@ -19,6 +27,11 @@ statistics:
     do_it: true
     groupby:
       gk: gk_all_wp
+  statline_gk_all_dtc: # bedrijfsgrootte,  2 en meer WP
+    do_it: true
+    scan_data: dtc_web
+    groupby:
+      gk: gk_all_wp
   statline_sbi_digit1:
     do_it: false
     groupby:
@@ -33,6 +46,10 @@ plots:
     reference_lines:
       statline_gk_all:
         label: NL
+        xoff: 0.01
+      statline_gk_all_dtc:
+        label: DTC
+        xoff: 0.02
   statline_gk_all: # bedrijfsgrootte,  2 en meer WP
     do_it: false
   statline_sbi_digit1:

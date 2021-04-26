@@ -11,16 +11,18 @@ import pandas as pd
 import yaml
 
 from domain_plots import make_bar_plot
-from ict_analyser.utils import (SampleStatistics,
-                                prepare_df_for_statistics,
-                                get_records_select, rename_all_variables,
-                                impose_variable_defaults, VariableProperties,
-                                )
+from ict_analyser.analyser_tool.utils import (SampleStatistics,
+                                              prepare_df_for_statistics,
+                                              get_records_select,
+                                              rename_all_variables,
+                                              VariableProperties,
+                                              )
 from utils import (read_tables_from_sqlite,
                    get_domain,
                    fill_booleans,
                    prepare_stat_data_for_write,
-                   get_option_mask)
+                   get_option_mask,
+                   impose_variable_defaults)
 
 from latex_output import make_latex_overview
 
@@ -30,34 +32,33 @@ mpl_logger = logging.getLogger("matplotlib")
 mpl_logger.setLevel(logging.WARNING)
 
 
+def make_plot_cache_file_name(cache_directory, file_base, prefix):
+    return cache_directory / Path("_".join([prefix, file_base, "cache_for_plot.pkl"]))
+
+
 class DomainAnalyser(object):
     def __init__(self,
+                 scan_data_key=None,
                  cache_file="tables_df.pkl",
                  cache_directory=None,
-                 image_directory=None,
-                 tex_prepend_path=None,
                  output_file=None,
                  reset=None,
                  records_filename="records_cache.sqlite",
                  internet_nl_filename="internet_nl.sqlite",
+                 breakdown_labels=None,
                  statistics: dict = None,
+                 default_scan=None,
                  variables: dict = None,
                  module_info: dict = None,
                  weights=None,
                  url_key="website_url",
                  translations=None,
-                 breakdown_labels=None,
                  module_key="module",
                  variable_key="variable",
                  sheet_renames=None,
                  n_digits=None,
                  write_dataframe_to_sqlite=False,
                  statistics_to_xls=False,
-                 plot_statistics=False,
-                 plot_info=None,
-                 show_plots=False,
-                 image_type=".pdf",
-                 max_plots=None,
                  ):
 
         _logger.info(f"Runing here {os.getcwd()}")
@@ -67,7 +68,11 @@ class DomainAnalyser(object):
         else:
             self.output_file = output_file
 
+        self.scan_data_key = scan_data_key
+        self.breakdown_labels = breakdown_labels
+
         self.statistics = statistics
+        self.default_scan = default_scan
         self.module_key = module_key
         self.variable_key = variable_key
         self.module_info = module_info
@@ -80,18 +85,11 @@ class DomainAnalyser(object):
         self.be_id = "be_id"
         self.mi_labels = ["sbi", "gk_sbs", self.be_id]
         self.translations = translations
-        self.breakdown_labels = breakdown_labels
 
         self.records_filename = records_filename
         self.internet_nl_filename = internet_nl_filename
 
-        self.show_plots = show_plots
-        self.max_plots = max_plots
-        self.image_type = image_type
-
         self.cache_directory = cache_directory
-        self.image_directory = image_directory
-        self.tex_prepend_path = tex_prepend_path
         self.cache_file = Path(cache_file)
         if reset is None:
             self.reset = None
@@ -101,7 +99,6 @@ class DomainAnalyser(object):
 
         self.dataframe = None
         self.all_stats_per_format = dict()
-        self.plot_info = plot_info
 
         self.all_plots = None
 
@@ -115,20 +112,6 @@ class DomainAnalyser(object):
         self.calculate_statistics()
         if statistics_to_xls:
             self.write_statistics()
-
-        self.image_files = Path("image_files.pkl")
-        self.cache_image_file_list = self.cache_directory / self.image_files
-        if plot_statistics:
-            self.make_plots()
-            with open(self.cache_image_file_list, "wb") as stream:
-                pickle.dump(self.all_plots, stream)
-
-        if self.all_plots is None:
-            with open(self.cache_image_file_list, "rb") as stream:
-                self.all_plots = pickle.load(stream)
-        make_latex_overview(all_plots=self.all_plots, variables=self.variables,
-                            image_directory=self.image_directory, image_files=self.image_files,
-                            tex_prepend_path=self.tex_prepend_path)
 
     def variable_dict2fd(self, variables, module_info: dict = None) -> pd.DataFrame:
         """
@@ -172,7 +155,9 @@ class DomainAnalyser(object):
                                                       connection=connection
                                                       )
 
-                cache_file = self.make_plot_cache_file_name(file_base)
+                cache_file = make_plot_cache_file_name(cache_directory=self.cache_directory,
+                                                       prefix=self.scan_data_key,
+                                                       file_base=file_base)
                 with open(cache_file, "wb") as stream:
                     pickle.dump(stat_df, stream)
 
@@ -252,6 +237,10 @@ class DomainAnalyser(object):
         self.all_stats_per_format = dict()
 
         for file_base, props in self.statistics.items():
+            scan_data = props.get("scan_data", self.default_scan)
+            if scan_data != self.scan_data_key:
+                _logger.debug(f"SKipping {scan_data} for {self.scan_data_key}")
+
             _logger.info(f"Processing {file_base}")
 
             cache_file = self.cache_directory / Path(file_base + ".pkl")
@@ -350,11 +339,53 @@ class DomainAnalyser(object):
             with open(str(self.cache_file), "rb") as stream:
                 self.dataframe = pickle.load(stream)
 
-    def make_plot_cache_file_name(self, file_base):
-        return self.cache_directory / Path(file_base + "_cache_for_plot.pkl")
 
-    def get_plot_cache(self, plot_key):
-        cache_file = self.make_plot_cache_file_name(plot_key)
+class DomainPlotter(object):
+    def __init__(self, scan_data,
+                 default_scan=None,
+                 plot_info=None,
+                 show_plots=False,
+                 image_directory=None,
+                 cache_directory=None,
+                 image_type=".pdf",
+                 max_plots=None,
+                 tex_prepend_path=None,
+                 statistics=None,
+                 breakdown_labels=None,
+                 ):
+
+        self.scan_data = scan_data
+        self.default_scan = default_scan
+        self.plot_info = plot_info
+        self.show_plots = show_plots
+        self.max_plots = max_plots
+        self.tex_prepend_path = tex_prepend_path
+        self.cache_directory = cache_directory
+        self.statistics = statistics
+
+        self.image_type = image_type
+        self.image_directory = image_directory
+        self.breakdown_labels = breakdown_labels
+        self.all_plots = dict()
+
+        self.image_files = Path("image_files.pkl")
+        self.cache_image_file_list = self.cache_directory / self.image_files
+        self.make_plots()
+        with open(self.cache_image_file_list, "wb") as stream:
+            pickle.dump(self.all_plots, stream)
+
+        if self.all_plots is None:
+            with open(self.cache_image_file_list, "rb") as stream:
+                self.all_plots = pickle.load(stream)
+        # make_latex_overview(all_plots=self.all_plots, variables=self.variables,
+        #                    image_directory=self.image_directory, image_files=self.image_files,
+        #                    tex_prepend_path=self.tex_prepend_path)
+
+    #
+    def get_plot_cache(self, scan_data_key, plot_key):
+        cache_file = make_plot_cache_file_name(cache_directory=self.cache_directory,
+                                               prefix=scan_data_key,
+                                               file_base=plot_key)
         _logger.debug(f"Reading {cache_file}")
         try:
             with open(cache_file, "rb") as stream:
@@ -374,12 +405,19 @@ class DomainAnalyser(object):
             if not plot_prop.get("do_it", True):
                 continue
 
-            stats_df = self.get_plot_cache(plot_key)
+            stat_prop = self.statistics[plot_key]
+            scan_data_key = stat_prop.get("scan_data", self.default_scan)
+
+            variables = self.scan_data[scan_data_key]["analyses"].variables
+
+            stats_df = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key)
 
             reference_lines = plot_prop.get("reference_lines")
             if reference_lines is not None:
                 for ref_key, ref_prop in reference_lines.items():
-                    ref_stat = self.get_plot_cache(ref_key)
+                    stat_prop = self.statistics[ref_key]
+                    scan_data_key = stat_prop.get("scan_data", self.default_scan)
+                    ref_stat = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key)
                     reference_lines[ref_key]["data"] = ref_stat
 
             label = plot_prop.get("label", plot_key)
@@ -402,16 +440,19 @@ class DomainAnalyser(object):
                     _logger.debug(f"Question {question_name}")
 
                     original_name = re.sub(r"_\d\.0$", "", question_df["variable"].values[0])
-                    question_type = self.variables.loc[original_name, "type"]
+                    question_type = variables.loc[original_name, "type"]
 
                     if original_name not in self.all_plots.keys():
                         _logger.debug(f"Initialize dict for {original_name}")
                         self.all_plots[original_name] = dict()
 
-                    mask = get_option_mask(question_df=question_df, variables=self.variables,
+                    mask = get_option_mask(question_df=question_df, variables=variables,
                                            question_type=question_type)
 
                     plot_df = question_df.loc[(module_name, question_name, mask)].copy()
+
+                    xoff = 0
+                    yoff = 0
 
                     if reference_lines is not None:
                         for ref_key, ref_prop in reference_lines.items():
@@ -422,9 +463,10 @@ class DomainAnalyser(object):
                                     break
                             if ref_quest_df is not None:
                                 mask2 = get_option_mask(question_df=ref_quest_df,
-                                                        variables=self.variables,
+                                                        variables=variables,
                                                         question_type=question_type)
-                                ref_df = ref_quest_df.loc[(module_name, question_name, mask2)].copy()
+                                ref_df = ref_quest_df.loc[
+                                    (module_name, question_name, mask2)].copy()
                                 reference_lines[ref_key]["plot_df"] = ref_df
 
                     _logger.info(f"Plot nr {plot_count}")
@@ -436,7 +478,8 @@ class DomainAnalyser(object):
                                                show_plots=self.show_plots,
                                                figsize=figsize,
                                                image_type=self.image_type,
-                                               reference_lines=reference_lines)
+                                               reference_lines=reference_lines,
+                                               xoff=xoff, yoff=yoff)
 
                     _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
                     self.all_plots[original_name][label] = image_file

@@ -13,7 +13,7 @@ sns.set_style('whitegrid')
 
 
 def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory, show_plots=False,
-                  figsize=None, image_type=".pdf", reference_lines=None) -> str:
+                  figsize=None, image_type=".pdf", reference_lines=None, xoff=0.02, yoff=0.02):
     """ create a bar plot from the question 'plot_df'"""
     figure_properties = CBSPlotSettings()
 
@@ -68,7 +68,7 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
                 value = ref_plot_df.values[0][1]
                 color = line_iter.get_next_color()
                 axis.axhline(y=value, color=color, linestyle='-.')
-                axis.text(0.02, value + 0.02 * y_range, ref_label, color=color, transform=trans)
+                axis.text(xoff, value + yoff * y_range, ref_label, color=color, transform=trans)
 
         image_name = re.sub("\s", "_", plot_title.replace(" - ", "_"))
         image_name = re.sub(":_.*$", "", image_name)

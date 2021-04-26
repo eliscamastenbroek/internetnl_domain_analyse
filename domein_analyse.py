@@ -8,7 +8,7 @@ from pathlib import Path
 import path
 import yaml
 
-from domain_analyse_classes import DomainAnalyser
+from domain_analyse_classes import DomainAnalyser, DomainPlotter
 
 logging.basicConfig(format='%(asctime)s [%(lineno)4s] - %(levelname)-8s : %(message)s',
                     level=logging.DEBUG)
@@ -65,6 +65,9 @@ def main(argv):
     image_directory = Path(general_settings.get("image_directory", "."))
     tex_prepend_path = Path(general_settings.get("tex_prepend_path", "."))
 
+    scan_data = general_settings["scan_data"]
+    default_scan = general_settings["default_scan"]
+
     sheet_renames = general_settings["sheet_renames"]
     n_digits = general_settings["n_digits"]
 
@@ -90,27 +93,44 @@ def main(argv):
         cache_directory.mkdir(exist_ok=True)
         image_directory.mkdir(exist_ok=True)
         _logger.info(f"Running domain analyser in {os.getcwd()}")
-        DomainAnalyser(
-            reset=args.reset,
-            output_file=output_file,
-            cache_directory=cache_directory,
-            image_directory=image_directory,
-            tex_prepend_path=tex_prepend_path,
-            statistics=statistics,
-            variables=variables,
-            module_info=module_info,
-            weights=weights,
-            translations=translations,
-            breakdown_labels=breakdown_labels,
-            sheet_renames=sheet_renames,
-            n_digits=n_digits,
-            write_dataframe_to_sqlite=args.write_dataframe_to_sqlite,
-            statistics_to_xls=args.statistics_to_xls,
-            plot_statistics=args.plot,
-            plot_info=plot_info,
-            show_plots=args.show_plots,
-            max_plots = args.max_plots
-        )
+        for key, scan_prop in scan_data.items():
+            if not scan_prop.get("do_it", True):
+                continue
+            internet_nl_filename = scan_prop["data_file"]
+            _logger.info(f"Start analyse {key}: {internet_nl_filename}")
+            domain_analyses = DomainAnalyser(
+                scan_data_key=key,
+                internet_nl_filename=internet_nl_filename,
+                reset=args.reset,
+                output_file=output_file,
+                cache_directory=cache_directory,
+                statistics=statistics,
+                default_scan=default_scan,
+                variables=variables,
+                module_info=module_info,
+                weights=weights,
+                translations=translations,
+                breakdown_labels=breakdown_labels,
+                sheet_renames=sheet_renames,
+                n_digits=n_digits,
+                write_dataframe_to_sqlite=args.write_dataframe_to_sqlite,
+                statistics_to_xls=args.statistics_to_xls,
+            )
+            scan_prop["analyses"] = domain_analyses
+
+        if args.plot:
+            DomainPlotter(
+                scan_data=scan_data,
+                default_scan=default_scan,
+                plot_info=plot_info,
+                show_plots=args.show_plots,
+                max_plots=args.max_plots,
+                statistics=statistics,
+                breakdown_labels=breakdown_labels,
+                image_directory=image_directory,
+                tex_prepend_path=tex_prepend_path,
+                cache_directory=cache_directory,
+            )
 
 
 if __name__ == "__main__":
