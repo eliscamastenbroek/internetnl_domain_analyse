@@ -18,7 +18,6 @@ from domain_analyser.utils import (read_tables_from_sqlite,
                                    prepare_stat_data_for_write,
                                    get_option_mask,
                                    impose_variable_defaults)
-
 from ict_analyser.analyser_tool.utils import (SampleStatistics,
                                               prepare_df_for_statistics,
                                               get_records_select,
@@ -43,8 +42,8 @@ class DomainAnalyser(object):
                  cache_directory=None,
                  output_file=None,
                  reset=None,
-                 records_filename="records_cache.sqlite",
-                 internet_nl_filename="internet_nl.sqlite",
+                 records_filename=None,
+                 internet_nl_filename=None,
                  breakdown_labels=None,
                  statistics: dict = None,
                  default_scan=None,
@@ -88,8 +87,15 @@ class DomainAnalyser(object):
         self.mi_labels = ["sbi", "gk_sbs", self.be_id]
         self.translations = translations
 
-        self.records_filename = records_filename
-        self.internet_nl_filename = internet_nl_filename
+        if records_filename is None:
+            self.records_filename = Path(cache_directory) / Path("records_cache.sqlite")
+        else:
+            self.records_filename = records_filename
+
+        if internet_nl_filename is not None:
+            self.internet_nl_filename = internet_nl_filename
+        else:
+            self.internet_nl_filename = Path("internet_nl.sqlite")
 
         self.cache_directory = cache_directory
         cache_file_base = Path("_".join([cache_file_base, scan_data_key]) + ".pkl")
@@ -305,6 +311,7 @@ class DomainAnalyser(object):
 
             table_names = ["records_df_2", "info_records_df"]
             index_name = self.be_id
+            _logger.info(f"Reading table data from {self.records_filename}")
             records = read_tables_from_sqlite(self.records_filename, table_names, index_name)
 
             records[self.url_key] = [get_domain(url) for url in records[self.url_key]]

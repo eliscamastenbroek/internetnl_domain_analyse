@@ -32,6 +32,8 @@ def parse_args():
                         action="store_const", const=logging.INFO, default=logging.INFO)
     parser.add_argument("--debug", dest="loglevel", help="set loglevel to DEBUG"
                         , action="store_const", const=logging.DEBUG)
+    parser.add_argument("--records_cache_dir", help="Directory of the records cache")
+    parser.add_argument("--records_filename", help="Name of the records cache")
     parser.add_argument("--working_directory", help="Directory relative to what we work")
     parser.add_argument("--output_filename", help="Name of the output")
     parser.add_argument("--reset", choices={"0", "1"}, default=None, help="Reset the cached data")
@@ -83,13 +85,32 @@ def main():
     weights = settings["weight"]
     plot_info = settings["plots"]
 
+    if args.records_cache_dir is not None:
+        records_cache_dir = args.records_cache_dir
+    elif os.getenv("RECORDS_CACHE_DIR") is not None:
+        records_cache_dir = os.getenv("RECORDS_CACHE_DIR")
+    else:
+        records_cache_dir = Path(".")
+    if args.records_filename is not None:
+        records_filename = Path(args.records_filename)
+    elif general_settings.get("records_cache_file") is not None:
+        records_filename = Path(general_settings["records_cache_file"])
+    else:
+        records_filename = Path("records_cache.sqlite")
+
+    records_filename = records_cache_dir / records_filename
+
     if args.output_filename is None:
         output_file = general_settings.get("output", "internet_nl_stats")
     else:
         output_file = args.output_filename
 
     if args.working_directory is None:
-        working_directory = Path(general_settings.get("working_directory", "."))
+        wd = general_settings.get("working_directory", ".")
+        if wd is None:
+            wd = "."
+        working_directory = Path(wd)
+
     else:
         working_directory = Path(args.working_directory)
 
@@ -100,10 +121,11 @@ def main():
         for key, scan_prop in scan_data.items():
             if not scan_prop.get("do_it", True):
                 continue
-            internet_nl_filename = scan_prop["data_file"]
+            internet_nl_filename = Path(scan_prop["data_file"])
             _logger.info(f"Start analyse {key}: {internet_nl_filename}")
             domain_analyses = DomainAnalyser(
                 scan_data_key=key,
+                records_filename=records_filename,
                 internet_nl_filename=internet_nl_filename,
                 reset=args.reset,
                 output_file=output_file,

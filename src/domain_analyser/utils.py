@@ -1,5 +1,6 @@
 import logging
 import sqlite3
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -10,9 +11,12 @@ from ict_analyser.analyser_tool.utils import (reorganise_stat_df)
 _logger = logging.getLogger(__name__)
 
 
-def read_tables_from_sqlite(filename: str, table_names, index_name) -> pd.DataFrame:
+def read_tables_from_sqlite(filename: Path, table_names, index_name) -> pd.DataFrame:
     if isinstance(table_names, str):
         table_names = [table_names]
+
+    if not filename.exists():
+        raise FileNotFoundError(f"Records file not found {filename.absolute()}")
 
     _logger.info(f"Reading from {filename}")
     connection = sqlite3.connect(filename)
