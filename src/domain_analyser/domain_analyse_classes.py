@@ -467,7 +467,11 @@ class DomainPlotter(object):
             plot_bar = plot_prop.get("bar_plot", True) and self.bar_plot
             y_max_pdf_plot = plot_prop.get("y_max_pdf_plot", 10)
             y_spacing_pdf_plot = plot_prop.get("y_spacing_pdf_plot", 5)
+            y_max_bar_plot = plot_prop.get("y_max_bar_plot")
+            y_spacing_bar_plot = plot_prop.get("y_spacing_bar_plot")
 
+            sort_values = plot_prop.get("sort_values", False)
+            subplot_adjust = plot_prop.get("subplot_adjust")
             reference_lines = plot_prop.get("reference_lines")
             if reference_lines is not None:
                 for ref_key, ref_prop in reference_lines.items():
@@ -545,7 +549,12 @@ class DomainPlotter(object):
                                                    reference_lines=reference_lines,
                                                    xoff=xoff, yoff=yoff,
                                                    show_title=self.show_title,
-                                                   barh=self.barh)
+                                                   barh=self.barh,
+                                                   subplot_adjust=subplot_adjust,
+                                                   sort_values=sort_values,
+                                                   y_max_bar_plot=y_max_bar_plot,
+                                                   y_spacing_bar_plot=y_spacing_bar_plot
+                                                   )
 
                         _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
                         self.all_plots[original_name][label] = image_file

@@ -136,7 +136,8 @@ def make_cdf_plot(hist,
 
 def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory, show_plots=False,
                   figsize=None, image_type=".pdf", reference_lines=None, xoff=0.02, yoff=0.02,
-                  show_title=False, barh=False):
+                  show_title=False, barh=False, subplot_adjust=None, sort_values=False,
+                  y_max_bar_plot = None, y_spacing_bar_plot = None):
     """ create a bar plot from the question 'plot_df'"""
     figure_properties = CBSPlotSettings()
 
@@ -152,12 +153,26 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     if result == "":
         result = "True"
     plot_title += f": {result}"
+    values_column = "Values"
+    plot_df.index.rename(values_column, inplace=True)
     plot_df[plot_title] = None
     plot_df.drop(names + ["variable"], axis=1, inplace=True)
     plot_df.set_index(plot_title, inplace=True)
+    plot_df.index = range(plot_df.index.size)
     plot_df = plot_df.T
+    plot_df.rename(columns={0: values_column}, inplace=True)
+
+    if sort_values:
+        plot_df.sort_values(by=[values_column], inplace=True, ascending=True)
 
     fig, axis = plt.subplots(figsize=figsize)
+    if subplot_adjust is None:
+        subplot_adjust = dict()
+    bottom = subplot_adjust.get("bottom", 0.15)
+    left = subplot_adjust.get("left", 0.45)
+    top = subplot_adjust.get("top", 0.95)
+    right = subplot_adjust.get("right", 0.95)
+    fig.subplots_adjust(bottom=bottom, left=left, top=top, right=right)
 
     line_iter = axis._get_lines
     trans = trn.blended_transform_factory(axis.transAxes, axis.transData)
@@ -211,13 +226,17 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
             pass
         else:
 
-            fig.subplots_adjust(bottom=0.15, left=0.45, top=0.95,right=0.95)
-
             xticks = axis.get_xticks()
             min_x = xticks[0]
             max_x = xticks[-1]
             x_range = (max_x - min_x)
-            axis.set_xlim((min_x, max_x + 1))
+            if y_max_bar_plot is not None:
+                axis.set_xlim((0, y_max_bar_plot))
+            else:
+                axis.set_xlim((min_x, max_x + 1))
+            start, end = axis.get_xlim()
+            if y_spacing_bar_plot is not None:
+                axis.xaxis.set_ticks(np.arange(start, end + 1, y_spacing_bar_plot))
 
             if show_title:
                 axis.set_title(plot_title)
