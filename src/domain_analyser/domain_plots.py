@@ -7,7 +7,6 @@ import matplotlib.transforms as trn
 import numpy as np
 import pandas as pd
 import seaborn as sns
-
 from cbs_utils.plotting import CBSPlotSettings, add_axis_label_background
 
 _logger = logging.getLogger(__name__)
@@ -17,15 +16,19 @@ sns.set_style('whitegrid')
 def make_cdf_plot(hist,
                   grp_key,
                   plot_key,
-                  module_name,
-                  question_name,
-                  image_directory,
-                  show_plots,
-                  figsize,
-                  image_type,
-                  cdf_plot,
-                  reference_lines,
-                  xoff, yoff):
+                  module_name=None,
+                  question_name=None,
+                  image_directory=None,
+                  show_plots=False,
+                  figsize=None,
+                  image_type=None,
+                  cummulative=False,
+                  reference_lines=None,
+                  xoff=None,
+                  yoff=None,
+                  y_max=None,
+                  y_spacing=None
+                  ):
     figure_properties = CBSPlotSettings()
 
     if figsize is None:
@@ -34,16 +37,16 @@ def make_cdf_plot(hist,
     counts = hist[0]
     sum_pdf = counts.sum()
     _logger.info(f"Plot pdf gebaseerd op {sum_pdf} bedrijven (door gewichten)")
-    pdf = counts / sum_pdf
+    pdf = 100 * counts / sum_pdf
     bins = hist[1]
     fig, axis = plt.subplots(nrows=1, ncols=1)
     fig.subplots_adjust(bottom=0.25, top=0.92, right=0.98)
     axis.tick_params(which="both", bottom=True)
 
-    cdf = 100 * pdf.cumsum()
+    cdf = pdf.cumsum()
     delta_bin = np.diff(bins)[0]
 
-    if cdf_plot:
+    if cummulative:
         fnc = cdf
         fnc_str = "cdf"
     else:
@@ -52,15 +55,40 @@ def make_cdf_plot(hist,
 
     axis.bar(bins[:-1], fnc, width=delta_bin, edgecolor=None, linewidth=0)
 
+    start, end = axis.get_ylim()
+    if y_max is not None:
+        end = y_max
+    if cummulative:
+        axis.yaxis.set_ticks(np.arange(start, end, 25))
+    elif y_spacing is not None:
+        axis.yaxis.set_ticks(np.arange(start, end + 1, y_spacing))
+
+
+    if y_max is not None:
+        axis.set_ylim((0, y_max))
+
     stats = dict()
     stats["mean"] = (pdf * bins[:-1]).sum()
-    for percentile in [25, 50, 75]:
-        index = np.argmax(np.diff(cdf < percentile))
-        pval = fnc[index]
-        value = index * delta_bin
+    for ii, percentile in enumerate([0, 25, 50, 75, 100]):
+        below = cdf < percentile
+        if below.all():
+            index = cdf.size - 1
+        else:
+            index = np.argmax(np.diff(cdf < percentile))
+        if cummulative:
+            pval = fnc[index]
+        else:
+            if y_max is None:
+                pval = end
+            else:
+                pval = y_max
+        value = (index + 1) * delta_bin
         stats[f"p{percentile}"] = value
         _logger.info(f"Adding line {percentile}: {value} {pval}")
-        axis.vlines(value, 0, pval, color="cbs:appelgroen")
+        if 0 < percentile < 100:
+            axis.vlines(value, 0, pval, color="cbs:appelgroen")
+            axis.text(value, 1.02 * pval, f"Q{ii}",  color="cbs:appelgroen",
+                      ha="center")
     stats_df = pd.DataFrame.from_dict(stats, orient="index", columns=["value"])
     stats_df.index.rename("Stat", inplace=True)
 
@@ -68,11 +96,12 @@ def make_cdf_plot(hist,
     fig.canvas.draw()
     fig.canvas.set_window_title(f"{grp_key}  {plot_key}")
 
-    if cdf_plot:
-        start, end = axis.get_ylim()
-        axis.yaxis.set_ticks(np.arange(start, end, 25))
+    if cummulative:
+        y_label = "Cumulatief % bedrijven"
+    else:
+        y_label = "% bedrijven"
 
-    axis.set_ylabel("Cumulatief % bedrijven", rotation="horizontal", horizontalalignment="left")
+    axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
     axis.yaxis.set_label_coords(-0.06, 1.05)
     axis.xaxis.grid(False)
     axis.set_xlabel(module_name, horizontalalignment="right")

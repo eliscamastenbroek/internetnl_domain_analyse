@@ -391,6 +391,8 @@ class DomainPlotter(object):
                  tex_prepend_path=None,
                  statistics=None,
                  cdf_plot=False,
+                 bar_plot=False,
+                 cummulative=False,
                  breakdown_labels=None,
                  ):
 
@@ -402,7 +404,9 @@ class DomainPlotter(object):
         self.tex_prepend_path = tex_prepend_path
         self.cache_directory = cache_directory
         self.statistics = statistics
+        self.bar_plot = bar_plot
         self.cdf_plot = cdf_plot
+        self.cummulative = cummulative
 
         self.image_type = image_type
         self.image_directory = image_directory
@@ -455,8 +459,10 @@ class DomainPlotter(object):
 
             stats_df = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key)
 
-            cdf_plot = plot_prop.get("cdf_plot", False)
-            bar_plot = plot_prop.get("bar_plot", True)
+            plot_cdf = plot_prop.get("cdf_plot", False) and self.cdf_plot
+            plot_bar = plot_prop.get("bar_plot", True) and self.bar_plot
+            y_max_pdf_plot = plot_prop.get("y_max_pdf_plot", 10)
+            y_spacing_pdf_plot = plot_prop.get("y_spacing_pdf_plot", 5)
 
             reference_lines = plot_prop.get("reference_lines")
             if reference_lines is not None:
@@ -523,7 +529,7 @@ class DomainPlotter(object):
                                 reference_lines[ref_key]["plot_df"] = ref_df
 
                     _logger.info(f"Plot nr {plot_count}")
-                    if bar_plot:
+                    if plot_bar:
                         image_file = make_bar_plot(plot_df=plot_df,
                                                    plot_key=plot_key,
                                                    module_name=module_name,
@@ -538,7 +544,7 @@ class DomainPlotter(object):
                         _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
                         self.all_plots[original_name][label] = image_file
 
-                    if cdf_plot:
+                    if plot_cdf:
                         hist_info = scan_data_analyses.all_hist_per_format[plot_key][original_name]
 
                         if hist_info is not None:
@@ -553,8 +559,11 @@ class DomainPlotter(object):
                                                           figsize=figsize,
                                                           image_type=self.image_type,
                                                           reference_lines=reference_lines,
-                                                          cdf_plot=self.cdf_plot,
-                                                          xoff=xoff, yoff=yoff)
+                                                          cummulative=self.cummulative,
+                                                          xoff=xoff, yoff=yoff,
+                                                          y_max=y_max_pdf_plot,
+                                                          y_spacing=y_spacing_pdf_plot
+                                                          )
                         if self.show_plots:
                             plt.show()
 

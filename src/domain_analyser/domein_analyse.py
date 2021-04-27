@@ -37,7 +37,6 @@ def parse_args():
     parser.add_argument("--working_directory", help="Directory relative to what we work")
     parser.add_argument("--output_filename", help="Name of the output")
     parser.add_argument("--reset", choices={"0", "1"}, default=None, help="Reset the cached data")
-    parser.add_argument("--plot", help="Make the plots of the statistics", action="store_true")
     parser.add_argument("--statistics_to_xls", help="Write the statistics ot an excel file",
                         action="store_true")
     parser.add_argument("--write_dataframe_to_sqlite", action="store_true",
@@ -48,6 +47,14 @@ def parse_args():
                         help="Maximum number of plots. If not given, plot all")
     parser.add_argument("--image_type", default=".pdf", choices={".pdf", ".png", ".jpg"},
                         help="Type of the images")
+    parser.add_argument("--cummulative", action="store_true", help="Plot pdf cummulitve")
+    parser.add_argument("--not_cummulative", action="store_false", dest="cummulative",
+                        help="Do not plot pdf cummulitve")
+    parser.add_argument("--plot_all", action="store_true", help="Plot alles", default=False)
+    parser.add_argument("--cdf_plot", action="store_true", help="Plot de cdf function",
+                        default=False)
+    parser.add_argument("--bar_plot", action="store_true", help="Plot het staafdiagram",
+                        default=False)
 
     parsed_arguments = parser.parse_args()
 
@@ -75,7 +82,12 @@ def main():
     sheet_renames = general_settings["sheet_renames"]
     n_digits = general_settings["n_digits"]
     n_bins = general_settings["n_bins"]
-    cdf_plot = general_settings["cdf_plot"]
+    cummulative = general_settings.get("cummulative", False)
+    if args.cummulative is not None:
+        cummulative = args.cummulative
+
+    bar_plot = args.bar_plot or args.plot_all
+    cdf_plot = args.cdf_plot or args.plot_all
 
     statistics = settings["statistics"]
     translations = settings["translations"]
@@ -145,7 +157,7 @@ def main():
             )
             scan_prop["analyses"] = domain_analyses
 
-        if args.plot:
+        if bar_plot or cdf_plot:
             DomainPlotter(
                 scan_data=scan_data,
                 default_scan=default_scan,
@@ -156,7 +168,9 @@ def main():
                 breakdown_labels=breakdown_labels,
                 image_directory=image_directory,
                 tex_prepend_path=tex_prepend_path,
+                cummulative=cummulative,
                 cdf_plot=cdf_plot,
+                bar_plot=bar_plot,
                 cache_directory=cache_directory,
             )
 
