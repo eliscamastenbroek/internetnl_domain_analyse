@@ -233,7 +233,7 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
             sns.despine(ax=axis, bottom=True)
             axis.tick_params(which="both", left=False)
 
-            add_axis_label_background(fig=fig, axes=axis, loc="east")
+            add_axis_label_background(fig=fig, axes=axis, loc="east", radius_corner_in_mm=1)
 
             if reference_lines is not None:
                 color = line_iter.get_next_color()
