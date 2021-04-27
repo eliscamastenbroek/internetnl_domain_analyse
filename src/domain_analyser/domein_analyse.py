@@ -8,6 +8,7 @@ from pathlib import Path
 import path
 import yaml
 
+from domain_analyser import  __version__
 from domain_analyser.domain_analyse_classes import (DomainAnalyser, DomainPlotter)
 
 logging.basicConfig(format='%(asctime)s [%(lineno)4s] - %(levelname)-8s : %(message)s',
@@ -26,6 +27,9 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description="Analyse the domains")
     parser.add_argument("settings_filename", help="Settings file")
+    parser.add_argument("--version", action="version",
+                        version="{file} version: {ver}".format(file=os.path.basename(__file__),
+                                                               ver=__version__))
     parser.add_argument("--verbose", dest="loglevel", help="set loglevel to INFO",
                         action="store_const", const=logging.INFO, default=logging.INFO)
     parser.add_argument("--debug", dest="loglevel", help="set loglevel to DEBUG"
