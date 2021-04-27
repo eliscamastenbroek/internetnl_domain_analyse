@@ -47,6 +47,7 @@ def parse_args():
                         help="Maximum number of plots. If not given, plot all")
     parser.add_argument("--image_type", default=".pdf", choices={".pdf", ".png", ".jpg"},
                         help="Type of the images")
+    parser.add_argument("--show_title", action="store_true", help="Show title in plot")
     parser.add_argument("--cummulative", action="store_true", help="Plot pdf cummulitve")
     parser.add_argument("--not_cummulative", action="store_false", dest="cummulative",
                         help="Do not plot pdf cummulitve")
@@ -82,9 +83,13 @@ def main():
     sheet_renames = general_settings["sheet_renames"]
     n_digits = general_settings["n_digits"]
     n_bins = general_settings["n_bins"]
+    barh = general_settings["barh"]
     cummulative = general_settings.get("cummulative", False)
     if args.cummulative is not None:
         cummulative = args.cummulative
+    show_title = general_settings.get("show_title", False)
+    if args.show_title is not None:
+        show_title = args.show_title
 
     bar_plot = args.bar_plot or args.plot_all
     cdf_plot = args.cdf_plot or args.plot_all
@@ -162,6 +167,7 @@ def main():
                 scan_data=scan_data,
                 default_scan=default_scan,
                 plot_info=plot_info,
+                barh=barh,
                 show_plots=args.show_plots,
                 max_plots=args.max_plots,
                 statistics=statistics,
@@ -169,6 +175,7 @@ def main():
                 image_directory=image_directory,
                 tex_prepend_path=tex_prepend_path,
                 cummulative=cummulative,
+                show_title=show_title,
                 cdf_plot=cdf_plot,
                 bar_plot=bar_plot,
                 cache_directory=cache_directory,

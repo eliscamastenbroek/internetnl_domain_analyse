@@ -63,7 +63,6 @@ def make_cdf_plot(hist,
     elif y_spacing is not None:
         axis.yaxis.set_ticks(np.arange(start, end + 1, y_spacing))
 
-
     if y_max is not None:
         axis.set_ylim((0, y_max))
 
@@ -87,7 +86,7 @@ def make_cdf_plot(hist,
         _logger.info(f"Adding line {percentile}: {value} {pval}")
         if 0 < percentile < 100:
             axis.vlines(value, 0, pval, color="cbs:appelgroen")
-            axis.text(value, 1.02 * pval, f"Q{ii}",  color="cbs:appelgroen",
+            axis.text(value, 1.02 * pval, f"Q{ii}", color="cbs:appelgroen",
                       ha="center")
     stats_df = pd.DataFrame.from_dict(stats, orient="index", columns=["value"])
     stats_df.index.rename("Stat", inplace=True)
@@ -136,7 +135,8 @@ def make_cdf_plot(hist,
 
 
 def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory, show_plots=False,
-                  figsize=None, image_type=".pdf", reference_lines=None, xoff=0.02, yoff=0.02):
+                  figsize=None, image_type=".pdf", reference_lines=None, xoff=0.02, yoff=0.02,
+                  show_title=False, barh=False):
     """ create a bar plot from the question 'plot_df'"""
     figure_properties = CBSPlotSettings()
 
@@ -162,36 +162,88 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     line_iter = axis._get_lines
     trans = trn.blended_transform_factory(axis.transAxes, axis.transData)
 
-    try:
-        plot_df.plot(kind="bar", ax=axis, rot=0, legend=None)
-    except IndexError as err:
-        _logger.warning(err)
-        _logger.warning(f"skip {plot_title}")
-        pass
-    else:
+    if not barh:
 
-        yticks = axis.get_yticks()
-        min_y = yticks[0]
-        max_y = yticks[-1]
-        y_range = (max_y - min_y)
-        axis.set_ylim((min_y, max_y))
+        try:
+            plot_df.plot(kind="bar", ax=axis, rot=0, legend=None)
+        except IndexError as err:
+            _logger.warning(err)
+            _logger.warning(f"skip {plot_title}")
+            pass
+        else:
 
-        axis.set_title(plot_title)
-        axis.set_xlabel("")
-        axis.set_ylabel("% enterprises")
-        axis.xaxis.grid(False)
-        sns.despine(ax=axis, left=True)
-        axis.tick_params(which="both", bottom=False)
+            yticks = axis.get_yticks()
+            min_y = yticks[0]
+            max_y = yticks[-1]
+            y_range = (max_y - min_y)
+            axis.set_ylim((min_y, max_y))
 
-        if reference_lines is not None:
-            color = line_iter.get_next_color()
-            for ref_key, ref_line in reference_lines.items():
-                ref_label = ref_line["label"]
-                ref_plot_df = ref_line["plot_df"]
-                value = ref_plot_df.values[0][1]
+            if show_title:
+                axis.set_title(plot_title)
+            axis.set_xlabel("")
+            if re.search("score", plot_title, re.IGNORECASE):
+                y_label = "Score %"
+            else:
+                y_label = "% bedrijven"
+
+            axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
+            axis.yaxis.set_label_coords(-0.04, 1.05)
+            axis.xaxis.grid(False)
+            sns.despine(ax=axis, left=True)
+            axis.tick_params(which="both", bottom=False)
+
+            if reference_lines is not None:
                 color = line_iter.get_next_color()
-                axis.axhline(y=value, color=color, linestyle='-.')
-                axis.text(xoff, value + yoff * y_range, ref_label, color=color, transform=trans)
+                for ref_key, ref_line in reference_lines.items():
+                    ref_label = ref_line["label"]
+                    ref_plot_df = ref_line["plot_df"]
+                    value = ref_plot_df.values[0][1]
+                    color = line_iter.get_next_color()
+                    axis.axhline(y=value, color=color, linestyle='-.')
+                    axis.text(xoff, value + yoff * y_range, ref_label, color=color, transform=trans)
+
+    else:
+        try:
+            plot_df.plot(kind="barh", ax=axis, rot=0, legend=None)
+        except IndexError as err:
+            _logger.warning(err)
+            _logger.warning(f"skip {plot_title}")
+            pass
+        else:
+
+            fig.subplots_adjust(bottom=0.15, left=0.4)
+
+            xticks = axis.get_xticks()
+            min_x = xticks[0]
+            max_x = xticks[-1]
+            x_range = (max_x - min_x)
+            axis.set_xlim((min_x, max_x + 1))
+
+            if show_title:
+                axis.set_title(plot_title)
+            axis.set_ylabel("")
+            if re.search("score", plot_title, re.IGNORECASE):
+                x_label = "Score %"
+            else:
+                x_label = "% bedrijven"
+
+            axis.set_xlabel(x_label, rotation="horizontal", horizontalalignment="left")
+            axis.xaxis.set_label_coords(0.9, -0.1)
+            axis.yaxis.grid(False)
+            sns.despine(ax=axis, bottom=True)
+            axis.tick_params(which="both", left=False)
+
+            add_axis_label_background(fig=fig, axes=axis, loc="east")
+
+            if reference_lines is not None:
+                color = line_iter.get_next_color()
+                for ref_key, ref_line in reference_lines.items():
+                    ref_label = ref_line["label"]
+                    ref_plot_df = ref_line["plot_df"]
+                    value = ref_plot_df.values[0][1]
+                    color = line_iter.get_next_color()
+                    axis.axhline(y=value, color=color, linestyle='-.')
+                    axis.text(xoff, value + yoff * y_range, ref_label, color=color, transform=trans)
 
         image_name = re.sub("\s", "_", plot_title.replace(" - ", "_"))
         image_name = re.sub(":_.*$", "", image_name)
@@ -202,6 +254,8 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
 
         if show_plots:
             plt.show()
+
+        _logger.debug("Done")
 
         _logger.debug("Done")
 

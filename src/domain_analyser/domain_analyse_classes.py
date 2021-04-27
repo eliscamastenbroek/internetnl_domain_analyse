@@ -384,6 +384,7 @@ class DomainPlotter(object):
                  default_scan=None,
                  plot_info=None,
                  show_plots=False,
+                 barh=False,
                  image_directory=None,
                  cache_directory=None,
                  image_type=".pdf",
@@ -393,6 +394,7 @@ class DomainPlotter(object):
                  cdf_plot=False,
                  bar_plot=False,
                  cummulative=False,
+                 show_title=False,
                  breakdown_labels=None,
                  ):
 
@@ -400,6 +402,7 @@ class DomainPlotter(object):
         self.default_scan = default_scan
         self.plot_info = plot_info
         self.show_plots = show_plots
+        self.barh = barh
         self.max_plots = max_plots
         self.tex_prepend_path = tex_prepend_path
         self.cache_directory = cache_directory
@@ -407,6 +410,7 @@ class DomainPlotter(object):
         self.bar_plot = bar_plot
         self.cdf_plot = cdf_plot
         self.cummulative = cummulative
+        self.show_title = show_title
 
         self.image_type = image_type
         self.image_directory = image_directory
@@ -539,7 +543,9 @@ class DomainPlotter(object):
                                                    figsize=figsize,
                                                    image_type=self.image_type,
                                                    reference_lines=reference_lines,
-                                                   xoff=xoff, yoff=yoff)
+                                                   xoff=xoff, yoff=yoff,
+                                                   show_title=self.show_title,
+                                                   barh=self.barh)
 
                         _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
                         self.all_plots[original_name][label] = image_file
