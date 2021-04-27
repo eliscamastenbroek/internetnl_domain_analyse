@@ -15,7 +15,7 @@ logging.basicConfig(format='%(asctime)s [%(lineno)4s] - %(levelname)-8s : %(mess
 _logger = logging.getLogger()
 
 
-def parse_args(args):
+def parse_args():
     """Parse command line parameters
 
     Args:
@@ -45,13 +45,13 @@ def parse_args(args):
     parser.add_argument("--image_type", default=".pdf", choices={".pdf", ".png", ".jpg"},
                         help="Type of the images")
 
-    parsed_arguments = parser.parse_args(args)
+    parsed_arguments = parser.parse_args()
 
     return parsed_arguments
 
 
-def main(argv):
-    args = parse_args(argv)
+def main():
+    args = parse_args()
 
     _logger.setLevel(args.loglevel)
 
@@ -138,4 +138,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()
