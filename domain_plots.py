@@ -23,6 +23,7 @@ def make_cdf_plot(hist,
                   show_plots,
                   figsize,
                   image_type,
+                  cdf_plot,
                   reference_lines,
                   xoff, yoff):
     figure_properties = CBSPlotSettings()
@@ -30,27 +31,36 @@ def make_cdf_plot(hist,
     if figsize is None:
         figsize = figure_properties.fig_size
 
-    pdf = hist[0]
-    sum_pdf = pdf.sum()
+    counts = hist[0]
+    sum_pdf = counts.sum()
     _logger.info(f"Plot pdf gebaseerd op {sum_pdf} bedrijven (door gewichten)")
-    pdf /= sum_pdf
+    pdf = counts / sum_pdf
     bins = hist[1]
     fig, axis = plt.subplots(nrows=1, ncols=1)
     fig.subplots_adjust(bottom=0.25, top=0.92, right=0.98)
     axis.tick_params(which="both", bottom=True)
 
     cdf = 100 * pdf.cumsum()
+    delta_bin = np.diff(bins)[0]
 
-    axis.bar(bins[:-1], cdf, width=1.0 * np.diff(bins), edgecolor=None, linewidth=0)
+    if cdf_plot:
+        fnc = cdf
+        fnc_str = "cdf"
+    else:
+        fnc = pdf
+        fnc_str = "pdf"
+
+    axis.bar(bins[:-1], fnc, width=delta_bin, edgecolor=None, linewidth=0)
 
     stats = dict()
     stats["mean"] = (pdf * bins[:-1]).sum()
     for percentile in [25, 50, 75]:
         index = np.argmax(np.diff(cdf < percentile))
-        pval = cdf[index]
-        stats[f"p{percentile}"] = index
-        _logger.info(f"Adding line {percentile}: {index} {pval}")
-        axis.vlines(index, 0, pval, color="cbs:appelgroen")
+        pval = fnc[index]
+        value = index * delta_bin
+        stats[f"p{percentile}"] = value
+        _logger.info(f"Adding line {percentile}: {value} {pval}")
+        axis.vlines(value, 0, pval, color="cbs:appelgroen")
     stats_df = pd.DataFrame.from_dict(stats, orient="index", columns=["value"])
     stats_df.index.rename("Stat", inplace=True)
 
@@ -58,11 +68,9 @@ def make_cdf_plot(hist,
     fig.canvas.draw()
     fig.canvas.set_window_title(f"{grp_key}  {plot_key}")
 
-    # yticks = axis.get_yticks()
-    # axis.set_ylim((yticks[0], yticks[-1]))
-
-    start, end = axis.get_ylim()
-    axis.yaxis.set_ticks(np.arange(start, end, 25))
+    if cdf_plot:
+        start, end = axis.get_ylim()
+        axis.yaxis.set_ticks(np.arange(start, end, 25))
 
     axis.set_ylabel("Cumulatief % bedrijven", rotation="horizontal", horizontalalignment="left")
     axis.yaxis.set_label_coords(-0.06, 1.05)
@@ -76,7 +84,7 @@ def make_cdf_plot(hist,
 
     add_axis_label_background(fig=fig, axes=axis, loc="south")
 
-    plot_title = " - ".join(["cdf", module_name, question_name, plot_key, grp_key])
+    plot_title = " - ".join([fnc_str, module_name, question_name, plot_key, grp_key])
     image_name = re.sub("\s", "_", plot_title.replace(" - ", "_"))
     image_name = re.sub(":_.*$", "", image_name)
     image_file = image_directory / Path("_".join([plot_key, image_name + image_type]))

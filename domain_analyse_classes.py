@@ -41,7 +41,7 @@ def make_plot_cache_file_name(cache_directory, file_base, prefix):
 class DomainAnalyser(object):
     def __init__(self,
                  scan_data_key=None,
-                 cache_file="tables_df.pkl",
+                 cache_file_base="tables_df",
                  cache_directory=None,
                  output_file=None,
                  reset=None,
@@ -61,6 +61,7 @@ class DomainAnalyser(object):
                  n_digits=None,
                  write_dataframe_to_sqlite=False,
                  statistics_to_xls=False,
+                 n_bins=100
                  ):
 
         _logger.info(f"Runing here {os.getcwd()}")
@@ -80,6 +81,7 @@ class DomainAnalyser(object):
         self.module_info = module_info
         self.variables = self.variable_dict2fd(variables, module_info)
         self.n_digits = n_digits
+        self.n_bins = n_bins
 
         self.sheet_renames = sheet_renames
 
@@ -92,7 +94,8 @@ class DomainAnalyser(object):
         self.internet_nl_filename = internet_nl_filename
 
         self.cache_directory = cache_directory
-        self.cache_file = Path(cache_file)
+        cache_file_base = Path("_".join([cache_file_base, scan_data_key]) + ".pkl")
+        self.cache_file = Path(cache_directory) / cache_file_base
         if reset is None:
             self.reset = None
         else:
@@ -161,6 +164,7 @@ class DomainAnalyser(object):
                 cache_file = make_plot_cache_file_name(cache_directory=self.cache_directory,
                                                        prefix=self.scan_data_key,
                                                        file_base=file_base)
+                _logger.info(f"Writing cache for stat {cache_file}")
                 with open(cache_file, "wb") as stream:
                     pickle.dump(stat_df, stream)
 
@@ -188,7 +192,7 @@ class DomainAnalyser(object):
         all_hist = dict()
 
         for var_key, var_prop in self.variables.iterrows():
-            _logger.info(f"{var_key}")
+            _logger.debug(f"{var_key}")
             var_prop_klass = VariableProperties(variables=self.variables, column=var_key)
 
             column = var_key
@@ -239,7 +243,7 @@ class DomainAnalyser(object):
                 try:
                     all_hist[var_key][grp_key] = np.histogram(dd, weights=ww,
                                                               density=False,
-                                                              bins=100,
+                                                              bins=self.n_bins,
                                                               range=(0, 100))
                 except ValueError as err:
                     _logger.warning("Fails for dicts. Skip for now")
@@ -262,7 +266,8 @@ class DomainAnalyser(object):
 
             _logger.info(f"Processing {file_base}")
 
-            cache_file = self.cache_directory / Path(file_base + ".pkl")
+            file_name = Path("_".join([file_base, self.scan_data_key]) + ".pkl")
+            cache_file = self.cache_directory / file_name
 
             if cache_file.exists() and self.reset is None:
                 _logger.info(f"Reading stats from cache {cache_file}")
@@ -350,14 +355,23 @@ class DomainAnalyser(object):
             mask = self.dataframe[self.be_id].duplicated()
             self.dataframe = self.dataframe[~mask]
             self.dataframe.set_index(self.be_id)
-            _logger.info(f"Writing results to cache {self.cache_file}")
+            _logger.info(f"Writing {self.dataframe.index.size} records to "
+                         f"cache {self.cache_file.absolute()}")
             with open(str(self.cache_file), "wb") as stream:
-                pickle.dump(self.dataframe, stream)
+                self.dataframe.to_pickle(stream)
+            _logger.debug(self.dataframe.info())
 
         else:
-            _logger.info(f"Reading tables from cache {self.cache_file}")
+            _logger.debug(f"Reading tables from cache {self.cache_file}")
             with open(str(self.cache_file), "rb") as stream:
-                self.dataframe = pickle.load(stream)
+                self.dataframe = pd.read_pickle(stream)
+            _logger.info(f"Read {self.dataframe.index.size} records from "
+                         f"cache {self.cache_file.absolute()}")
+
+        with open(str(self.cache_file), "rb") as stream:
+            df = pd.read_pickle(stream)
+            _logger.debug(f"Check size {df.index.size} tables from cache {self.cache_file}")
+            _logger.debug(df.info())
 
 
 class DomainPlotter(object):
@@ -371,6 +385,7 @@ class DomainPlotter(object):
                  max_plots=None,
                  tex_prepend_path=None,
                  statistics=None,
+                 cdf_plot=False,
                  breakdown_labels=None,
                  ):
 
@@ -382,6 +397,7 @@ class DomainPlotter(object):
         self.tex_prepend_path = tex_prepend_path
         self.cache_directory = cache_directory
         self.statistics = statistics
+        self.cdf_plot = cdf_plot
 
         self.image_type = image_type
         self.image_directory = image_directory
@@ -532,6 +548,7 @@ class DomainPlotter(object):
                                                           figsize=figsize,
                                                           image_type=self.image_type,
                                                           reference_lines=reference_lines,
+                                                          cdf_plot=self.cdf_plot,
                                                           xoff=xoff, yoff=yoff)
                         if self.show_plots:
                             plt.show()

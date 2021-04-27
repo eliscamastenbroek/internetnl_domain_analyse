@@ -14,6 +14,8 @@ general:
   image_type: .pdf
   cache_directory: cache
   n_digits: 1
+  n_bins: 50
+  cdf_plot: false
   sheet_renames:
     statline:
       pattern: "statline_"

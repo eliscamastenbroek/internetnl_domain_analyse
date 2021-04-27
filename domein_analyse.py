@@ -70,6 +70,8 @@ def main(argv):
 
     sheet_renames = general_settings["sheet_renames"]
     n_digits = general_settings["n_digits"]
+    n_bins = general_settings["n_bins"]
+    cdf_plot = general_settings["cdf_plot"]
 
     statistics = settings["statistics"]
     translations = settings["translations"]
@@ -115,6 +117,7 @@ def main(argv):
                 n_digits=n_digits,
                 write_dataframe_to_sqlite=args.write_dataframe_to_sqlite,
                 statistics_to_xls=args.statistics_to_xls,
+                n_bins=n_bins
             )
             scan_prop["analyses"] = domain_analyses
 
@@ -129,6 +132,7 @@ def main(argv):
                 breakdown_labels=breakdown_labels,
                 image_directory=image_directory,
                 tex_prepend_path=tex_prepend_path,
+                cdf_plot=cdf_plot,
                 cache_directory=cache_directory,
             )
 
