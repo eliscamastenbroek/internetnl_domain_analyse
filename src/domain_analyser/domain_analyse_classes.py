@@ -19,12 +19,12 @@ from ict_analyser.analyser_tool.utils import (SampleStatistics,
                                               rename_all_variables,
                                               VariableProperties,
                                               )
-from utils import (read_tables_from_sqlite,
-                   get_domain,
-                   fill_booleans,
-                   prepare_stat_data_for_write,
-                   get_option_mask,
-                   impose_variable_defaults)
+from domain_analyser.utils import (read_tables_from_sqlite,
+                                   get_domain,
+                                   fill_booleans,
+                                   prepare_stat_data_for_write,
+                                   get_option_mask,
+                                   impose_variable_defaults)
 
 from latex_output import make_latex_overview
 
