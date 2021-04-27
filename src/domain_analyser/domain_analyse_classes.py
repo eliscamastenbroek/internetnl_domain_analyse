@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from domain_plots import make_bar_plot, make_cdf_plot
+from domain_analyser.domain_plots import (make_cdf_plot, make_bar_plot)
 from ict_analyser.analyser_tool.utils import (SampleStatistics,
                                               prepare_df_for_statistics,
                                               get_records_select,
