@@ -211,7 +211,7 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
             pass
         else:
 
-            fig.subplots_adjust(bottom=0.15, left=0.4)
+            fig.subplots_adjust(bottom=0.15, left=0.45, top=0.95,right=0.95)
 
             xticks = axis.get_xticks()
             min_x = xticks[0]
@@ -227,13 +227,14 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
             else:
                 x_label = "% bedrijven"
 
-            axis.set_xlabel(x_label, rotation="horizontal", horizontalalignment="left")
-            axis.xaxis.set_label_coords(0.9, -0.1)
+            axis.set_xlabel(x_label, rotation="horizontal", horizontalalignment="right")
+            axis.xaxis.set_label_coords(1.01, -0.12)
             axis.yaxis.grid(False)
             sns.despine(ax=axis, bottom=True)
             axis.tick_params(which="both", left=False)
 
-            add_axis_label_background(fig=fig, axes=axis, loc="east", radius_corner_in_mm=1)
+            add_axis_label_background(fig=fig, axes=axis, loc="east", radius_corner_in_mm=1,
+                                      margin=0.1)
 
             if reference_lines is not None:
                 color = line_iter.get_next_color()
