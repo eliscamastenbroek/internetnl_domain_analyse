@@ -2,13 +2,11 @@ import argparse
 import codecs
 import logging
 import os
-import sys
 from pathlib import Path
 
 import path
 import yaml
-
-from domain_analyser import  __version__
+from domain_analyser import __version__
 from domain_analyser.domain_analyse_classes import (DomainAnalyser, DomainPlotter)
 
 logging.basicConfig(format='%(asctime)s [%(lineno)4s] - %(levelname)-8s : %(message)s',

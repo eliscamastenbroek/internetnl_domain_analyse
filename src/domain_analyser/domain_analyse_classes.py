@@ -6,19 +6,12 @@ import sqlite3
 import sys
 from collections import Counter
 from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
-
 import pandas as pd
 import yaml
-
 from domain_analyser.domain_plots import (make_cdf_plot, make_bar_plot)
-from ict_analyser.analyser_tool.utils import (SampleStatistics,
-                                              prepare_df_for_statistics,
-                                              get_records_select,
-                                              rename_all_variables,
-                                              VariableProperties,
-                                              )
 from domain_analyser.utils import (read_tables_from_sqlite,
                                    get_domain,
                                    fill_booleans,
@@ -26,7 +19,12 @@ from domain_analyser.utils import (read_tables_from_sqlite,
                                    get_option_mask,
                                    impose_variable_defaults)
 
-from latex_output import make_latex_overview
+from ict_analyser.analyser_tool.utils import (SampleStatistics,
+                                              prepare_df_for_statistics,
+                                              get_records_select,
+                                              rename_all_variables,
+                                              VariableProperties,
+                                              )
 
 _logger = logging.getLogger(__name__)
 

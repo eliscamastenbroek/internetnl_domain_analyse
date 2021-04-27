@@ -1,9 +1,10 @@
-import re
-import numpy as np
-from tldextract import tldextract
 import logging
-import pandas as pd
 import sqlite3
+
+import numpy as np
+import pandas as pd
+from tldextract import tldextract
+
 from ict_analyser.analyser_tool.utils import (reorganise_stat_df)
 
 _logger = logging.getLogger(__name__)

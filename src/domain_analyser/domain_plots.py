@@ -1,14 +1,14 @@
 import logging
 import re
 from pathlib import Path
-import numpy as np
 
 import matplotlib.pyplot as plt
 import matplotlib.transforms as trn
+import numpy as np
 import pandas as pd
-
 import seaborn as sns
-from cbs_utils.plotting import CBSPlotSettings, add_axis_label_background, get_color_palette
+
+from cbs_utils.plotting import CBSPlotSettings, add_axis_label_background
 
 _logger = logging.getLogger(__name__)
 sns.set_style('whitegrid')

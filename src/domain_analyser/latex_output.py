@@ -1,5 +1,6 @@
 import logging
-from pylatex import Document, Figure, SubFigure, NoEscape, Command
+
+from pylatex import Document, Figure, NoEscape, Command
 from pylatex.base_classes import Environment, CommandBase, Arguments
 from pylatex.package import Package
 
