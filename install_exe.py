@@ -10,13 +10,13 @@ This script runs the following steps
 
 Generates a wheel file in the dest directory
 
-2.: pip install ict_analyser --no-index --find-links <name of the wheel file> --prefix <location> -U
+2.: pip install internetnl_domain_analyse --no-index --find-links <name of the wheel file> --prefix <location> -U
 
 Installs the APP as a library
 
 3.: python install.py install --prefix <location>
 
-Installs the ict_analyser executable
+Installs the internetnl_domain_analyse executable
 
 See python install_exe.py --help for the options
 """
@@ -29,10 +29,10 @@ import argparse
 
 TOOLS_DIR = "\\\\cbsp.nl\\Productie\\secundair\\DecentraleTools\\Output\\CBS_Python"
 
-parser = argparse.ArgumentParser("Install the python executable of the ict_analyser")
+parser = argparse.ArgumentParser("Install the python executable of the internetnl_domain_analyse")
 parser.add_argument("--debug", help="Give debug info", dest="log_level", default=logging.INFO, const=logging.DEBUG,
                     action="store_const")
-parser.add_argument("--app_name", help="Name of the application", default="ict_analyser")
+parser.add_argument("--app_name", help="Name of the application", default="internetnl_domain_analyse")
 parser.add_argument("--system_install", help="If true, install in the system directory",
                     action="store_true")
 parser.add_argument("--destination", help="Destination where the app is installed", default=TOOLS_DIR)
