@@ -4,9 +4,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from tldextract import tldextract
-
 from ict_analyser.analyser_tool.utils import (reorganise_stat_df)
+from tldextract import tldextract
 
 _logger = logging.getLogger(__name__)
 
@@ -16,6 +15,9 @@ def read_tables_from_sqlite(filename: Path, table_names, index_name) -> pd.DataF
         table_names = [table_names]
 
     if not filename.exists():
+        _logger.warning("Records file not found. Make sure you set the environment variable "
+                        "RECORDS_CACHE_DIR or pass it via the command line argument "
+                        "--records_cache_dir")
         raise FileNotFoundError(f"Records file not found {filename.absolute()}")
 
     _logger.info(f"Reading from {filename}")

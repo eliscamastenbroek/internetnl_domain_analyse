@@ -101,7 +101,7 @@ def make_cdf_plot(hist,
         y_label = "% bedrijven"
 
     axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
-    axis.yaxis.set_label_coords(-0.06, 1.05)
+    axis.yaxis.set_label_coords(-0.04, 1.05)
     axis.xaxis.grid(False)
     axis.set_xlabel(module_name, horizontalalignment="right")
     axis.xaxis.set_label_coords(0.95, -0.15)
