@@ -83,7 +83,7 @@ def main():
     sheet_renames = general_settings["sheet_renames"]
     n_digits = general_settings["n_digits"]
     n_bins = general_settings["n_bins"]
-    barh = general_settings["barh"]
+    barh = general_settings.get("barh", False)
     cummulative = general_settings.get("cummulative", False)
     if args.cummulative is not None:
         cummulative = args.cummulative

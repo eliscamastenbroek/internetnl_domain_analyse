@@ -241,19 +241,22 @@ class DomainAnalyser(object):
             _logger.debug(f"Storing {stats.records_weighted_mean_agg}")
             all_stats[var_key] = stats.records_weighted_mean_agg
             all_hist[var_key] = dict()
-            for grp_key, df in data.groupby(level=0, axis=0):
-                ww = df_weights.loc[grp_key, "ratio_units"].to_numpy()
-                dd = df.loc[grp_key, var_key].to_numpy()
-                try:
-                    all_hist[var_key][grp_key] = np.histogram(dd, weights=ww,
-                                                              density=False,
-                                                              bins=self.n_bins,
-                                                              range=(0, 100))
-                except ValueError as err:
-                    _logger.warning("Fails for dicts. Skip for now")
-                    all_hist[var_key][grp_key] = None
-                else:
-                    _logger.debug(f"Success with {var_key}")
+            try:
+                for grp_key, df in data.groupby(level=0, axis=0):
+                    ww = df_weights.loc[grp_key, "ratio_units"].to_numpy()
+                    dd = df.loc[grp_key, var_key].to_numpy()
+                    try:
+                        all_hist[var_key][grp_key] = np.histogram(dd, weights=ww,
+                                                                  density=False,
+                                                                  bins=self.n_bins,
+                                                                  range=(0, 100))
+                    except ValueError as err:
+                        _logger.warning("Fails for dicts. Skip for now")
+                        all_hist[var_key][grp_key] = None
+                    else:
+                        _logger.debug(f"Success with {var_key}")
+            except KeyError:
+                pass
 
         return all_stats, all_hist
 

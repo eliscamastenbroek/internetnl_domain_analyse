@@ -44,7 +44,7 @@ statistics:
       sbi: sbi_digit1_statline
 plots:
   internet_gk_vanaf_2: # bedrijfsgrootte, per gk vanaf 2
-    do_it: false
+    do_it: true
     label: "Bedrijfsgrootteklasse"
     legend_title: "# Werknemers"
     figsize:
@@ -62,7 +62,7 @@ plots:
     cdf_plot: true
     bar_plot: false
   statline_gk3: # bedrijfsgrootte,  klasse met gk3 indeling
-    do_it: true
+    do_it: false
     cdf_plot: true
     bar_plot: true
     label: "Bedrijfsgrootteklasse"
@@ -357,11 +357,11 @@ module_info:
     label: Totaal score
     description: Totale score van alle resultaten
   categories:
-    include: false
+    include: true
     label: Categories
     description: Micro variabeles scan result
   tests:
-    include: false
+    include: true
     label: Test
     description: Micro variabeles scan result
 breakdown_labels:

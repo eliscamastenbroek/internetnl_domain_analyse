@@ -265,19 +265,15 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
                     axis.axhline(y=value, color=color, linestyle='-.')
                     axis.text(xoff, value + yoff * y_range, ref_label, color=color, transform=trans)
 
-        image_name = re.sub("\s", "_", plot_title.replace(" - ", "_"))
-        image_name = re.sub(":_.*$", "", image_name)
-        image_file = image_directory / Path("_".join([plot_key, image_name + image_type]))
-        image_file_name = image_file.as_posix()
-        _logger.info(f"Saving plot {image_file_name}")
-        fig.savefig(image_file)
+    image_name = re.sub("\s", "_", plot_title.replace(" - ", "_"))
+    image_name = re.sub(":_.*$", "", image_name)
+    image_file = image_directory / Path("_".join([plot_key, image_name + image_type]))
+    image_file_name = image_file.as_posix()
+    _logger.info(f"Saving plot {image_file_name}")
+    fig.savefig(image_file)
 
-        if show_plots:
-            plt.show()
-
-        _logger.debug("Done")
-
-        _logger.debug("Done")
+    if show_plots:
+        plt.show()
 
     plt.close()
 
