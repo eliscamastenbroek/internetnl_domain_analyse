@@ -13,9 +13,12 @@ general:
   tex_prepend_path: figures/scan_results
   image_type: .pdf
   cache_directory: cache
+  records_cache_file: records_cache.sqlite
   n_digits: 1
   n_bins: 50
-  cdf_plot: false
+  barh: true
+  cummulative: false
+  show_title: false
   sheet_renames:
     statline:
       pattern: "statline_"
@@ -44,7 +47,7 @@ statistics:
       sbi: sbi_digit1_statline
 plots:
   internet_gk_vanaf_2: # bedrijfsgrootte, per gk vanaf 2
-    do_it: true
+    do_it: false
     label: "Bedrijfsgrootteklasse"
     legend_title: "# Werknemers"
     figsize:
@@ -58,21 +61,34 @@ plots:
         label: DTC
         xoff: 0.02
   statline_gk_all: # bedrijfsgrootte,  2 en meer WP
-    do_it: false
+    do_it: true
     cdf_plot: true
     bar_plot: false
+    y_max_pdf_plot: 8
+    y_spacing_pdf_plot: 2
+    label: "Bedrijfsgrootteklasse"
+    legend_title: "# Werknemers"
   statline_gk3: # bedrijfsgrootte,  klasse met gk3 indeling
-    do_it: false
+    do_it: true
     cdf_plot: true
     bar_plot: true
+    y_max_pdf_plot: 15
+    y_spacing_pdf_plot: 5
     label: "Bedrijfsgrootteklasse"
     legend_title: "# Werknemers"
     figsize:
       - 6.5
       - 3.4
   statline_sbi_digit1:
-    do_it: false
-    use_breakdown_keys: true
+    do_it: true
+    cdf_plot: true
+    bar_plot: true
+    use_breakdown_keys: false
+    y_max_bar_plot: 71
+    y_spacing_bar_plot: 10
+    sort_values: true
+    subplot_adjust:
+      left:  0.5
     label: "Branche"
     legend_title: Branche
     figsize:
@@ -357,11 +373,11 @@ module_info:
     label: Totaal score
     description: Totale score van alle resultaten
   categories:
-    include: true
+    include: false
     label: Categories
     description: Micro variabeles scan result
   tests:
-    include: true
+    include: false
     label: Test
     description: Micro variabeles scan result
 breakdown_labels:
@@ -377,6 +393,11 @@ breakdown_labels:
     WP19109: 500-     # 500 of meer
   statline_gk_all:
     WP19115: Totaal NL  # bedrijfsgrootte, 2 en meer WP
+  statline_gk3: # bedrijfsgrootte,  2 en meer WP
+    WP19080: 2 tot 10 werkzame personen
+    WP19090: 10 tot 50 werkzame personen
+    WP19097: 50 tot 250 werkzame personen
+    WP19107: 250 of meer werkzame personen
   statline_sbi_digit1:
     "C": "Industrie"
     "D-E": "Energie/water/afval"
@@ -388,5 +409,5 @@ breakdown_labels:
     "K": "Financiële dienstverlening"
     "L": "Verhuur/handel ontr.goed"
     "M": "Special. zakelijke dienstver."
-    "N": "Verhuur en overige zakelijke diensten"
+    "N": "Verhuur/overige zakelijke dnst."
     "Q": "Gezondheid en welzijnszorg"
