@@ -4,11 +4,15 @@ import logging
 import os
 from pathlib import Path
 
+try:
+    from path import Path as path_Path
+except ModuleNotFoundError:
+    from cbs_utils.misc import Chdir as path_Path
 import yaml
 from domain_analyser import __version__
 from domain_analyser.domain_analyse_classes import (DomainAnalyser, DomainPlotter)
 
-logging.basicConfig(format='%(asctime)s [%(lineno)4s] - %(levelname)-8s : %(message)s',
+logging.basicConfig(format='%(asctime)s %(filename)25s[%(lineno)4s] - %(levelname)-8s : %(message)s',
                     level=logging.DEBUG)
 _logger = logging.getLogger()
 
@@ -79,6 +83,9 @@ def main():
     scan_data = general_settings["scan_data"]
     default_scan = general_settings["default_scan"]
 
+    records_file_name = general_settings["records_cache_file"]
+    records_table_names = general_settings["records_table_names"]
+
     sheet_renames = general_settings["sheet_renames"]
     n_digits = general_settings["n_digits"]
     n_bins = general_settings["n_bins"]
@@ -100,6 +107,7 @@ def main():
     module_info = settings["module_info"]
     weights = settings["weight"]
     plot_info = settings["plots"]
+
 
     if args.records_cache_dir is not None:
         records_cache_dir = args.records_cache_dir
@@ -130,7 +138,7 @@ def main():
     else:
         working_directory = Path(args.working_directory)
 
-    with path.Path(str(working_directory)):
+    with path_Path(str(working_directory)):
         cache_directory.mkdir(exist_ok=True)
         image_directory.mkdir(exist_ok=True)
         _logger.info(f"Running domain analyser in {os.getcwd()}")
@@ -142,6 +150,7 @@ def main():
             domain_analyses = DomainAnalyser(
                 scan_data_key=key,
                 records_filename=records_filename,
+                records_table_names=records_table_names,
                 internet_nl_filename=internet_nl_filename,
                 reset=args.reset,
                 output_file=output_file,
