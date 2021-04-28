@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import yaml
+
 from domain_analyser.domain_plots import (make_cdf_plot, make_bar_plot)
 from domain_analyser.utils import (read_tables_from_sqlite,
                                    get_domain,
@@ -43,6 +44,7 @@ class DomainAnalyser(object):
                  output_file=None,
                  reset=None,
                  records_filename=None,
+                 records_table_names=None,
                  internet_nl_filename=None,
                  breakdown_labels=None,
                  statistics: dict = None,
@@ -91,6 +93,11 @@ class DomainAnalyser(object):
             self.records_filename = Path(cache_directory) / Path("records_cache.sqlite")
         else:
             self.records_filename = records_filename
+
+        if records_table_names is None:
+            self.records_tables_names = ["records_df_20_2", "info_records_df_20_2"]
+        else:
+            self.records_tables_names = records_table_names
 
         if internet_nl_filename is not None:
             self.internet_nl_filename = internet_nl_filename
@@ -312,17 +319,19 @@ class DomainAnalyser(object):
     def read_data(self):
         if not self.cache_file.exists() or self.reset == 0:
 
-            table_names = ["records_df_2", "info_records_df"]
             index_name = self.be_id
             _logger.info(f"Reading table data from {self.records_filename}")
-            records = read_tables_from_sqlite(self.records_filename, table_names, index_name)
+            records = read_tables_from_sqlite(self.records_filename, self.records_tables_names,
+                                              index_name)
 
             records[self.url_key] = [get_domain(url) for url in records[self.url_key]]
             records.reset_index(inplace=True)
 
             table_names = ["report", "scoring", "status", "results"]
             index_name = "index"
+            _logger.info(f"Reading tables {table_names} from {self.internet_nl_filename}")
             tables = read_tables_from_sqlite(self.internet_nl_filename, table_names, index_name)
+            _logger.info(f"Done")
             tables.reset_index(inplace=True)
             tables.rename(columns=dict(index=self.url_key), inplace=True)
 
