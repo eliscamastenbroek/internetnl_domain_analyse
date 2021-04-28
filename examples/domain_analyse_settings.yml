@@ -13,7 +13,10 @@ general:
   tex_prepend_path: figures/scan_results
   image_type: .pdf
   cache_directory: cache
-  records_cache_file: records_cache.sqlite
+  records_cache_file: records_cache_20.sqlite
+  records_table_names:
+    - records_df_20_2
+    - info_records_df_20
   n_digits: 1
   n_bins: 50
   barh: true
