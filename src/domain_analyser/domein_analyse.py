@@ -4,7 +4,6 @@ import logging
 import os
 from pathlib import Path
 
-import path
 import yaml
 from domain_analyser import __version__
 from domain_analyser.domain_analyse_classes import (DomainAnalyser, DomainPlotter)
