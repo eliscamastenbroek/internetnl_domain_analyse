@@ -1,11 +1,14 @@
 import logging
 import sqlite3
+import ssl
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from ict_analyser.analyser_tool.utils import (reorganise_stat_df)
+import requests
 from tldextract import tldextract
+
+from ict_analyser.analyser_tool.utils import (reorganise_stat_df)
 
 _logger = logging.getLogger(__name__)
 
@@ -21,26 +24,36 @@ def read_tables_from_sqlite(filename: Path, table_names, index_name) -> pd.DataF
         raise FileNotFoundError(f"Records file not found {filename.absolute()}")
 
     _logger.info(f"Reading from {filename}")
-    connection = sqlite3.connect(filename)
+    connection = sqlite3.connect(filename.as_posix())
     tables = list()
     for table_name in table_names:
+        _logger.debug(f"Reading table {table_name}")
         df = pd.read_sql(f"select * from {table_name}", con=connection, index_col=index_name)
         tables.append(df)
+    _logger.debug(f"Done")
     if len(tables) > 1:
         tables_df = pd.concat(tables, axis=1)
     else:
         tables_df = tables[0]
 
+    _logger.debug(f"Closing database")
+
     connection.close()
 
+    _logger.debug(f"Done reading")
     return tables_df
 
 
 def get_domain(url):
+    domain = None
     try:
         tld = tldextract.extract(url)
     except TypeError:
-        domain = None
+        _logger.debug(f"Type error occurred for {url}")
+    except ssl.SSLEOFError as ssl_err:
+        _logger.debug(f"SSLEOF error occurred for {url}")
+    except requests.exceptions.SSLError as req_err:
+        _logger.debug(f"SSLError error occurred for {url}")
     else:
         domain = tld.domain.lower()
     return domain
