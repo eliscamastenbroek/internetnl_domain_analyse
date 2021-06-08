@@ -570,7 +570,8 @@ class DomainPlotter(object):
                                                    subplot_adjust=subplot_adjust,
                                                    sort_values=sort_values,
                                                    y_max_bar_plot=y_max_bar_plot,
-                                                   y_spacing_bar_plot=y_spacing_bar_plot
+                                                   y_spacing_bar_plot=y_spacing_bar_plot,
+                                                   translations=self.translations
                                                    )
 
                         _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
@@ -594,7 +595,8 @@ class DomainPlotter(object):
                                                           cummulative=self.cummulative,
                                                           xoff=xoff, yoff=yoff,
                                                           y_max=y_max_pdf_plot,
-                                                          y_spacing=y_spacing_pdf_plot
+                                                          y_spacing=y_spacing_pdf_plot,
+                                                          translations=self.translations
                                                           )
                         if self.show_plots:
                             plt.show()

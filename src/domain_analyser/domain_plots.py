@@ -27,7 +27,8 @@ def make_cdf_plot(hist,
                   xoff=None,
                   yoff=None,
                   y_max=None,
-                  y_spacing=None
+                  y_spacing=None,
+                  translations=None
                   ):
     figure_properties = CBSPlotSettings()
 
@@ -100,6 +101,16 @@ def make_cdf_plot(hist,
     else:
         y_label = "% bedrijven"
 
+    if translations is not None:
+        for key_in, label_out in translations.items():
+            if label_out is not None and key_in in y_label:
+                _logger.debug(f"Replacing {key_in} -> {label_out}")
+                y_label = y_label.replace(key_in, label_out)
+            if label_out is not None and key_in in module_name:
+                _logger.debug(f"Replacing {key_in} -> {label_out}")
+                module_name = module_name.replace(key_in, label_out)
+
+
     axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
     axis.yaxis.set_label_coords(-0.04, 1.05)
     axis.xaxis.grid(False)
@@ -137,7 +148,7 @@ def make_cdf_plot(hist,
 def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory, show_plots=False,
                   figsize=None, image_type=".pdf", reference_lines=None, xoff=0.02, yoff=0.02,
                   show_title=False, barh=False, subplot_adjust=None, sort_values=False,
-                  y_max_bar_plot = None, y_spacing_bar_plot = None):
+                  y_max_bar_plot = None, y_spacing_bar_plot = None, translations=None):
     """ create a bar plot from the question 'plot_df'"""
     figure_properties = CBSPlotSettings()
 
@@ -201,6 +212,12 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
             else:
                 y_label = "% bedrijven"
 
+            if translations is not None:
+                for key_in, label_out in translations.items():
+                    if label_out is not None and key_in in y_label:
+                        logger.debug(f"Replacing {key_in} -> {label_out}")
+                        y_label = y_label.replace(key_in, label_out)
+
             axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
             axis.yaxis.set_label_coords(-0.04, 1.05)
             axis.xaxis.grid(False)
@@ -245,6 +262,13 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
                 x_label = "Score %"
             else:
                 x_label = "% bedrijven"
+
+            if translations is not None:
+                for key_in, label_out in translations.items():
+                    if label_out is not None and key_in in x_label:
+                        logger.debug(f"Replacing {key_in} -> {label_out}")
+                        x_label = x_label.replace(key_in, label_out)
+
 
             axis.set_xlabel(x_label, rotation="horizontal", horizontalalignment="right")
             axis.xaxis.set_label_coords(1.01, -0.12)
