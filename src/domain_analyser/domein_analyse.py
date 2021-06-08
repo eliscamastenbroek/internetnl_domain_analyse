@@ -77,6 +77,8 @@ def main():
     general_settings = settings["general"]
     cache_directory = Path(general_settings.get("cache_directory", "."))
 
+    label_translations = general_settings.get("translations")
+
     image_directory = Path(general_settings.get("image_directory", "."))
     tex_prepend_path = Path(general_settings.get("tex_prepend_path", "."))
 
@@ -187,6 +189,7 @@ def main():
                 cdf_plot=cdf_plot,
                 bar_plot=bar_plot,
                 cache_directory=cache_directory,
+                translations=label_translations
             )
 
 

@@ -408,6 +408,7 @@ class DomainPlotter(object):
                  cummulative=False,
                  show_title=False,
                  breakdown_labels=None,
+                 translations: dict=None,
                  ):
 
         self.scan_data = scan_data
@@ -423,6 +424,7 @@ class DomainPlotter(object):
         self.cdf_plot = cdf_plot
         self.cummulative = cummulative
         self.show_title = show_title
+        self.translations = translations
 
         self.image_type = image_type
         self.image_directory = image_directory
@@ -529,6 +531,9 @@ class DomainPlotter(object):
                                            question_type=question_type)
 
                     plot_df = question_df.loc[(module_name, question_name, mask)].copy()
+
+                    if self.translations is not None:
+                        plot_df.rename(columns=self.translations, inplace=True)
 
                     xoff = 0
                     yoff = 0
