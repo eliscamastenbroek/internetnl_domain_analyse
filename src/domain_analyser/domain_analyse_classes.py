@@ -19,12 +19,11 @@ from domain_analyser.utils import (read_tables_from_sqlite,
                                    prepare_stat_data_for_write,
                                    get_option_mask,
                                    impose_variable_defaults)
-from ict_analyser.analyser_tool.utils import (SampleStatistics,
-                                              prepare_df_for_statistics,
+from ict_analyser.analyser_tool.utils import (prepare_df_for_statistics,
                                               get_records_select,
-                                              rename_all_variables,
-                                              VariableProperties,
-                                              )
+                                              rename_all_variables)
+from ict_analyser.analyser_tool.sample_statistics import SampleStatistics
+from ict_analyser.analyser_tool.variable_properties import VariableProperties
 
 _logger = logging.getLogger(__name__)
 
@@ -408,7 +407,7 @@ class DomainPlotter(object):
                  cummulative=False,
                  show_title=False,
                  breakdown_labels=None,
-                 translations: dict=None,
+                 translations: dict = None,
                  ):
 
         self.scan_data = scan_data
