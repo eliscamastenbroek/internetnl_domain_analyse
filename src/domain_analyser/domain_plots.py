@@ -7,7 +7,8 @@ import matplotlib.transforms as trn
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from cbs_utils.plotting import CBSPlotSettings, add_axis_label_background
+from cbsplotlib.settings import CBSPlotSettings
+from cbsplotlib.utils import add_axis_label_background
 
 _logger = logging.getLogger(__name__)
 sns.set_style('whitegrid')
