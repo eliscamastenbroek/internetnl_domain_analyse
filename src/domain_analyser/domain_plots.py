@@ -165,7 +165,9 @@ def make_cdf_plot(hist,
 def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory, show_plots=False,
                   figsize=None, image_type=".pdf", reference_lines=None, xoff=0.02, yoff=0.02,
                   show_title=False, barh=False, subplot_adjust=None, sort_values=False,
-                  y_max_bar_plot=None, y_spacing_bar_plot=None, translations=None):
+                  y_max_bar_plot=None, y_spacing_bar_plot=None, translations=None,
+                  export_highcharts=False, highcharts_directory=None
+                  ):
     """ create a bar plot from the question 'plot_df'"""
     figure_properties = CBSPlotSettings()
 
@@ -311,6 +313,19 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     image_file_name = image_file.as_posix()
     _logger.info(f"Saving plot {image_file_name}")
     fig.savefig(image_file)
+
+    if export_highcharts:
+        CBSHighChart(
+            data=plot_df,
+            chart_type="bar",
+            input_file_name="bar_percentage",
+            output_directory=highcharts_directory,
+            output_file_name=image_file.stem,
+            xlabel=x_label,
+            ylabel=y_label,
+            title=plot_title,
+        )
+
 
     if show_plots:
         plt.show()

@@ -574,8 +574,10 @@ class DomainPlotter(object):
                                                    sort_values=sort_values,
                                                    y_max_bar_plot=y_max_bar_plot,
                                                    y_spacing_bar_plot=y_spacing_bar_plot,
-                                                   translations=self.translations
-                                                   )
+                                                   translations=self.translations,
+                                                   export_highcharts = self.export_highcharts,
+                                                   highcharts_directory = self.highcharts_directory
+                        )
 
                         _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
                         self.all_plots[original_name][label] = image_file
