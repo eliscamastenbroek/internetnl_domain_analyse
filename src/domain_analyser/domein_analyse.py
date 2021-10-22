@@ -59,6 +59,10 @@ def parse_args():
                         default=False)
     parser.add_argument("--bar_plot", action="store_true", help="Plot het staafdiagram",
                         default=False)
+    parser.add_argument("--export_highcharts", help="Export each image to a highcharts file",
+                        action="store_true")
+    parser.add_argument("--highcharts_output_directory",
+                        help="Directory waar alle highcharts naar toe geschreven wordt")
 
     parsed_arguments = parser.parse_args()
 
@@ -131,6 +135,7 @@ def main():
     else:
         output_file = args.output_filename
 
+
     if args.working_directory is None:
         wd = general_settings.get("working_directory", ".")
         if wd is None:
@@ -189,7 +194,10 @@ def main():
                 cdf_plot=cdf_plot,
                 bar_plot=bar_plot,
                 cache_directory=cache_directory,
-                translations=label_translations
+                translations=label_translations,
+                export_highcharts=args.export_highcharts,
+                highcharts_directory=args.highcharts_output_directory,
+
             )
 
 

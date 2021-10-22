@@ -7,10 +7,14 @@ import matplotlib.transforms as trn
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from cbsplotlib import LOGGER_BASE_NAME
 from cbsplotlib.settings import CBSPlotSettings
 from cbsplotlib.utils import add_axis_label_background
+from cbsplotlib.highcharts import CBSHighChart
 
 _logger = logging.getLogger(__name__)
+cbsplotlib_logger = logging.getLogger(LOGGER_BASE_NAME)
+cbsplotlib_logger.setLevel(_logger.getEffectiveLevel())
 sns.set_style('whitegrid')
 
 
@@ -29,8 +33,9 @@ def make_cdf_plot(hist,
                   yoff=None,
                   y_max=None,
                   y_spacing=None,
-                  translations=None
-                  ):
+                  translations=None,
+                  export_highcharts=None,
+                  highcharts_directory: str = None):
     figure_properties = CBSPlotSettings()
 
     if figsize is None:
@@ -111,7 +116,6 @@ def make_cdf_plot(hist,
                 _logger.debug(f"Replacing {key_in} -> {label_out}")
                 module_name = module_name.replace(key_in, label_out)
 
-
     axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
     axis.yaxis.set_label_coords(-0.04, 1.05)
     axis.xaxis.grid(False)
@@ -135,6 +139,18 @@ def make_cdf_plot(hist,
     stat_file = image_file.with_suffix(".out").as_posix()
     _logger.info(f"Saving stats to {stat_file}")
     stats_df.to_csv(stat_file)
+    if export_highcharts:
+        hc_df = pd.DataFrame(index=bins[:-1], data=fnc, columns=[fnc_str])
+        hc_df.index = hc_df.index.rename(module_name)
+        CBSHighChart(
+            data=hc_df,
+            chart_type="column",
+            input_file_name="column_percentage",
+            output_directory=highcharts_directory,
+            output_file_name=image_file.stem,
+            ylabel=y_label,
+            title=plot_title,
+        )
 
     if show_plots:
         plt.show()
@@ -149,7 +165,7 @@ def make_cdf_plot(hist,
 def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory, show_plots=False,
                   figsize=None, image_type=".pdf", reference_lines=None, xoff=0.02, yoff=0.02,
                   show_title=False, barh=False, subplot_adjust=None, sort_values=False,
-                  y_max_bar_plot = None, y_spacing_bar_plot = None, translations=None):
+                  y_max_bar_plot=None, y_spacing_bar_plot=None, translations=None):
     """ create a bar plot from the question 'plot_df'"""
     figure_properties = CBSPlotSettings()
 
@@ -269,7 +285,6 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
                     if label_out is not None and key_in in x_label:
                         logger.debug(f"Replacing {key_in} -> {label_out}")
                         x_label = x_label.replace(key_in, label_out)
-
 
             axis.set_xlabel(x_label, rotation="horizontal", horizontalalignment="right")
             axis.xaxis.set_label_coords(1.01, -0.12)

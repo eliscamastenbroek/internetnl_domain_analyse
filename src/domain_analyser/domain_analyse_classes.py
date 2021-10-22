@@ -408,6 +408,8 @@ class DomainPlotter(object):
                  show_title=False,
                  breakdown_labels=None,
                  translations: dict = None,
+                 export_highcharts=False,
+                 highcharts_directory=None,
                  ):
 
         self.scan_data = scan_data
@@ -424,6 +426,8 @@ class DomainPlotter(object):
         self.cummulative = cummulative
         self.show_title = show_title
         self.translations = translations
+        self.export_highcharts = export_highcharts
+        self.highcharts_directory = highcharts_directory
 
         self.image_type = image_type
         self.image_directory = image_directory
@@ -595,7 +599,9 @@ class DomainPlotter(object):
                                                           xoff=xoff, yoff=yoff,
                                                           y_max=y_max_pdf_plot,
                                                           y_spacing=y_spacing_pdf_plot,
-                                                          translations=self.translations
+                                                          translations=self.translations,
+                                                          export_highcharts=self.export_highcharts,
+                                                          highcharts_directory=self.highcharts_directory
                                                           )
                         if self.show_plots:
                             plt.show()
