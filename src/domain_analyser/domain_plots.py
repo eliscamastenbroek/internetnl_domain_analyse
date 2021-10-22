@@ -207,6 +207,9 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     line_iter = axis._get_lines
     trans = trn.blended_transform_factory(axis.transAxes, axis.transData)
 
+    x_label = None
+    y_label = None
+
     if not barh:
 
         try:
@@ -315,14 +318,17 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     fig.savefig(image_file)
 
     if export_highcharts:
+        if barh:
+            hc_ylabel = x_label
+        else:
+            hc_ylabel = y_label
         CBSHighChart(
             data=plot_df,
             chart_type="bar",
             input_file_name="bar_percentage",
             output_directory=highcharts_directory,
             output_file_name=image_file.stem,
-            xlabel=x_label,
-            ylabel=y_label,
+            ylabel=hc_ylabel,
             title=plot_title,
         )
 
