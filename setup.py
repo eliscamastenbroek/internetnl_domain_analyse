@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    Setup file for ict_analyser.
+    Setup file for internetnl_domain_analyse.
     Use setup.cfg to configure your project.
 
     This file was generated with PyScaffold 3.3.1.
