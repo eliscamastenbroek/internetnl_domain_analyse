@@ -135,7 +135,6 @@ def main():
     else:
         output_file = args.output_filename
 
-
     if args.working_directory is None:
         wd = general_settings.get("working_directory", ".")
         if wd is None:

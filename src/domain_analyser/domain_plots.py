@@ -145,11 +145,11 @@ def make_cdf_plot(hist,
         CBSHighChart(
             data=hc_df,
             chart_type="column",
-            input_file_name="column_percentage",
             output_directory=highcharts_directory,
             output_file_name=image_file.stem,
             ylabel=y_label,
             title=plot_title,
+            enable_legend=False,
         )
 
     if show_plots:
@@ -237,7 +237,7 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
             if translations is not None:
                 for key_in, label_out in translations.items():
                     if label_out is not None and key_in in y_label:
-                        logger.debug(f"Replacing {key_in} -> {label_out}")
+                        _logger.debug(f"Replacing {key_in} -> {label_out}")
                         y_label = y_label.replace(key_in, label_out)
 
             axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
@@ -322,14 +322,15 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
             hc_ylabel = x_label
         else:
             hc_ylabel = y_label
+        _logger.info(f"Saving plot to highcharts")
         CBSHighChart(
             data=plot_df,
             chart_type="bar",
-            input_file_name="bar_percentage",
             output_directory=highcharts_directory,
             output_file_name=image_file.stem,
             ylabel=hc_ylabel,
             title=plot_title,
+            enable_legend=False
         )
 
 
