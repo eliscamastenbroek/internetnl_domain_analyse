@@ -130,10 +130,8 @@ def make_cdf_plot(hist,
 
     add_axis_label_background(fig=fig, axes=axis, loc="south")
 
-    if title is not None:
-        plot_title = title
-    else:
-        plot_title = " - ".join([fnc_str, module_name, question_name, plot_key, grp_key])
+    plot_title = " - ".join([fnc_str, module_name, question_name, plot_key, grp_key])
+
     image_name = re.sub("\s", "_", plot_title.replace(" - ", "_"))
     image_name = re.sub(":_.*$", "", image_name)
     image_file = image_directory / Path("_".join([plot_key, image_name + image_type]))
@@ -145,6 +143,9 @@ def make_cdf_plot(hist,
     _logger.info(f"Saving stats to {stat_file}")
     stats_df.to_csv(stat_file)
     if export_highcharts:
+        # voor highcharts de titel setten
+        if title is not None:
+            plot_title = title
         hc_df = pd.DataFrame(index=bins[:-1], data=fnc, columns=[fnc_str])
         hc_df = hc_df.reindex(hc_df.index[::-1])
         hc_df.index = hc_df.index.rename(module_name)
@@ -184,14 +185,11 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
 
     names = plot_df.index.names
     plot_df.reset_index(inplace=True)
-    if title is not None:
-        plot_title = title
-    else:
-        plot_title = " - ".join([module_name, question_name])
-        result = plot_df.loc[0, names[2]]
-        if result == "":
-            result = "True"
-        plot_title += f": {result}"
+    plot_title = " - ".join([module_name, question_name])
+    result = plot_df.loc[0, names[2]]
+    if result == "":
+        result = "True"
+    plot_title += f": {result}"
     values_column = "Values"
     plot_df.index.rename(values_column, inplace=True)
     plot_df[plot_title] = None
@@ -297,7 +295,7 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
             if translations is not None:
                 for key_in, label_out in translations.items():
                     if label_out is not None and key_in in x_label:
-                        logger.debug(f"Replacing {key_in} -> {label_out}")
+                        _logger.debug(f"Replacing {key_in} -> {label_out}")
                         x_label = x_label.replace(key_in, label_out)
 
             axis.set_xlabel(x_label, rotation="horizontal", horizontalalignment="right")
@@ -327,6 +325,8 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     fig.savefig(image_file)
 
     if export_highcharts:
+        if title is not None:
+            plot_title = title
         if barh:
             hc_ylabel = x_label
         else:
@@ -342,7 +342,6 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
             title=plot_title,
             enable_legend=False
         )
-
 
     if show_plots:
         plt.show()
