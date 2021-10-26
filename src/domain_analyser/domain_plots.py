@@ -147,7 +147,6 @@ def make_cdf_plot(hist,
         if title is not None:
             plot_title = title
         hc_df = pd.DataFrame(index=bins[:-1], data=fnc, columns=[fnc_str])
-        hc_df = hc_df.reindex(hc_df.index[::-1])
         hc_df.index = hc_df.index.rename(module_name)
         CBSHighChart(
             data=hc_df,
