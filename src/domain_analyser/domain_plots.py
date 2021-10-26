@@ -35,7 +35,9 @@ def make_cdf_plot(hist,
                   y_spacing=None,
                   translations=None,
                   export_highcharts=None,
-                  highcharts_directory: str = None):
+                  highcharts_directory: str = None,
+                  title: str = None
+                  ):
     figure_properties = CBSPlotSettings()
 
     if figsize is None:
@@ -128,7 +130,10 @@ def make_cdf_plot(hist,
 
     add_axis_label_background(fig=fig, axes=axis, loc="south")
 
-    plot_title = " - ".join([fnc_str, module_name, question_name, plot_key, grp_key])
+    if title is not None:
+        plot_title = title
+    else:
+        plot_title = " - ".join([fnc_str, module_name, question_name, plot_key, grp_key])
     image_name = re.sub("\s", "_", plot_title.replace(" - ", "_"))
     image_name = re.sub(":_.*$", "", image_name)
     image_file = image_directory / Path("_".join([plot_key, image_name + image_type]))
@@ -166,7 +171,7 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
                   figsize=None, image_type=".pdf", reference_lines=None, xoff=0.02, yoff=0.02,
                   show_title=False, barh=False, subplot_adjust=None, sort_values=False,
                   y_max_bar_plot=None, y_spacing_bar_plot=None, translations=None,
-                  export_highcharts=False, highcharts_directory=None
+                  export_highcharts=False, highcharts_directory=None, title=None
                   ):
     """ create a bar plot from the question 'plot_df'"""
     figure_properties = CBSPlotSettings()
@@ -178,7 +183,10 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
 
     names = plot_df.index.names
     plot_df.reset_index(inplace=True)
-    plot_title = " - ".join([module_name, question_name])
+    if title is not None:
+        plot_title = title
+    else:
+        plot_title = " - ".join([module_name, question_name])
     result = plot_df.loc[0, names[2]]
     if result == "":
         result = "True"

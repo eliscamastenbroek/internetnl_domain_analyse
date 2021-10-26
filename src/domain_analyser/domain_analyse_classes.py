@@ -480,6 +480,7 @@ class DomainPlotter(object):
 
             stats_df = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key)
 
+            title = plot_prop.get("title")
             plot_cdf = plot_prop.get("cdf_plot", False) and self.cdf_plot
             plot_bar = plot_prop.get("bar_plot", True) and self.bar_plot
             y_max_pdf_plot = plot_prop.get("y_max_pdf_plot", 10)
@@ -575,9 +576,11 @@ class DomainPlotter(object):
                                                    y_max_bar_plot=y_max_bar_plot,
                                                    y_spacing_bar_plot=y_spacing_bar_plot,
                                                    translations=self.translations,
-                                                   export_highcharts = self.export_highcharts,
-                                                   highcharts_directory = self.highcharts_directory
-                        )
+                                                   export_highcharts=self.export_highcharts,
+                                                   highcharts_directory=self.highcharts_directory,
+                                                   title=title
+
+                                                   )
 
                         _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
                         self.all_plots[original_name][label] = image_file
@@ -603,7 +606,8 @@ class DomainPlotter(object):
                                                           y_spacing=y_spacing_pdf_plot,
                                                           translations=self.translations,
                                                           export_highcharts=self.export_highcharts,
-                                                          highcharts_directory=self.highcharts_directory
+                                                          highcharts_directory=self.highcharts_directory,
+                                                          title=title
                                                           )
                         if self.show_plots:
                             plt.show()

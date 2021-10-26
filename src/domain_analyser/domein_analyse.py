@@ -114,7 +114,6 @@ def main():
     weights = settings["weight"]
     plot_info = settings["plots"]
 
-
     if args.records_cache_dir is not None:
         records_cache_dir = args.records_cache_dir
     elif os.getenv("RECORDS_CACHE_DIR") is not None:
