@@ -146,6 +146,7 @@ def make_cdf_plot(hist,
     stats_df.to_csv(stat_file)
     if export_highcharts:
         hc_df = pd.DataFrame(index=bins[:-1], data=fnc, columns=[fnc_str])
+        hc_df = hc_df.reindex(hc_df.index[::-1])
         hc_df.index = hc_df.index.rename(module_name)
         CBSHighChart(
             data=hc_df,
@@ -187,10 +188,10 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
         plot_title = title
     else:
         plot_title = " - ".join([module_name, question_name])
-    result = plot_df.loc[0, names[2]]
-    if result == "":
-        result = "True"
-    plot_title += f": {result}"
+        result = plot_df.loc[0, names[2]]
+        if result == "":
+            result = "True"
+        plot_title += f": {result}"
     values_column = "Values"
     plot_df.index.rename(values_column, inplace=True)
     plot_df[plot_title] = None
@@ -331,6 +332,7 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
         else:
             hc_ylabel = y_label
         _logger.info(f"Saving plot to highcharts")
+        plot_df = plot_df.reindex(plot_df.index[::-1])
         CBSHighChart(
             data=plot_df,
             chart_type="bar",

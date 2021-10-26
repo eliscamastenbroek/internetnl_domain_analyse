@@ -195,7 +195,6 @@ def main():
                 translations=label_translations,
                 export_highcharts=args.export_highcharts,
                 highcharts_directory=args.highcharts_output_directory,
-
             )
 
 

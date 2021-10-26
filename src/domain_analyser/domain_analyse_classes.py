@@ -579,7 +579,6 @@ class DomainPlotter(object):
                                                    export_highcharts=self.export_highcharts,
                                                    highcharts_directory=self.highcharts_directory,
                                                    title=title
-
                                                    )
 
                         _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
