@@ -2,9 +2,7 @@
 Changelog
 =========
 
-Version 0.1
+Version 1.r
 ===========
 
-- Feature A added
-- FIX: nasty bug #1729 fixed
-- add your changes here!
+- Export naar highcharts en svg toegevoegd
