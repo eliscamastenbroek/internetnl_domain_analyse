@@ -143,6 +143,10 @@ def make_cdf_plot(hist,
     _logger.info(f"Saving stats to {stat_file}")
     stats_df.to_csv(stat_file)
     if export_highcharts:
+        svg_image_file = highcharts_directory / Path("_".join([plot_key, image_name + ".svg"]))
+        _logger.info(f"Saving plot to {svg_image_file}")
+        fig.savefig(svg_image_file)
+
         # voor highcharts de titel setten
         if title is not None:
             plot_title = title
