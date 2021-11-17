@@ -484,12 +484,15 @@ class DomainPlotter(object):
             stats_df = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key)
 
             title = plot_prop.get("title")
+            export_svg_cdf = False
+            export_svg_bar = False
             if self.cdf_plot:
                 plot_cdf = plot_prop.get("cdf_plot")
                 highcharts_directory_cdf = self.highcharts_directory
                 if isinstance(plot_cdf, dict):
                     if hc_sub_dir := plot_cdf.get("highcharts_output_directory"):
                         highcharts_directory_cdf = highcharts_directory_cdf / Path(hc_sub_dir)
+                    export_svg_cdf = plot_cdf.get("export_svg", False)
                     plot_cdf = plot_cdf.get("apply", True)
             else:
                 plot_cdf = False
@@ -499,6 +502,7 @@ class DomainPlotter(object):
                 if isinstance(plot_bar, dict):
                     if hc_sub_dir := plot_bar.get("highcharts_output_directory"):
                         highcharts_directory_bar = highcharts_directory_bar / Path(hc_sub_dir)
+                    export_svg_bar = plot_bar.get("export_svg", False)
                     plot_bar = plot_bar.get("apply", True)
             else:
                 plot_bar = False
@@ -596,6 +600,7 @@ class DomainPlotter(object):
                                                    y_spacing_bar_plot=y_spacing_bar_plot,
                                                    translations=self.translations,
                                                    export_highcharts=self.export_highcharts,
+                                                   export_svg=export_svg_bar,
                                                    highcharts_directory=highcharts_directory_bar,
                                                    title=title
                                                    )
@@ -624,6 +629,7 @@ class DomainPlotter(object):
                                                           y_spacing=y_spacing_pdf_plot,
                                                           translations=self.translations,
                                                           export_highcharts=self.export_highcharts,
+                                                          export_svg=export_svg_cdf,
                                                           highcharts_directory=highcharts_directory_cdf,
                                                           title=title
                                                           )

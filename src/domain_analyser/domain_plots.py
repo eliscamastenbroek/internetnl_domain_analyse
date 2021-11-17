@@ -35,6 +35,7 @@ def make_cdf_plot(hist,
                   y_spacing=None,
                   translations=None,
                   export_highcharts=None,
+                  export_svg=False,
                   highcharts_directory: str = None,
                   title: str = None
                   ):
@@ -142,11 +143,14 @@ def make_cdf_plot(hist,
     stat_file = image_file.with_suffix(".out").as_posix()
     _logger.info(f"Saving stats to {stat_file}")
     stats_df.to_csv(stat_file)
-    if export_highcharts:
-        highcharts_directory.mkdir(exist_ok=True, parents=True)
+    highcharts_directory.mkdir(exist_ok=True, parents=True)
+
+    if export_svg:
         svg_image_file = highcharts_directory / Path("_".join([plot_key, image_name + ".svg"]))
         _logger.info(f"Saving plot to {svg_image_file}")
         fig.savefig(svg_image_file)
+
+    if export_highcharts:
 
         # voor highcharts de titel setten
         if title is not None:
@@ -177,7 +181,10 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
                   figsize=None, image_type=".pdf", reference_lines=None, xoff=0.02, yoff=0.02,
                   show_title=False, barh=False, subplot_adjust=None, sort_values=False,
                   y_max_bar_plot=None, y_spacing_bar_plot=None, translations=None,
-                  export_highcharts=False, highcharts_directory=None, title=None
+                  export_svg=False,
+                  export_highcharts=False,
+                  highcharts_directory=None,
+                  title=None
                   ):
     """ create a bar plot from the question 'plot_df'"""
     figure_properties = CBSPlotSettings()
@@ -328,12 +335,14 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     _logger.info(f"Saving plot {image_file_name}")
     fig.savefig(image_file)
 
-    if export_highcharts:
-        highcharts_directory.mkdir(exist_ok=True, parents=True)
+    highcharts_directory.mkdir(exist_ok=True, parents=True)
+    if export_svg:
         # met export highcharts gaan we ook een svg exporten
-        svg_image_file = highcharts_directory / Path("_".join([plot_key, image_name + ".svg" ]))
+        svg_image_file = highcharts_directory / Path("_".join([plot_key, image_name + ".svg"]))
         _logger.info(f"Saving plot {svg_image_file}")
         fig.savefig(svg_image_file)
+
+    if export_highcharts:
 
         if title is not None:
             plot_title = title
