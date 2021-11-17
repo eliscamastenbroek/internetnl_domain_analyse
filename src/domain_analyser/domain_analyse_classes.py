@@ -488,21 +488,20 @@ class DomainPlotter(object):
                 plot_cdf = plot_prop.get("cdf_plot")
                 highcharts_directory_cdf = self.highcharts_directory
                 if isinstance(plot_cdf, dict):
-                    plot_cdf.get("apply", True)
                     if hc_sub_dir := plot_cdf.get("highcharts_output_directory") is not None:
                         highcharts_directory_cdf = highcharts_directory_cdf / Path(hc_sub_dir)
+                    plot_cdf = plot_cdf.get("apply", True)
             else:
                 plot_cdf = False
             if self.bar_plot:
                 plot_bar = plot_prop.get("bar_plot")
                 highcharts_directory_bar = self.highcharts_directory
                 if isinstance(plot_cdf, dict):
-                    plot_bar.get("apply", True)
                     if hc_sub_dir := plot_cdf.get("highcharts_output_directory") is not None:
                         highcharts_directory_bar = highcharts_directory_bar / Path(hc_sub_dir)
+                    plot_bar = plot_bar.get("apply", True)
             else:
                 plot_bar = False
-            plot_bar = plot_prop.get("bar_plot", True) and self.bar_plot
             y_max_pdf_plot = plot_prop.get("y_max_pdf_plot", 10)
             y_spacing_pdf_plot = plot_prop.get("y_spacing_pdf_plot", 5)
             y_max_bar_plot = plot_prop.get("y_max_bar_plot")

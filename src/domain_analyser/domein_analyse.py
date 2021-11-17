@@ -199,7 +199,7 @@ def main():
                 cache_directory=cache_directory,
                 translations=label_translations,
                 export_highcharts=args.export_highcharts,
-                highcharts_directory=args.highcharts_output_directory,
+                highcharts_directory=highcharts_directory,
             )
 
 
