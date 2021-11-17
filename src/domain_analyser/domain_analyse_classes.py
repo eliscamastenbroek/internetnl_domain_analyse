@@ -488,7 +488,7 @@ class DomainPlotter(object):
                 plot_cdf = plot_prop.get("cdf_plot")
                 highcharts_directory_cdf = self.highcharts_directory
                 if isinstance(plot_cdf, dict):
-                    if hc_sub_dir := plot_cdf.get("highcharts_output_directory") is not None:
+                    if hc_sub_dir := plot_cdf.get("highcharts_output_directory"):
                         highcharts_directory_cdf = highcharts_directory_cdf / Path(hc_sub_dir)
                     plot_cdf = plot_cdf.get("apply", True)
             else:
@@ -497,7 +497,7 @@ class DomainPlotter(object):
                 plot_bar = plot_prop.get("bar_plot")
                 highcharts_directory_bar = self.highcharts_directory
                 if isinstance(plot_cdf, dict):
-                    if hc_sub_dir := plot_cdf.get("highcharts_output_directory") is not None:
+                    if hc_sub_dir := plot_cdf.get("highcharts_output_directory"):
                         highcharts_directory_bar = highcharts_directory_bar / Path(hc_sub_dir)
                     plot_bar = plot_bar.get("apply", True)
             else:
