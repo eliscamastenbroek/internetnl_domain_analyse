@@ -155,7 +155,7 @@ def make_cdf_plot(hist,
         CBSHighChart(
             data=hc_df,
             chart_type="column",
-            output_directory=highcharts_directory,
+            output_directory=highcharts_directory.as_posix(),
             output_file_name=image_file.stem,
             ylabel=y_label,
             title=plot_title,
@@ -345,7 +345,7 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
         CBSHighChart(
             data=plot_df,
             chart_type="bar",
-            output_directory=highcharts_directory,
+            output_directory=highcharts_directory.as_posix(),
             output_file_name=image_file.stem,
             ylabel=hc_ylabel,
             title=plot_title,

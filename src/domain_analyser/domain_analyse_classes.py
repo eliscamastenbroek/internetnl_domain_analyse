@@ -427,7 +427,10 @@ class DomainPlotter(object):
         self.show_title = show_title
         self.translations = translations
         self.export_highcharts = export_highcharts
-        self.highcharts_directory = highcharts_directory
+        if highcharts_directory is None:
+            self.highcharts_directory = Path(".")
+        else:
+            self.highcharts_directory = Path(highcharts_directory)
 
         self.image_type = image_type
         self.image_directory = image_directory
@@ -481,7 +484,24 @@ class DomainPlotter(object):
             stats_df = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key)
 
             title = plot_prop.get("title")
-            plot_cdf = plot_prop.get("cdf_plot", False) and self.cdf_plot
+            if self.cdf_plot:
+                plot_cdf = plot_prop.get("cdf_plot")
+                highcharts_directory_cdf = self.highcharts_directory
+                if isinstance(plot_cdf, dict):
+                    plot_cdf.get("apply", True)
+                    if hc_sub_dir := plot_cdf.get("highcharts_output_directory") is not None:
+                        highcharts_directory_cdf = highcharts_directory_cdf / Path(hc_sub_dir)
+            else:
+                plot_cdf = False
+            if self.bar_plot:
+                plot_bar = plot_prop.get("bar_plot")
+                highcharts_directory_bar = self.highcharts_directory
+                if isinstance(plot_cdf, dict):
+                    plot_bar.get("apply", True)
+                    if hc_sub_dir := plot_cdf.get("highcharts_output_directory") is not None:
+                        highcharts_directory_bar = highcharts_directory_bar / Path(hc_sub_dir)
+            else:
+                plot_bar = False
             plot_bar = plot_prop.get("bar_plot", True) and self.bar_plot
             y_max_pdf_plot = plot_prop.get("y_max_pdf_plot", 10)
             y_spacing_pdf_plot = plot_prop.get("y_spacing_pdf_plot", 5)
@@ -577,7 +597,7 @@ class DomainPlotter(object):
                                                    y_spacing_bar_plot=y_spacing_bar_plot,
                                                    translations=self.translations,
                                                    export_highcharts=self.export_highcharts,
-                                                   highcharts_directory=self.highcharts_directory,
+                                                   highcharts_directory=highcharts_directory_bar,
                                                    title=title
                                                    )
 
@@ -605,7 +625,7 @@ class DomainPlotter(object):
                                                           y_spacing=y_spacing_pdf_plot,
                                                           translations=self.translations,
                                                           export_highcharts=self.export_highcharts,
-                                                          highcharts_directory=self.highcharts_directory,
+                                                          highcharts_directory=highcharts_directory_cdf,
                                                           title=title
                                                           )
                         if self.show_plots:
