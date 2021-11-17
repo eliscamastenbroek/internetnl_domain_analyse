@@ -143,6 +143,7 @@ def make_cdf_plot(hist,
     _logger.info(f"Saving stats to {stat_file}")
     stats_df.to_csv(stat_file)
     if export_highcharts:
+        highcharts_directory.mkdir(exist_ok=True, parents=True)
         svg_image_file = highcharts_directory / Path("_".join([plot_key, image_name + ".svg"]))
         _logger.info(f"Saving plot to {svg_image_file}")
         fig.savefig(svg_image_file)
