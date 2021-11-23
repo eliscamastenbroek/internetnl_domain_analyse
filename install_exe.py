@@ -26,8 +26,7 @@ import sys
 from subprocess import Popen, PIPE
 import logging
 import argparse
-
-TOOLS_DIR = "\\\\cbsp.nl\\Productie\\secundair\\DecentraleTools\\Output\\CBS_Python"
+TOOLS_DIR = "\\\\cbsp.nl\\productie\\primair\\WTE\\Werk\\WTE_Python"
 
 parser = argparse.ArgumentParser("Install the python executable of the internetnl_domain_analyse")
 parser.add_argument("--debug", help="Give debug info", dest="log_level", default=logging.INFO, const=logging.DEBUG,
