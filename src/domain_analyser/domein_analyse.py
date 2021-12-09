@@ -63,6 +63,8 @@ def parse_args():
                         action="store_true")
     parser.add_argument("--highcharts_output_directory",
                         help="Directory waar alle highcharts naar toe geschreven wordt")
+    parser.add_argument("--mode", choices={"statistics", "correlations", "all"},
+                        default="statistics", help="Type  analyse die we doen")
 
     parsed_arguments = parser.parse_args()
 
@@ -176,7 +178,8 @@ def main():
                 n_digits=n_digits,
                 write_dataframe_to_sqlite=args.write_dataframe_to_sqlite,
                 statistics_to_xls=args.statistics_to_xls,
-                n_bins=n_bins
+                n_bins=n_bins,
+                mode=args.mode
             )
             scan_prop["analyses"] = domain_analyses
 

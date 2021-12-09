@@ -59,7 +59,8 @@ class DomainAnalyser(object):
                  n_digits=None,
                  write_dataframe_to_sqlite=False,
                  statistics_to_xls=False,
-                 n_bins=100
+                 n_bins=100,
+                 mode=None
                  ):
 
         _logger.info(f"Runing here {os.getcwd()}")
@@ -119,15 +120,26 @@ class DomainAnalyser(object):
         self.all_plots = None
 
         if (self.reset is not None and self.reset <= 1) or not self.cache_file.exists():
+            # de microdata alleen lezen als we geen pickle files van de statistische output hebben
+            # als we alleen plaatjes willen maken is het sneller om de uitgerekende tabellen van
+            # cache te lezen
             self.read_data()
 
         if write_dataframe_to_sqlite:
-            self.write_data()
-            sys.exit(0)
+            if self.dataframe is not None:
+                self.write_data()
+                sys.exit(0)
+            else:
+                msg = "The write_data_frame option only works if you force to read the micro " \
+                      "data with --reset 0 or --reset 1"
+                raise ValueError(msg)
 
-        self.calculate_statistics()
-        if statistics_to_xls:
-            self.write_statistics()
+        if mode in ("all", "statistics"):
+            self.calculate_statistics()
+            if statistics_to_xls:
+                self.write_statistics()
+        if mode in ("all", "correlations"):
+            self.calculate_correlations()
 
     def variable_dict2fd(self, variables, module_info: dict = None) -> pd.DataFrame:
         """
@@ -228,9 +240,8 @@ class DomainAnalyser(object):
                                                        column=column,
                                                        column_list=column_list,
                                                        output_format="statline",
-                                                       var_filter=var_filter,
-                                                       var_gewicht_key=var_weight_key,
-                                                       schaal_factor_key=schaal_factor_key)
+                                                       var_filter=var_filter
+                                                       )
             except KeyError:
                 _logger.warning(f"Failed to get selection of {column}. Skipping")
                 continue
@@ -276,6 +287,11 @@ class DomainAnalyser(object):
             scan_data = props.get("scan_data", self.default_scan)
             if scan_data != self.scan_data_key:
                 _logger.debug(f"SKipping {scan_data} for {self.scan_data_key}")
+                continue
+
+            if not props.get('do_it', True):
+                _logger.debug(f"SKipping breakdown {file_base} for {self.scan_data_key}")
+                continue
 
             _logger.info(f"Processing {file_base}")
 
@@ -383,11 +399,6 @@ class DomainAnalyser(object):
                 self.dataframe = pd.read_pickle(stream)
             _logger.info(f"Read {self.dataframe.index.size} records from "
                          f"cache {self.cache_file.absolute()}")
-
-        with open(str(self.cache_file), "rb") as stream:
-            df = pd.read_pickle(stream)
-            _logger.debug(f"Check size {df.index.size} tables from cache {self.cache_file}")
-            _logger.debug(df.info())
 
 
 class DomainPlotter(object):
