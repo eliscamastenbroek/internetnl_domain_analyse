@@ -368,3 +368,50 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     plt.close()
 
     return image_file_name
+
+def make_heatmap(correlations, image_directory,
+                      show_plots=False,
+                      figsize=None, image_type=".pdf", 
+                      export_svg=False,
+                      export_highcharts=False,
+                      highcharts_directory=None,
+                      title=None
+                      ):
+    outfile = Path(correlations["output_file"])
+    in_file = outfile.with_suffix(".pkl")
+
+    if highcharts_directory is None:
+        highcharts_directory = Path(".")
+
+    if hc_sub_dir := correlations.get("highcharts_output_directory"):
+        highcharts_directory = highcharts_directory / Path(hc_sub_dir)
+
+    _logger.info(f"Reading correlation from {in_file}")
+    corr = pd.read_pickle(in_file.with_suffix(".pkl"))
+    
+    im_file = outfile.with_suffix(".pdf")
+    fig, axis = plt.subplots(figsize=(10, 10))
+    plt.subplots_adjust(left=.27, bottom=.27, top=0.98, right=0.9)
+    cbar_ax = fig.add_axes([.91, .31, .02, .63])
+    sns.heatmap(corr, square=True, ax=axis, cbar_ax=cbar_ax, cmap="viridis",
+                vmin=-0.2, vmax=1.0, cbar_kws={'label': r'Correlatiecoëfficiënt $\rho$'})
+    clean_labels = [_.get_text().replace("_verdict", "").replace("tests_", "")
+                    for _ in axis.get_xticklabels()]
+
+    axis.set_xticklabels(clean_labels, rotation=90, ha="right")
+    axis.set_yticklabels(clean_labels, rotation=0, ha="right")
+
+    plt.legend(loc="upper left", prop={"size": 10})
+
+    _logger.info(f"Writing heatmap to {im_file}")
+    fig.savefig(im_file.as_posix())
+
+    highcharts_directory.mkdir(exist_ok=True, parents=True)
+
+    hc_out = highcharts_directory / Path(im_file.stem + ".svg")
+
+    _logger.info(f"Writing heatmap to {hc_out}")
+    fig.savefig(hc_out.as_posix())
+
+    if show_plots:
+        plt.show()

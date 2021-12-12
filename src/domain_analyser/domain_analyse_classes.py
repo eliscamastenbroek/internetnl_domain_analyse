@@ -63,7 +63,7 @@ class DomainAnalyser(object):
                  statistics_to_xls=False,
                  n_bins=100,
                  mode=None,
-                 correlations=None
+                 correlations=None,
                  ):
 
         _logger.info(f"Running here {os.getcwd()}")
@@ -92,6 +92,8 @@ class DomainAnalyser(object):
         self.be_id = "be_id"
         self.mi_labels = ["sbi", "gk_sbs", self.be_id]
         self.translations = translations
+
+        self.correlation_coefficient_df = None
 
         if records_filename is None:
             self.records_filename = Path(cache_directory) / Path("records_cache.sqlite")
@@ -282,6 +284,8 @@ class DomainAnalyser(object):
         return all_stats, all_hist
 
     def calculate_correlations(self):
+        outfile = Path(self.correlations["output_file"])
+
         _logger.info("Calculating correlations")
         col_sel = list()
         for col_name in self.dataframe.columns:
@@ -297,8 +301,6 @@ class DomainAnalyser(object):
 
         # data_df["score"] = self.dataframe["percentage"] / 100
 
-        outfile = Path(self.correlations["output_file"])
-
         desc = data_df.describe()
         _logger.debug(f"making descr\n{desc}")
         # reken correlatie twee keer uit
@@ -306,28 +308,15 @@ class DomainAnalyser(object):
         ordered_index = corr.sum().sort_values(ascending=False).index
         data_df = data_df[ordered_index]
         corr = data_df.corr()
+        self.correlation_coefficient_df = corr
 
+        _logger.info(f"Schrijf naar {outfile}")
         with sqlite3.connect(str(outfile)) as connection:
             corr.to_sql(name="correlations", con=connection, if_exists="replace")
+        pkl_file = outfile.with_suffix(".pkl")
+        _logger.info(f"Schrijf naar {pkl_file}")
+        corr.to_pickle(pkl_file.as_posix())
         _logger.debug(f"making corrected\n{corr}")
-
-        im_file = outfile.with_suffix(".pdf")
-        fig, axis = plt.subplots(figsize=(10, 10))
-        plt.subplots_adjust(left=.27, bottom=.27, top=0.98, right=0.9)
-        cbar_ax = fig.add_axes([.91, .31, .02, .63])
-        sns.heatmap(corr, square=True, ax=axis, cbar_ax=cbar_ax, cmap="viridis",
-                    vmin=-0.2, vmax=1.0,cbar_kws={'label': r'Correlatiecoëfficiënt $\rho$'})
-        clean_labels = [_.get_text().replace("_verdict", "").replace("tests_", "")
-                        for _ in axis.get_xticklabels()]
-
-        axis.set_xticklabels(clean_labels, rotation=90, ha="right")
-        axis.set_yticklabels(clean_labels, rotation=0, ha="right")
-
-        plt.legend(loc="upper left", prop={"size": 10})
-
-        fig.savefig(im_file.as_posix())
-
-        plt.show()
 
     def calculate_statistics(self):
         _logger.info("Calculating statistics")
@@ -467,12 +456,14 @@ class DomainPlotter(object):
                  statistics=None,
                  cdf_plot=False,
                  bar_plot=False,
+                 cor_plot=False,
                  cumulative=False,
                  show_title=False,
                  breakdown_labels=None,
                  translations: dict = None,
                  export_highcharts=False,
                  highcharts_directory=None,
+                 correlations=None,
                  ):
 
         self.scan_data = scan_data
@@ -489,6 +480,7 @@ class DomainPlotter(object):
         self.cumulative = cumulative
         self.show_title = show_title
         self.translations = translations
+        self.correlations = correlations
         self.export_highcharts = export_highcharts
         if highcharts_directory is None:
             self.highcharts_directory = Path(".")
