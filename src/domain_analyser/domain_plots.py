@@ -389,7 +389,7 @@ def make_heatmap(correlations, image_directory,
     _logger.info(f"Reading correlation from {in_file}")
     corr = pd.read_pickle(in_file.with_suffix(".pkl"))
     
-    im_file = outfile.with_suffix(".pdf")
+    im_file = image_directory / outfile.with_suffix(".pdf")
     fig, axis = plt.subplots(figsize=(10, 10))
     plt.subplots_adjust(left=.27, bottom=.27, top=0.98, right=0.9)
     cbar_ax = fig.add_axes([.91, .31, .02, .63])
