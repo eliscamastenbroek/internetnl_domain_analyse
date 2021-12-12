@@ -311,7 +311,7 @@ class DomainAnalyser(object):
             corr.to_sql(name="correlations", con=connection, if_exists="replace")
         _logger.debug(f"making corrected\n{corr}")
 
-        im_file = outfile.with_suffix(".png")
+        im_file = outfile.with_suffix(".pdf")
         fig, axis = plt.subplots(figsize=(10, 10))
         plt.subplots_adjust(left=.27, bottom=.27, top=0.98, right=0.9)
         cbar_ax = fig.add_axes([.91, .31, .02, .63])
