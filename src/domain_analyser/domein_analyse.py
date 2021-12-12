@@ -191,7 +191,8 @@ def main():
 
         if cor_plot:
             make_heatmap(correlations=correlations, image_directory=image_directory,
-                         highcharts_directory=highcharts_directory, show_plots=args.show_plots)
+                         highcharts_directory=highcharts_directory, show_plots=args.show_plots,
+                         cache_directory=cache_directory)
 
         if (bar_plot or cdf_plot):
             DomainPlotter(

@@ -284,7 +284,7 @@ class DomainAnalyser(object):
         return all_stats, all_hist
 
     def calculate_correlations(self):
-        outfile = Path(self.correlations["output_file"])
+        outfile = self.cache_directory / Path(self.correlations["output_file"])
         pkl_file = outfile.with_suffix(".pkl")
 
         if pkl_file.exists() and self.reset is None:

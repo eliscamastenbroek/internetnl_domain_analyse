@@ -369,15 +369,20 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
 
     return image_file_name
 
+
 def make_heatmap(correlations, image_directory,
-                      show_plots=False,
-                      figsize=None, image_type=".pdf", 
-                      export_svg=False,
-                      export_highcharts=False,
-                      highcharts_directory=None,
-                      title=None
-                      ):
+                 show_plots=False,
+                 figsize=None, image_type=".pdf",
+                 export_svg=False,
+                 export_highcharts=False,
+                 highcharts_directory=None,
+                 title=None,
+                 cache_directory=None
+                 ):
     outfile = Path(correlations["output_file"])
+    if cache_directory is not None:
+        outfile = Path(cache_directory) / outfile
+
     in_file = outfile.with_suffix(".pkl")
 
     if highcharts_directory is None:
@@ -388,7 +393,7 @@ def make_heatmap(correlations, image_directory,
 
     _logger.info(f"Reading correlation from {in_file}")
     corr = pd.read_pickle(in_file.with_suffix(".pkl"))
-    
+
     im_file = image_directory / outfile.with_suffix(".pdf")
     fig, axis = plt.subplots(figsize=(10, 10))
     plt.subplots_adjust(left=.27, bottom=.27, top=0.98, right=0.9)
