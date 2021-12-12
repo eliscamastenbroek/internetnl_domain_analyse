@@ -285,6 +285,15 @@ class DomainAnalyser(object):
 
     def calculate_correlations(self):
         outfile = Path(self.correlations["output_file"])
+        pkl_file = outfile.with_suffix(".pkl")
+
+        if pkl_file.exists() and self.reset is None:
+            _logger.info(f"Cache {pkl_file} already exist. Skip calculation and go to plot")
+            return
+
+        if self.dataframe is None:
+            msg = "For correlations you need the microdata. Run with --reset 1"
+            raise ValueError(msg)
 
         _logger.info("Calculating correlations")
         col_sel = list()
@@ -313,7 +322,6 @@ class DomainAnalyser(object):
         _logger.info(f"Schrijf naar {outfile}")
         with sqlite3.connect(str(outfile)) as connection:
             corr.to_sql(name="correlations", con=connection, if_exists="replace")
-        pkl_file = outfile.with_suffix(".pkl")
         _logger.info(f"Schrijf naar {pkl_file}")
         corr.to_pickle(pkl_file.as_posix())
         _logger.debug(f"making corrected\n{corr}")
