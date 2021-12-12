@@ -3,6 +3,8 @@ import os
 import pickle
 import re
 import sqlite3
+import matplotlib.pyplot as plt
+import seaborn as sns
 import sys
 from collections import Counter
 from pathlib import Path
@@ -60,10 +62,11 @@ class DomainAnalyser(object):
                  write_dataframe_to_sqlite=False,
                  statistics_to_xls=False,
                  n_bins=100,
-                 mode=None
+                 mode=None,
+                 correlations=None
                  ):
 
-        _logger.info(f"Runing here {os.getcwd()}")
+        _logger.info(f"Running here {os.getcwd()}")
 
         if output_file is None:
             self.output_file = "output.sqlite"
@@ -73,6 +76,7 @@ class DomainAnalyser(object):
         self.scan_data_key = scan_data_key
         self.breakdown_labels = breakdown_labels
 
+        self.correlations = correlations
         self.statistics = statistics
         self.default_scan = default_scan
         self.module_key = module_key
@@ -277,6 +281,54 @@ class DomainAnalyser(object):
 
         return all_stats, all_hist
 
+    def calculate_correlations(self):
+        _logger.info("Calculating correlations")
+        col_sel = list()
+        for col_name in self.dataframe.columns:
+            match = re.search("verdict", col_name)
+            if match is not None:
+                col_sel.append(col_name)
+
+        _logger.debug(f"make selection\n{col_sel}")
+        data_df: pd.DataFrame = self.dataframe[col_sel]
+
+        # alleen 1 wordt als succes beschouwd
+        data_df = data_df == 1
+
+        # data_df["score"] = self.dataframe["percentage"] / 100
+
+        outfile = Path(self.correlations["output_file"])
+
+        desc = data_df.describe()
+        _logger.debug(f"making descr\n{desc}")
+        # reken correlatie twee keer uit
+        corr = data_df.corr()
+        ordered_index = corr.sum().sort_values(ascending=False).index
+        data_df = data_df[ordered_index]
+        corr = data_df.corr()
+
+        with sqlite3.connect(str(outfile)) as connection:
+            corr.to_sql(name="correlations", con=connection, if_exists="replace")
+        _logger.debug(f"making corrected\n{corr}")
+
+        im_file = outfile.with_suffix(".png")
+        fig, axis = plt.subplots(figsize=(10, 10))
+        plt.subplots_adjust(left=.27, bottom=.27, top=0.98, right=0.9)
+        cbar_ax = fig.add_axes([.91, .31, .02, .63])
+        sns.heatmap(corr, square=True, ax=axis, cbar_ax=cbar_ax, cmap="viridis",
+                    vmin=-0.2, vmax=1.0,cbar_kws={'label': r'Correlatiecoëfficiënt $\rho$'})
+        clean_labels = [_.get_text().replace("_verdict", "").replace("tests_", "")
+                        for _ in axis.get_xticklabels()]
+
+        axis.set_xticklabels(clean_labels, rotation=90, ha="right")
+        axis.set_yticklabels(clean_labels, rotation=0, ha="right")
+
+        plt.legend(loc="upper left", prop={"size": 10})
+
+        fig.savefig(im_file.as_posix())
+
+        plt.show()
+
     def calculate_statistics(self):
         _logger.info("Calculating statistics")
 
@@ -415,7 +467,7 @@ class DomainPlotter(object):
                  statistics=None,
                  cdf_plot=False,
                  bar_plot=False,
-                 cummulative=False,
+                 cumulative=False,
                  show_title=False,
                  breakdown_labels=None,
                  translations: dict = None,
@@ -434,7 +486,7 @@ class DomainPlotter(object):
         self.statistics = statistics
         self.bar_plot = bar_plot
         self.cdf_plot = cdf_plot
-        self.cummulative = cummulative
+        self.cumulative = cumulative
         self.show_title = show_title
         self.translations = translations
         self.export_highcharts = export_highcharts
@@ -634,7 +686,7 @@ class DomainPlotter(object):
                                                           figsize=figsize,
                                                           image_type=self.image_type,
                                                           reference_lines=reference_lines,
-                                                          cummulative=self.cummulative,
+                                                          cummulative=self.cumulative,
                                                           xoff=xoff, yoff=yoff,
                                                           y_max=y_max_pdf_plot,
                                                           y_spacing=y_spacing_pdf_plot,
