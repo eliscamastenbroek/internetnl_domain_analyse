@@ -11,10 +11,11 @@ except ModuleNotFoundError:
 import yaml
 from domain_analyser import __version__
 from domain_analyser.domain_analyse_classes import (DomainAnalyser, DomainPlotter)
-from domain_analyser.domain_plots import make_heatmap
+from domain_analyser.domain_plots import (make_heatmap, make_conditional_score_plot)
 
-logging.basicConfig(format='%(asctime)s %(filename)25s[%(lineno)4s] - %(levelname)-8s : %(message)s',
-                    level=logging.DEBUG)
+logging.basicConfig(
+    format='%(asctime)s %(filename)25s[%(lineno)4s] - %(levelname)-8s : %(message)s',
+    level=logging.DEBUG)
 _logger = logging.getLogger()
 
 
@@ -61,6 +62,8 @@ def parse_args():
     parser.add_argument("--bar_plot", action="store_true", help="Plot het staafdiagram",
                         default=False)
     parser.add_argument("--cor_plot", action="store_true", help="Plot de heatmap",
+                        default=False)
+    parser.add_argument("--score_plot", action="store_true", help="Plot de conditionele score",
                         default=False)
     parser.add_argument("--export_highcharts", help="Export each image to a highcharts file",
                         action="store_true")
@@ -116,6 +119,7 @@ def main():
     bar_plot = args.bar_plot or args.plot_all
     cdf_plot = args.cdf_plot or args.plot_all
     cor_plot = args.cor_plot or args.plot_all
+    score_plot = args.score_plot or args.plot_all
 
     correlations = settings.get("correlations")
     statistics = settings["statistics"]
@@ -193,6 +197,11 @@ def main():
             make_heatmap(correlations=correlations, image_directory=image_directory,
                          highcharts_directory=highcharts_directory, show_plots=args.show_plots,
                          cache_directory=cache_directory)
+        if score_plot:
+            make_conditional_score_plot(correlations=correlations, image_directory=image_directory,
+                                        highcharts_directory=highcharts_directory,
+                                        show_plots=args.show_plots,
+                                        cache_directory=cache_directory)
 
         if (bar_plot or cdf_plot):
             DomainPlotter(

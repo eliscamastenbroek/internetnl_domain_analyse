@@ -372,6 +372,65 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     return image_file_name
 
 
+def make_conditional_score_plot(correlations,
+                                image_directory,
+                                show_plots=False,
+                                figsize=None, image_type=".pdf",
+                                export_svg=False,
+                                export_highcharts=False,
+                                highcharts_directory=None,
+                                title=None,
+                                cache_directory=None
+                                ):
+    outfile = Path(correlations["score_output_file"])
+    if cache_directory is not None:
+        outfile = Path(cache_directory) / outfile
+    in_file = outfile.with_suffix(".pkl")
+
+    if highcharts_directory is None:
+        highcharts_directory = Path(".")
+
+    if hc_sub_dir := correlations.get("highcharts_output_directory"):
+        highcharts_directory = highcharts_directory / Path(hc_sub_dir)
+
+    _logger.info(f"Reading scores from {in_file}")
+    scores = pd.read_pickle(in_file.with_suffix(".pkl"))
+
+    categories = correlations["index_categories"]
+    corr_index = correlations["index"]
+
+    score_intervallen = correlations["score_intervallen"]
+
+    im_file = image_directory / Path(outfile.stem).with_suffix(".pdf")
+    score_labels = list(score_intervallen.keys())
+    score_bins = list([s / 100 for s in score_intervallen.values()]) + [1.01]
+
+    # add a new columns with the interval label belonging to the gk code bin. Note that we
+    # merge all the grootte klass below 40 to a group smaller than 10
+    scores["score_category"] = pd.cut(scores["score"],
+                                      bins=score_bins,
+                                      labels=score_labels,
+                                      right=True,
+                                      include_lowest=True)
+
+
+    score_per_category = dict()
+    for categorie_key, category_df in scores.groupby("score_category"):
+        _logger.debug(f"Plotting {categorie_key}")
+        df = category_df[list(categories.keys())]
+        score_per_category[categorie_key] = df.mean()
+
+
+
+    _logger.debug("Klaar")
+
+
+# fig, axis = plt.subplots(figsize=(10, 10))
+# plt.subplots_adjust(left=.28, bottom=.27, top=0.98, right=0.9)
+# cbar_ax = fig.add_axes([.91, .315, .02, .62])
+# cmap = sns.color_palette("deep", 10)
+
+
 def make_heatmap(correlations, image_directory,
                  show_plots=False,
                  figsize=None, image_type=".pdf",
@@ -381,7 +440,7 @@ def make_heatmap(correlations, image_directory,
                  title=None,
                  cache_directory=None
                  ):
-    outfile = Path(correlations["output_file"])
+    outfile = Path(correlations["correlation_output_file"])
     if cache_directory is not None:
         outfile = Path(cache_directory) / outfile
 

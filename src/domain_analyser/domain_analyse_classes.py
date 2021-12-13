@@ -146,7 +146,7 @@ class DomainAnalyser(object):
             if statistics_to_xls:
                 self.write_statistics()
         if mode in ("all", "correlations"):
-            self.calculate_correlations()
+            self.calculate_correlations_and_scores()
 
     def variable_dict2fd(self, variables, module_info: dict = None) -> pd.DataFrame:
         """
@@ -284,12 +284,15 @@ class DomainAnalyser(object):
 
         return all_stats, all_hist
 
-    def calculate_correlations(self):
-        outfile = self.cache_directory / Path(self.correlations["output_file"])
-        pkl_file = outfile.with_suffix(".pkl")
+    def calculate_correlations_and_scores(self):
+        corr_outfile = self.cache_directory / Path(self.correlations["correlation_output_file"])
+        corr_pkl_file = corr_outfile.with_suffix(".pkl")
+        score_outfile = self.cache_directory / Path(self.correlations["score_output_file"])
+        score_pkl_file = score_outfile.with_suffix(".pkl")
 
-        if pkl_file.exists() and self.reset is None:
-            _logger.info(f"Cache {pkl_file} already exist. Skip calculation and go to plot")
+        if corr_pkl_file.exists() and score_pkl_file.exists() and self.reset is None:
+            _logger.info(f"Cache {corr_pkl_file} and {score_pkl_file} already exist. "
+                         f"Skip calculation and go to plot")
             return
 
         if self.dataframe is None:
@@ -332,11 +335,14 @@ class DomainAnalyser(object):
         corr = data_df.corr()
         self.correlation_coefficient_df = corr
 
-        _logger.info(f"Schrijf naar {outfile}")
-        with sqlite3.connect(str(outfile)) as connection:
+        _logger.info(f"Schrijf naar {corr_outfile}")
+        with sqlite3.connect(str(corr_outfile)) as connection:
             corr.to_sql(name="correlations", con=connection, if_exists="replace")
-        _logger.info(f"Schrijf naar {pkl_file}")
-        corr.to_pickle(pkl_file.as_posix())
+        _logger.info(f"Schrijf naar {corr_pkl_file}")
+        corr.to_pickle(corr_pkl_file.as_posix())
+
+        _logger.info(f"Schrijf naar {score_pkl_file}")
+        self.score_df.to_pickle(score_pkl_file.as_posix())
         _logger.debug(f"making corrected\n{corr}")
 
     def calculate_statistics(self):
