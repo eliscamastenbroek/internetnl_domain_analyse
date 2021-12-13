@@ -120,6 +120,7 @@ class DomainAnalyser(object):
         self.weight_key = weights
 
         self.dataframe = None
+        self.score_df = None
         self.all_stats_per_format = dict()
         self.all_hist_per_format = dict()
 
@@ -295,12 +296,10 @@ class DomainAnalyser(object):
             msg = "For correlations you need the microdata. Run with --reset 1"
             raise ValueError(msg)
 
+        index_columns = self.correlations["index"]
+
         _logger.info("Calculating correlations")
-        col_sel = list()
-        for col_name in self.dataframe.columns:
-            match = re.search("verdict", col_name)
-            if match is not None:
-                col_sel.append(col_name)
+        col_sel = list(index_columns.keys())
 
         _logger.debug(f"make selection\n{col_sel}")
         data_df: pd.DataFrame = self.dataframe[col_sel]
@@ -308,7 +307,21 @@ class DomainAnalyser(object):
         # alleen 1 wordt als succes beschouwd
         data_df = data_df == 1
 
-        # data_df["score"] = self.dataframe["percentage"] / 100
+        # verkrijg de categorien van variabele met hoge correlatie
+        categories = dict()
+        for col_name, categorie in index_columns.items():
+            try:
+                categories[categorie].append(col_name)
+            except KeyError:
+                categories[categorie] = [col_name]
+
+        # bereken de score per category en vergelijk met de internet.nl score
+        self.score_df = self.dataframe[["percentage"]].copy() / 100
+        self.score_df.rename(columns={"percentage": "score"}, inplace=True)
+        for categorie, columns in categories.items():
+            selection = data_df[columns]
+            max_score = len(columns)
+            self.score_df[categorie] = selection.sum(axis=1) / max_score
 
         desc = data_df.describe()
         _logger.debug(f"making descr\n{desc}")
