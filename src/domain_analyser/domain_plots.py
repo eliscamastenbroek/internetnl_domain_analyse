@@ -4,6 +4,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import matplotlib.transforms as trn
+import matplotlib.colors as mpc
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -11,6 +12,7 @@ from cbsplotlib import LOGGER_BASE_NAME
 from cbsplotlib.settings import CBSPlotSettings
 from cbsplotlib.utils import add_axis_label_background
 from cbsplotlib.highcharts import CBSHighChart
+from cbsplotlib.colors import CBS_COLORS_RBG
 
 _logger = logging.getLogger(__name__)
 cbsplotlib_logger = logging.getLogger(LOGGER_BASE_NAME)
@@ -394,17 +396,48 @@ def make_heatmap(correlations, image_directory,
     _logger.info(f"Reading correlation from {in_file}")
     corr = pd.read_pickle(in_file.with_suffix(".pkl"))
 
-    im_file = image_directory / outfile.with_suffix(".pdf")
-    fig, axis = plt.subplots(figsize=(10, 10))
-    plt.subplots_adjust(left=.27, bottom=.27, top=0.98, right=0.9)
-    cbar_ax = fig.add_axes([.91, .31, .02, .63])
-    sns.heatmap(corr, square=True, ax=axis, cbar_ax=cbar_ax, cmap="viridis",
-                vmin=-0.2, vmax=1.0, cbar_kws={'label': r'Correlatiecoëfficiënt $\rho$'})
-    clean_labels = [_.get_text().replace("_verdict", "").replace("tests_", "")
-                    for _ in axis.get_xticklabels()]
+    categories = correlations["index_categories"]
+    corr_index = correlations["index"]
+    corr = corr.reindex(list(corr_index.keys()))
+    corr = corr[list(corr_index.keys())]
 
-    axis.set_xticklabels(clean_labels, rotation=90, ha="right")
-    axis.set_yticklabels(clean_labels, rotation=0, ha="right")
+    sns.set(font_scale=0.8)
+    # cmap is now a list of colors
+    cmap = mpc.ListedColormap(sns.cubehelix_palette(start=2.8, rot=.1, light=0.9, n_colors=12))
+
+    # Create two appropriately sized subplots
+    # grid_kws = {'width_ratios': (0.9, 0.03), 'wspace': 0.18}
+    # fig, (axis, cbar_ax) = plt.subplots(1, 2, gridspec_kw=grid_kws, figsize=(8.3, 8.3))
+
+    im_file = image_directory / Path(outfile.stem).with_suffix(".pdf")
+    fig, axis = plt.subplots(figsize=(10, 10))
+    plt.subplots_adjust(left=.28, bottom=.27, top=0.98, right=0.9)
+    cbar_ax = fig.add_axes([.91, .315, .02, .62])
+    # cmap = sns.color_palette("deep", 10)
+
+    sns.heatmap(corr, square=True, ax=axis, cbar_ax=cbar_ax, cmap=cmap,
+                vmin=-0.2, vmax=1.0,
+                cbar_kws={
+                    'orientation': 'vertical',
+                    'label': r'Correlatiecoëfficiënt $\rho$'}
+                )
+    xlabels = axis.get_xticklabels()
+    ylabels = axis.get_yticklabels()
+    for xlbl, ylbl in zip(xlabels, ylabels):
+        tekst = xlbl.get_text()
+        categorie = corr_index[tekst]
+        categorie_properties = categories[categorie]
+        kleur = categorie_properties['color']
+        RGB = CBS_COLORS_RBG.get(kleur, [0, 0, 0])
+        rgb = [_ / 255 for _ in RGB]
+        tekst_clean = tekst.replace("_verdict", "").replace("tests_", "")
+        xlbl.set_text(tekst_clean)
+        xlbl.set_color(rgb)
+        ylbl.set_text(tekst_clean)
+        ylbl.set_color(rgb)
+
+    axis.set_xticklabels(xlabels, rotation=90, ha="right")
+    axis.set_yticklabels(ylabels, rotation=0, ha="right")
 
     plt.legend(loc="upper left", prop={"size": 10})
 
