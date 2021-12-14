@@ -396,6 +396,7 @@ def make_conditional_score_plot(correlations,
     _logger.info(f"Reading scores from {in_file}")
     scores = pd.read_pickle(in_file.with_suffix(".pkl"))
 
+    index_labels = correlations["index_labels"]
     categories = correlations["index_categories"]
     corr_index = correlations["index"]
 
@@ -417,7 +418,8 @@ def make_conditional_score_plot(correlations,
     for categorie_key, category_df in scores.groupby("score_category"):
         _logger.debug(f"Plotting {categorie_key}")
         df = category_df[list(categories.keys())]
-        score_per_category[categorie_key] = df.mean()
+        category_label = index_labels[categorie_key]
+        score_per_category[category_label] = df.mean()
 
     score_per_category_df = pd.DataFrame(score_per_category).T
 
@@ -426,9 +428,32 @@ def make_conditional_score_plot(correlations,
 
     settings = CBSPlotSettings()
     fig, axis = plt.subplots()
-    score_per_category_df.plot.bar(stacked=True, ax=axis, rot=0)
+    fig.subplots_adjust(bottom=0.3, top=0.92)
+    score_per_category_df.plot.bar(ax=axis, rot=0, stacked=True, edgecolor="white", linewidth=1.5)
+    yticks = axis.get_yticks()
+    axis.set_ylim((yticks[0], yticks[-1]))
 
-    plt.legend(loc="upper left", prop={"size": 10})
+    axis.set_xlabel("Scorecategorie", rotation="horizontal", horizontalalignment="right")
+    axis.xaxis.set_label_coords(0.98, -0.15)
+
+    axis.set_ylabel("Genormaliseerde score per categorie",
+                    rotation="horizontal", horizontalalignment="left")
+    axis.yaxis.set_label_coords(-0.065, 1.07)
+    axis.xaxis.grid(False)
+    sns.despine(ax=axis, left=True)
+
+    # niet meer volgens de richtlijnen
+    # add_values_to_bars(axis=axis, color="w")
+
+    sns.despine(ax=axis, left=True)
+
+    axis.tick_params(which="both", bottom=False)
+
+    add_axis_label_background(fig=fig, axes=axis, loc="south")
+
+    legend = axis.legend(loc="lower left",
+                         bbox_to_anchor=(0.105, -0.00), frameon=False,
+                         bbox_transform=fig.transFigure, ncol=3)
 
     _logger.info(f"Writing score plot to {im_file}")
     fig.savefig(im_file.as_posix())
@@ -452,7 +477,6 @@ def make_conditional_score_plot(correlations,
 
 
 # fig, axis = plt.subplots(figsize=(10, 10))
-# plt.subplots_adjust(left=.28, bottom=.27, top=0.98, right=0.9)
 # cbar_ax = fig.add_axes([.91, .315, .02, .62])
 # cmap = sns.color_palette("deep", 10)
 
