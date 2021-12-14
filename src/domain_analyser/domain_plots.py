@@ -413,14 +413,40 @@ def make_conditional_score_plot(correlations,
                                       right=True,
                                       include_lowest=True)
 
-
     score_per_category = dict()
     for categorie_key, category_df in scores.groupby("score_category"):
         _logger.debug(f"Plotting {categorie_key}")
         df = category_df[list(categories.keys())]
         score_per_category[categorie_key] = df.mean()
 
+    score_per_category_df = pd.DataFrame(score_per_category).T
 
+    plot_title = "Score per categorie"
+    y_label = "Score"
+
+    settings = CBSPlotSettings()
+    fig, axis = plt.subplots()
+    score_per_category_df.plot.bar(stacked=True, ax=axis, rot=0)
+
+    plt.legend(loc="upper left", prop={"size": 10})
+
+    _logger.info(f"Writing score plot to {im_file}")
+    fig.savefig(im_file.as_posix())
+
+    highcharts_directory.mkdir(exist_ok=True, parents=True)
+
+    CBSHighChart(
+        data=score_per_category_df,
+        chart_type="column_grouped_stacked",
+        output_directory=highcharts_directory.as_posix(),
+        output_file_name=im_file.stem,
+        ylabel=y_label,
+        title=plot_title,
+        enable_legend=False,
+    )
+
+    if show_plots:
+        plt.show()
 
     _logger.debug("Klaar")
 
