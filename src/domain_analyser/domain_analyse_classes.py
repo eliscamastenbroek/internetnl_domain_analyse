@@ -113,6 +113,11 @@ class DomainAnalyser(object):
         self.cache_directory = cache_directory
         cache_file_base = Path("_".join([cache_file_base, scan_data_key]) + ".pkl")
         self.cache_file = Path(cache_directory) / cache_file_base
+        corr_outfile = self.cache_directory / Path(self.correlations["correlation_output_file"])
+        self.corr_pkl_file = corr_outfile.with_suffix(".pkl")
+        score_outfile = self.cache_directory / Path(self.correlations["score_output_file"])
+        self.score_pkl_file = score_outfile.with_suffix(".pkl")
+
         if reset is None:
             self.reset = None
         else:
@@ -126,7 +131,9 @@ class DomainAnalyser(object):
 
         self.all_plots = None
 
-        if (self.reset is not None and self.reset <= 1) or not self.cache_file.exists():
+        have_cache = self.check_if_cache_exist(mode)
+
+        if (self.reset is not None and self.reset <= 1) or not have_cache:
             # de microdata alleen lezen als we geen pickle files van de statistische output hebben
             # als we alleen plaatjes willen maken is het sneller om de uitgerekende tabellen van
             # cache te lezen
@@ -147,6 +154,17 @@ class DomainAnalyser(object):
                 self.write_statistics()
         if mode in ("all", "correlations"):
             self.calculate_correlations_and_scores()
+
+    def check_if_cache_exist(self, mode: str):
+
+        cache_exists = True
+        if mode in ("all", "statistics"):
+            cache_exists = self.cache_file.exists()
+        if mode in ("all", "correlations"):
+            cache_exists = cache_exists and self.corr_pkl_file.exists()
+            cache_exists = cache_exists and self.score_pkl_file.exists()
+
+        return cache_exists
 
     def variable_dict2fd(self, variables, module_info: dict = None) -> pd.DataFrame:
         """
@@ -285,10 +303,6 @@ class DomainAnalyser(object):
         return all_stats, all_hist
 
     def calculate_correlations_and_scores(self):
-        corr_outfile = self.cache_directory / Path(self.correlations["correlation_output_file"])
-        corr_pkl_file = corr_outfile.with_suffix(".pkl")
-        score_outfile = self.cache_directory / Path(self.correlations["score_output_file"])
-        score_pkl_file = score_outfile.with_suffix(".pkl")
 
         if corr_pkl_file.exists() and score_pkl_file.exists() and self.reset is None:
             _logger.info(f"Cache {corr_pkl_file} and {score_pkl_file} already exist. "
