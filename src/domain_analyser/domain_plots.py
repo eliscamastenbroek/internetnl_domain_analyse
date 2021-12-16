@@ -451,7 +451,7 @@ def make_conditional_score_plot(correlations,
 
     add_axis_label_background(fig=fig, axes=axis, loc="south")
 
-    ncol = (score_per_category_df.columns.size // 2) + 1
+    ncol = (score_per_category_df.columns.size - 1) // 2 + 1
 
     legend = axis.legend(loc="lower left",
                          bbox_to_anchor=(0.105, -0.00), frameon=False,
