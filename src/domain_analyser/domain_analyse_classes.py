@@ -113,10 +113,10 @@ class DomainAnalyser(object):
         self.cache_directory = cache_directory
         cache_file_base = Path("_".join([cache_file_base, scan_data_key]) + ".pkl")
         self.cache_file = Path(cache_directory) / cache_file_base
-        corr_outfile = self.cache_directory / Path(self.correlations["correlation_output_file"])
-        self.corr_pkl_file = corr_outfile.with_suffix(".pkl")
-        score_outfile = self.cache_directory / Path(self.correlations["score_output_file"])
-        self.score_pkl_file = score_outfile.with_suffix(".pkl")
+        self.corr_outfile = self.cache_directory / Path(self.correlations["correlation_output_file"])
+        self.corr_pkl_file = self.corr_outfile.with_suffix(".pkl")
+        self.score_outfile = self.cache_directory / Path(self.correlations["score_output_file"])
+        self.score_pkl_file = self.score_outfile.with_suffix(".pkl")
 
         if reset is None:
             self.reset = None
@@ -304,8 +304,8 @@ class DomainAnalyser(object):
 
     def calculate_correlations_and_scores(self):
 
-        if corr_pkl_file.exists() and score_pkl_file.exists() and self.reset is None:
-            _logger.info(f"Cache {corr_pkl_file} and {score_pkl_file} already exist. "
+        if self.corr_pkl_file.exists() and self.score_pkl_file.exists() and self.reset is None:
+            _logger.info(f"Cache {self.corr_pkl_file} and {self.score_pkl_file} already exist. "
                          f"Skip calculation and go to plot")
             return
 
@@ -349,14 +349,14 @@ class DomainAnalyser(object):
         corr = data_df.corr()
         self.correlation_coefficient_df = corr
 
-        _logger.info(f"Schrijf naar {corr_outfile}")
-        with sqlite3.connect(str(corr_outfile)) as connection:
+        _logger.info(f"Schrijf naar {self.corr_outfile}")
+        with sqlite3.connect(str(self.corr_outfile)) as connection:
             corr.to_sql(name="correlations", con=connection, if_exists="replace")
-        _logger.info(f"Schrijf naar {corr_pkl_file}")
-        corr.to_pickle(corr_pkl_file.as_posix())
+        _logger.info(f"Schrijf naar {self.corr_pkl_file}")
+        corr.to_pickle(self.corr_pkl_file.as_posix())
 
-        _logger.info(f"Schrijf naar {score_pkl_file}")
-        self.score_df.to_pickle(score_pkl_file.as_posix())
+        _logger.info(f"Schrijf naar {self.score_pkl_file}")
+        self.score_df.to_pickle(self.score_pkl_file.as_posix())
         _logger.debug(f"making corrected\n{corr}")
 
     def calculate_statistics(self):
