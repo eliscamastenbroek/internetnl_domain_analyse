@@ -426,7 +426,7 @@ def make_conditional_score_plot(correlations,
     plot_title = "Score per categorie"
     y_label = "Score"
 
-    settings = CBSPlotSettings()
+    settings = CBSPlotSettings(color_palette="koelextended")
     fig, axis = plt.subplots()
     fig.subplots_adjust(bottom=0.3, top=0.92)
     score_per_category_df.plot.bar(ax=axis, rot=0, stacked=True, edgecolor="white", linewidth=1.5)

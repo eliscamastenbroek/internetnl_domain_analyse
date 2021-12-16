@@ -558,7 +558,7 @@ class DomainPlotter(object):
         except FileNotFoundError as err:
             _logger.warning(err)
             _logger.warning("Run script with option '--statistics_to_xls'  first")
-            sys.exit(-1)
+            stats_df = None
         return stats_df
 
     def make_plots(self):
