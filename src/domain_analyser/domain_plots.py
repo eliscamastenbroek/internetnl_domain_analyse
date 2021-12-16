@@ -451,9 +451,11 @@ def make_conditional_score_plot(correlations,
 
     add_axis_label_background(fig=fig, axes=axis, loc="south")
 
+    ncol = (score_per_category_df.columns.size // 2) + 1
+
     legend = axis.legend(loc="lower left",
                          bbox_to_anchor=(0.105, -0.00), frameon=False,
-                         bbox_transform=fig.transFigure, ncol=3)
+                         bbox_transform=fig.transFigure, ncol=ncol)
 
     _logger.info(f"Writing score plot to {im_file}")
     fig.savefig(im_file.as_posix())
