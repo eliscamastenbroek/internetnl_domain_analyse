@@ -400,7 +400,6 @@ def make_conditional_score_plot(correlations,
 
     index_labels = correlations["index_labels"]
     categories = correlations["index_categories"]
-    corr_index = correlations["index"]
 
     score_intervallen = correlations["score_intervallen"]
 
