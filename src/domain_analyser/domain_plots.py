@@ -400,7 +400,6 @@ def make_conditional_score_plot(correlations,
 
     index_labels = correlations["index_labels"]
     categories = correlations["index_categories"]
-    corr_index = correlations["index"]
 
     score_intervallen = correlations["score_intervallen"]
 
@@ -510,7 +509,7 @@ def make_heatmap(correlations, image_directory,
     corr = pd.read_pickle(in_file.with_suffix(".pkl"))
 
     categories = correlations["index_categories"]
-    corr_index = correlations["index"]
+    corr_index = correlations["index_correlations"]
     corr = corr.reindex(list(corr_index.keys()))
     corr = corr[list(corr_index.keys())]
 
