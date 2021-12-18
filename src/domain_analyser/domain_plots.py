@@ -600,10 +600,13 @@ def make_conditional_pdf_plot(categories, image_directory,
     axis.tick_params(which="both", bottom=True)
     delta_bin = np.diff(conditional_scores_df.index)[0]
 
+    fig.subplots_adjust(bottom=0.25, top=0.92, right=0.98)
+    axis.tick_params(which="both", bottom=True)
+
     conditional_scores_df.index = conditional_scores_df.index + delta_bin / 2
 
     for col_name in conditional_scores_df.columns:
-        pdf = conditional_scores_df[col_name].to_numpy()
+        pdf = 100 * conditional_scores_df[col_name].to_numpy()
         axis.bar(conditional_scores_df.index, pdf, width=delta_bin, label=col_name)
     # , edgecolor=None, linewidth=0)
     # conditional_scores_df[0].plot.bar(ax=axis, stacked=True, width=delta_bin / 2)
@@ -613,7 +616,7 @@ def make_conditional_pdf_plot(categories, image_directory,
     _logger.debug(xtics)
     _logger.debug(conditional_scores_df.index)
     axis.xaxis.set_ticks(xtics)
-    axis.set_xlim((0, 100))
+    axis.set_xlim((-5, 105))
 
     start, end = axis.get_ylim()
     if y_max is not None:
@@ -624,7 +627,6 @@ def make_conditional_pdf_plot(categories, image_directory,
     if y_max is not None:
         axis.set_ylim((0, y_max))
 
-
     # this triggers the drawing, otherwise we can not retrieve the xtick labels
     fig.canvas.draw()
 
@@ -634,16 +636,25 @@ def make_conditional_pdf_plot(categories, image_directory,
     axis.yaxis.set_label_coords(-0.04, 1.05)
     axis.xaxis.grid(False)
     axis.set_xlabel("Score", horizontalalignment="right")
-    axis.xaxis.set_label_coords(0.95, -0.15)
+    axis.xaxis.set_label_coords(0.98, -0.12)
     sns.despine(ax=axis, left=True)
 
     labels = [_.get_text() for _ in axis.get_xticklabels()]
     axis.set_xticklabels(labels, ha='center')
 
-    add_axis_label_background(fig=fig, axes=axis, loc="south")
+    add_axis_label_background(fig=fig, axes=axis, loc="south", margin=0.10)
+
+    legend = axis.legend(loc="lower left",
+                         title="# categorieën goed",
+                         prop={"size": 10},
+                         bbox_to_anchor=(0.2, 0.02), frameon=False,
+                         bbox_transform=fig.transFigure, ncol=5)
+
+    legend._legend_box.align = "left"
+    for patch in legend.get_patches():
+        patch.set_linewidth(0)
 
     if export_highcharts:
-
         # voor highcharts de titel setten
         CBSHighChart(
             data=conditional_scores_df,
