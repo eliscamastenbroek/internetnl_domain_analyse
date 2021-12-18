@@ -329,6 +329,7 @@ class DomainAnalyser(object):
             col_sel.append(variable)
 
         score_df = self.dataframe["percentage"].copy()
+        weights = self.dataframe[self.weight_key].copy()
         score_df = score_df.rename("score")
 
         _logger.debug(f"make selection\n{col_sel}")
@@ -345,10 +346,20 @@ class DomainAnalyser(object):
         conditional_scores = list()
 
         total_sum = 0
+        mask_tot: pd.Series = None
         for number_of_cat in range(0, 5):
-            tot_cond = tot.loc[tot['count'] == number_of_cat, "score"]
-            hist, bin_edge = np.histogram(tot_cond.to_numpy(), density=False, range=(0, 100),
-                                          bins=50)
+            mask = tot['count'] == number_of_cat
+            tot_cond = tot.loc[mask, "score"]
+            ww = weights[mask].to_numpy()
+            if mask_tot is None:
+                mask_tot = mask
+            else:
+                mask_tot = mask_tot | mask
+            hist, bin_edge = np.histogram(tot_cond.to_numpy(),
+                                          weights=ww,
+                                          density=False,
+                                          range=(0, 100),
+                                          bins=self.n_bins)
             hist_sum = hist.sum()
             total_sum += hist_sum
             conditional_scores.append(hist)

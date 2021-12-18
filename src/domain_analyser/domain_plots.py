@@ -49,14 +49,14 @@ def make_cdf_plot(hist,
     counts = hist[0]
     sum_pdf = counts.sum()
     _logger.info(f"Plot pdf gebaseerd op {sum_pdf} bedrijven (door gewichten)")
-    pdf = 100 * counts / sum_pdf
     bins = hist[1]
+    delta_bin = np.diff(bins)[0]
+    pdf = 100 * counts / sum_pdf / delta_bin
     fig, axis = plt.subplots(nrows=1, ncols=1)
     fig.subplots_adjust(bottom=0.25, top=0.92, right=0.98)
     axis.tick_params(which="both", bottom=True)
 
-    cdf = pdf.cumsum()
-    delta_bin = np.diff(bins)[0]
+    cdf = pdf.cumsum() * delta_bin
 
     if cummulative:
         fnc = cdf
@@ -653,6 +653,9 @@ def make_conditional_pdf_plot(categories, image_directory,
     legend._legend_box.align = "left"
     for patch in legend.get_patches():
         patch.set_linewidth(0)
+
+    _logger.info(f"Saving plot {im_file}")
+    fig.savefig(im_file)
 
     if export_highcharts:
         # voor highcharts de titel setten
