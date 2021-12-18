@@ -568,25 +568,25 @@ def make_heatmap(correlations, image_directory,
 
 def make_conditional_pdf_plot(categories, image_directory,
                               show_plots=False,
-                              figsize=None, image_type=".pdf",
-                              export_svg=False,
                               export_highcharts=False,
                               highcharts_directory=None,
-                              title=None,
-                              y_max=None,
-                              y_spacing=None,
                               cache_directory=None
                               ):
     outfile = Path(categories["categories_output_file"])
     if cache_directory is not None:
         outfile = Path(cache_directory) / outfile
 
+    plot_settings = categories["plot_settings"]
+    y_max = plot_settings.get("y_max_pdf_plot")
+    y_spacing = plot_settings.get("y_spacing_pdf_plot")
+    export_svg = plot_settings.get("export_svg")
+
     in_file = outfile.with_suffix(".pkl")
 
     if highcharts_directory is None:
         highcharts_directory = Path(".")
 
-    if hc_sub_dir := categories.get("highcharts_output_directory"):
+    if hc_sub_dir := plot_settings.get("highcharts_output_directory"):
         highcharts_directory = highcharts_directory / Path(hc_sub_dir)
 
     _logger.info(f"Reading correlation from {in_file}")
@@ -656,6 +656,11 @@ def make_conditional_pdf_plot(categories, image_directory,
 
     _logger.info(f"Saving plot {im_file}")
     fig.savefig(im_file)
+
+    if export_svg:
+        svg_image_file = highcharts_directory / Path(im_file.with_suffix(".svg").stem)
+        _logger.info(f"Saving plot to {svg_image_file}")
+        fig.savefig(svg_image_file)
 
     if export_highcharts:
         # voor highcharts de titel setten
