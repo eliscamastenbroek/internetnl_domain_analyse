@@ -65,7 +65,9 @@ def make_cdf_plot(hist,
         fnc = pdf
         fnc_str = "pdf"
 
-    axis.bar(bins[:-1], fnc, width=delta_bin, edgecolor=None, linewidth=0)
+    xgrid = bins[:-1] + delta_bin / 2
+
+    axis.bar(xgrid, fnc, width=delta_bin, edgecolor=None, linewidth=0)
 
     start, end = axis.get_ylim()
     if y_max is not None:
@@ -635,7 +637,7 @@ def make_conditional_pdf_plot(categories, image_directory,
     axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
     axis.yaxis.set_label_coords(-0.04, 1.05)
     axis.xaxis.grid(False)
-    axis.set_xlabel("Score", horizontalalignment="right")
+    axis.set_xlabel("Totaal score", horizontalalignment="right")
     axis.xaxis.set_label_coords(0.98, -0.12)
     sns.despine(ax=axis, left=True)
 
