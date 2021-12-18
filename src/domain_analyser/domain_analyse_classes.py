@@ -64,6 +64,7 @@ class DomainAnalyser(object):
                  n_bins=100,
                  mode=None,
                  correlations=None,
+                 categories=None,
                  ):
 
         _logger.info(f"Running here {os.getcwd()}")
@@ -77,6 +78,7 @@ class DomainAnalyser(object):
         self.breakdown_labels = breakdown_labels
 
         self.correlations = correlations
+        self.categories = categories
         self.statistics = statistics
         self.default_scan = default_scan
         self.module_key = module_key
@@ -93,6 +95,7 @@ class DomainAnalyser(object):
         self.mi_labels = ["sbi", "gk_sbs", self.be_id]
         self.translations = translations
 
+        self.categories_coefficient_df = None
         self.correlation_coefficient_df = None
 
         if records_filename is None:
@@ -113,7 +116,10 @@ class DomainAnalyser(object):
         self.cache_directory = cache_directory
         cache_file_base = Path("_".join([cache_file_base, scan_data_key]) + ".pkl")
         self.cache_file = Path(cache_directory) / cache_file_base
-        self.corr_outfile = self.cache_directory / Path(self.correlations["correlation_output_file"])
+        self.cate_outfile = self.cache_directory / Path(self.categories["categories_output_file"])
+        self.cate_pkl_file = self.cate_outfile.with_suffix(".pkl")
+        self.corr_outfile = self.cache_directory / Path(
+            self.correlations["correlation_output_file"])
         self.corr_pkl_file = self.corr_outfile.with_suffix(".pkl")
         self.score_outfile = self.cache_directory / Path(self.correlations["score_output_file"])
         self.score_pkl_file = self.score_outfile.with_suffix(".pkl")
@@ -154,6 +160,8 @@ class DomainAnalyser(object):
                 self.write_statistics()
         if mode in ("all", "correlations"):
             self.calculate_correlations_and_scores()
+        if mode in ("all", "categories"):
+            self.calculate_categories()
 
     def check_if_cache_exist(self, mode: str):
 
@@ -163,6 +171,8 @@ class DomainAnalyser(object):
         if mode in ("all", "correlations"):
             cache_exists = cache_exists and self.corr_pkl_file.exists()
             cache_exists = cache_exists and self.score_pkl_file.exists()
+        if mode in ("all", "categories"):
+            cache_exists = cache_exists and self.cate_pkl_file.exists()
 
         return cache_exists
 
@@ -302,6 +312,60 @@ class DomainAnalyser(object):
 
         return all_stats, all_hist
 
+    def calculate_categories(self):
+        if self.cate_pkl_file.exists() and self.reset is None:
+            _logger.info(f"Cache {self.cate_pkl_file} and already exist. "
+                         f"Skip calculation cateogires and go to plot")
+            return
+        if self.dataframe is None:
+            msg = "For correlations you need the microdata. Run with --reset 1"
+            raise ValueError(msg)
+
+        _logger.info("Calculating cateogires")
+        col_sel = list()
+
+        for cat_key, cat_prop in self.categories["index_categories"].items():
+            variable = cat_prop["variable"]
+            col_sel.append(variable)
+
+        score_df = self.dataframe["percentage"].copy()
+        score_df = score_df.rename("score")
+
+        _logger.debug(f"make selection\n{col_sel}")
+        data_df: pd.DataFrame = self.dataframe[col_sel]
+
+        # alleen 1 wordt als succes beschouwd
+        data_df = data_df == 1
+
+        count = data_df.sum(axis=1)
+        count = count.rename("count")
+
+        tot = pd.concat([score_df, count], axis=1)
+
+        conditional_scores = list()
+
+        total_sum = 0
+        for number_of_cat in range(0, 5):
+            tot_cond = tot.loc[tot['count'] == number_of_cat, "score"]
+            hist, bin_edge = np.histogram(tot_cond.to_numpy(), density=False, range=(0, 100),
+                                          bins=50)
+            hist_sum = hist.sum()
+            total_sum += hist_sum
+            conditional_scores.append(hist)
+        bin_width = bin_edge[1] - bin_edge[0]
+        conditional_scores_df = pd.DataFrame().from_records(conditional_scores)
+        conditional_scores_df.index = conditional_scores_df.index.rename("n_categories")
+        conditional_scores_df = conditional_scores_df.T
+        conditional_scores_df.index = bin_edge[:-1]
+        conditional_scores_df /= (total_sum * bin_width)
+
+        check_sum = conditional_scores_df.sum().sum() * bin_width
+
+        _logger.debug(f"sum {check_sum}")
+
+        _logger.info(f"Writing to {self.cate_pkl_file}")
+        conditional_scores_df.to_pickle(self.cate_pkl_file)
+
     def calculate_correlations_and_scores(self):
 
         if self.corr_pkl_file.exists() and self.score_pkl_file.exists() and self.reset is None:
@@ -313,7 +377,7 @@ class DomainAnalyser(object):
             msg = "For correlations you need the microdata. Run with --reset 1"
             raise ValueError(msg)
 
-        index_columns = self.correlations["index"]
+        index_columns = self.correlations["index_correlations"]
 
         _logger.info("Calculating correlations")
         col_sel = list(index_columns.keys())

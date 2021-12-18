@@ -564,3 +564,100 @@ def make_heatmap(correlations, image_directory,
 
     if show_plots:
         plt.show()
+
+
+def make_conditional_pdf_plot(categories, image_directory,
+                              show_plots=False,
+                              figsize=None, image_type=".pdf",
+                              export_svg=False,
+                              export_highcharts=False,
+                              highcharts_directory=None,
+                              title=None,
+                              y_max=None,
+                              y_spacing=None,
+                              cache_directory=None
+                              ):
+    outfile = Path(categories["categories_output_file"])
+    if cache_directory is not None:
+        outfile = Path(cache_directory) / outfile
+
+    in_file = outfile.with_suffix(".pkl")
+
+    if highcharts_directory is None:
+        highcharts_directory = Path(".")
+
+    if hc_sub_dir := categories.get("highcharts_output_directory"):
+        highcharts_directory = highcharts_directory / Path(hc_sub_dir)
+
+    _logger.info(f"Reading correlation from {in_file}")
+    conditional_scores_df = pd.read_pickle(in_file.with_suffix(".pkl"))
+
+    im_file = image_directory / Path(outfile.stem).with_suffix(".pdf")
+
+    figure_properties = CBSPlotSettings()
+
+    fig, axis = plt.subplots()
+    axis.tick_params(which="both", bottom=True)
+    delta_bin = np.diff(conditional_scores_df.index)[0]
+
+    conditional_scores_df.index = conditional_scores_df.index + delta_bin / 2
+
+    for col_name in conditional_scores_df.columns:
+        pdf = conditional_scores_df[col_name].to_numpy()
+        axis.bar(conditional_scores_df.index, pdf, width=delta_bin, label=col_name)
+    # , edgecolor=None, linewidth=0)
+    # conditional_scores_df[0].plot.bar(ax=axis, stacked=True, width=delta_bin / 2)
+    # edgecolor=None, linewidth=0)
+
+    xtics = np.linspace(0, 100, endpoint=True, num=6)
+    _logger.debug(xtics)
+    _logger.debug(conditional_scores_df.index)
+    axis.xaxis.set_ticks(xtics)
+    axis.set_xlim((0, 100))
+
+    start, end = axis.get_ylim()
+    if y_max is not None:
+        end = y_max
+    if y_spacing is not None:
+        axis.yaxis.set_ticks(np.arange(start, end + 1, y_spacing))
+
+    if y_max is not None:
+        axis.set_ylim((0, y_max))
+
+
+    # this triggers the drawing, otherwise we can not retrieve the xtick labels
+    fig.canvas.draw()
+
+    y_label = '% bedrijven'
+
+    axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
+    axis.yaxis.set_label_coords(-0.04, 1.05)
+    axis.xaxis.grid(False)
+    axis.set_xlabel("Score", horizontalalignment="right")
+    axis.xaxis.set_label_coords(0.95, -0.15)
+    sns.despine(ax=axis, left=True)
+
+    labels = [_.get_text() for _ in axis.get_xticklabels()]
+    axis.set_xticklabels(labels, ha='center')
+
+    add_axis_label_background(fig=fig, axes=axis, loc="south")
+
+    if export_highcharts:
+
+        # voor highcharts de titel setten
+        CBSHighChart(
+            data=conditional_scores_df,
+            chart_type="column",
+            output_directory=highcharts_directory.as_posix(),
+            output_file_name=im_file.stem,
+            ylabel=y_label,
+            title="Verdeling scores per categorie",
+            enable_legend=False,
+        )
+
+    if show_plots:
+        plt.show()
+
+    _logger.debug("Done")
+
+    plt.close()

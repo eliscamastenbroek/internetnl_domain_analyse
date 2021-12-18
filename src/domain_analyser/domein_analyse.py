@@ -11,12 +11,15 @@ except ModuleNotFoundError:
 import yaml
 from domain_analyser import __version__
 from domain_analyser.domain_analyse_classes import (DomainAnalyser, DomainPlotter)
-from domain_analyser.domain_plots import (make_heatmap, make_conditional_score_plot)
+from domain_analyser.domain_plots import (make_heatmap, make_conditional_score_plot,
+                                          make_conditional_pdf_plot)
 
 logging.basicConfig(
     format='%(asctime)s %(filename)25s[%(lineno)4s] - %(levelname)-8s : %(message)s',
     level=logging.DEBUG)
 _logger = logging.getLogger()
+
+MODES = {"statistics", "correlations", "categories", "all"}
 
 
 def parse_args():
@@ -61,6 +64,8 @@ def parse_args():
                         default=False)
     parser.add_argument("--bar_plot", action="store_true", help="Plot het staafdiagram",
                         default=False)
+    parser.add_argument("--cate_plot", action="store_true",
+                        help="Plot de heatmap of the categories", default=False)
     parser.add_argument("--cor_plot", action="store_true", help="Plot de heatmap",
                         default=False)
     parser.add_argument("--score_plot", action="store_true", help="Plot de conditionele score",
@@ -69,8 +74,8 @@ def parse_args():
                         action="store_true")
     parser.add_argument("--highcharts_output_directory",
                         help="Directory waar alle highcharts naar toe geschreven wordt")
-    parser.add_argument("--mode", choices={"statistics", "correlations", "all"},
-                        default="statistics", help="Type  analyse die we doen")
+    parser.add_argument("--mode", choices=MODES, default="statistics",
+                        help="Type  analyse die we doen")
 
     parsed_arguments = parser.parse_args()
 
@@ -119,8 +124,10 @@ def main():
     bar_plot = args.bar_plot or args.plot_all
     cdf_plot = args.cdf_plot or args.plot_all
     cor_plot = args.cor_plot or args.plot_all
+    cate_plot = args.cate_plot or args.cate_plot
     score_plot = args.score_plot or args.plot_all
 
+    categories = settings.get("categories")
     correlations = settings.get("correlations")
     statistics = settings["statistics"]
     translations = settings["translations"]
@@ -190,6 +197,7 @@ def main():
                 n_bins=n_bins,
                 mode=args.mode,
                 correlations=correlations,
+                categories=categories,
             )
             scan_prop["analyses"] = domain_analyses
 
@@ -197,6 +205,10 @@ def main():
             make_heatmap(correlations=correlations, image_directory=image_directory,
                          highcharts_directory=highcharts_directory, show_plots=args.show_plots,
                          cache_directory=cache_directory)
+        if cate_plot:
+            make_conditional_pdf_plot(categories=categories, image_directory=image_directory,
+                                      highcharts_directory=highcharts_directory, show_plots=args.show_plots,
+                                      cache_directory=cache_directory)
         if score_plot:
             make_conditional_score_plot(correlations=correlations, image_directory=image_directory,
                                         highcharts_directory=highcharts_directory,
