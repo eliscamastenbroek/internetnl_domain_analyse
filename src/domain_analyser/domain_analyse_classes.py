@@ -344,12 +344,15 @@ class DomainAnalyser(object):
         tot = pd.concat([score_df, count], axis=1)
 
         conditional_scores = list()
+        sum_per_number_of_cat = list()
 
         total_sum = 0
         mask_tot: pd.Series = None
         for number_of_cat in range(0, 5):
             mask = tot['count'] == number_of_cat
             tot_cond = tot.loc[mask, "score"]
+            sel_df = data_df[mask]
+            sum_per_number_of_cat.append(sel_df.sum(axis=0))
             ww = weights[mask].to_numpy()
             if mask_tot is None:
                 mask_tot = mask
@@ -363,7 +366,10 @@ class DomainAnalyser(object):
             hist_sum = hist.sum()
             total_sum += hist_sum
             conditional_scores.append(hist)
+
+        sum_per_number_of_cat_df = pd.DataFrame.from_records(sum_per_number_of_cat)
         bin_width = bin_edge[1] - bin_edge[0]
+
         conditional_scores_df = pd.DataFrame().from_records(conditional_scores)
         conditional_scores_df.index = conditional_scores_df.index.rename("n_categories")
         conditional_scores_df = conditional_scores_df.T
@@ -376,6 +382,10 @@ class DomainAnalyser(object):
 
         _logger.info(f"Writing to {self.cate_pkl_file}")
         conditional_scores_df.to_pickle(self.cate_pkl_file)
+
+        sum_file = self.cate_pkl_file.parent / Path(self.cate_pkl_file.stem + "_sum.pkl")
+        _logger.info(f"Writing to {sum_file}")
+        sum_per_number_of_cat_df.to_pickle(sum_file)
 
     def calculate_correlations_and_scores(self):
 

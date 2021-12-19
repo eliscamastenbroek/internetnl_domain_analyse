@@ -590,6 +590,8 @@ def make_conditional_pdf_plot(categories, image_directory,
     if hc_sub_dir := plot_settings.get("highcharts_output_directory"):
         highcharts_directory = highcharts_directory / Path(hc_sub_dir)
 
+    highcharts_directory.mkdir(exist_ok=True, parents=True)
+
     _logger.info(f"Reading correlation from {in_file}")
     conditional_scores_df = pd.read_pickle(in_file.with_suffix(".pkl"))
 
