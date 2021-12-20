@@ -12,7 +12,8 @@ import yaml
 from domain_analyser import __version__
 from domain_analyser.domain_analyse_classes import (DomainAnalyser, DomainPlotter)
 from domain_analyser.domain_plots import (make_heatmap, make_conditional_score_plot,
-                                          make_conditional_pdf_plot)
+                                          make_conditional_pdf_plot,
+                                          make_verdeling_per_aantal_categorie)
 
 logging.basicConfig(
     format='%(asctime)s %(filename)25s[%(lineno)4s] - %(levelname)-8s : %(message)s',
@@ -66,6 +67,8 @@ def parse_args():
                         default=False)
     parser.add_argument("--cate_plot", action="store_true",
                         help="Plot de heatmap of the categories", default=False)
+    parser.add_argument("--verdeling_plot", action="store_true",
+                        help="Plot de verdeling per categorie", default=False)
     parser.add_argument("--cor_plot", action="store_true", help="Plot de heatmap",
                         default=False)
     parser.add_argument("--score_plot", action="store_true", help="Plot de conditionele score",
@@ -124,7 +127,8 @@ def main():
     bar_plot = args.bar_plot or args.plot_all
     cdf_plot = args.cdf_plot or args.plot_all
     cor_plot = args.cor_plot or args.plot_all
-    cate_plot = args.cate_plot or args.cate_plot
+    cate_plot = args.cate_plot or args.plot_all
+    verdeling_plot = args.verdeling_plot or args.plot_all
     score_plot = args.score_plot or args.plot_all
 
     categories = settings.get("categories")
@@ -207,8 +211,15 @@ def main():
                          cache_directory=cache_directory)
         if cate_plot:
             make_conditional_pdf_plot(categories=categories, image_directory=image_directory,
-                                      highcharts_directory=highcharts_directory, show_plots=args.show_plots,
+                                      highcharts_directory=highcharts_directory,
+                                      show_plots=args.show_plots,
                                       cache_directory=cache_directory)
+        if verdeling_plot:
+            make_verdeling_per_aantal_categorie(categories=categories,
+                                                image_directory=image_directory,
+                                                highcharts_directory=highcharts_directory,
+                                                show_plots=args.show_plots,
+                                                cache_directory=cache_directory)
         if score_plot:
             make_conditional_score_plot(correlations=correlations, image_directory=image_directory,
                                         highcharts_directory=highcharts_directory,

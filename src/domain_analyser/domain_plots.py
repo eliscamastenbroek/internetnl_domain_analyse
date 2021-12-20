@@ -577,7 +577,7 @@ def make_conditional_pdf_plot(categories, image_directory,
     if cache_directory is not None:
         outfile = Path(cache_directory) / outfile
 
-    plot_settings = categories["plot_settings"]
+    plot_settings = categories["plot_settings"]["pdf_per_category"]
     y_max = plot_settings.get("y_max_pdf_plot")
     y_spacing = plot_settings.get("y_spacing_pdf_plot")
     export_svg = plot_settings.get("export_svg")
@@ -673,6 +673,111 @@ def make_conditional_pdf_plot(categories, image_directory,
             output_directory=highcharts_directory.as_posix(),
             output_file_name=im_file.stem,
             ylabel=y_label,
+            title="Verdeling scores per categorie",
+            enable_legend=False,
+        )
+
+    if show_plots:
+        plt.show()
+
+    _logger.debug("Done")
+
+    plt.close()
+
+
+def make_verdeling_per_aantal_categorie(categories, image_directory,
+                                        show_plots=False,
+                                        export_highcharts=False,
+                                        highcharts_directory=None,
+                                        cache_directory=None
+                                        ):
+    outfile = Path(categories["categories_output_file"])
+    if cache_directory is not None:
+        outfile = Path(cache_directory) / outfile
+
+    plot_settings = categories["plot_settings"]["verdeling_per_category"]
+    y_max = plot_settings.get("y_max_pdf_plot")
+    y_spacing = plot_settings.get("y_spacing_pdf_plot")
+    export_svg = plot_settings.get("export_svg")
+
+    index_categories = categories["index_categories"]
+    renames = dict()
+    for index_key, index_prop in index_categories.items():
+        variable_name = index_prop["variable"]
+        renames[variable_name] = index_key
+
+    in_file = outfile.with_suffix(".pkl")
+    sum_file = in_file.parent / Path(in_file.stem + "_sum.pkl")
+    _logger.info(f"Reading from {sum_file}")
+    sum_per_number_of_cat_df = pd.read_pickle(sum_file)
+    sum_per_number_of_cat_df.rename(columns=renames, inplace=True)
+    # zet de volgorde gelijk aan de settings file
+    sum_per_number_of_cat_df = sum_per_number_of_cat_df[list(index_categories.keys())]
+
+    sum_per_number_of_cat_df = sum_per_number_of_cat_df.T
+    sum_per_number_of_cat_df.drop(0, axis=1, inplace=True)
+
+    sum_of_all_categories = sum_per_number_of_cat_df.sum()
+
+    percentage_per_number_of_cat = 100 * sum_per_number_of_cat_df / sum_of_all_categories
+
+    if highcharts_directory is None:
+        highcharts_directory = Path(".")
+    else:
+        highcharts_directory = Path(highcharts_directory)
+
+    if hc_sub_dir := plot_settings.get("highcharts_output_directory"):
+        highcharts_directory = highcharts_directory / Path(hc_sub_dir)
+
+    highcharts_directory.mkdir(exist_ok=True, parents=True)
+
+    im_file = image_directory / Path(outfile.stem).with_suffix(".pdf")
+
+    figure_properties = CBSPlotSettings()
+
+    fig, axis = plt.subplots()
+    axis.tick_params(which="both", bottom=True)
+    fig.subplots_adjust(bottom=0.25, top=0.92, right=0.98)
+
+    percentage_per_number_of_cat.T.plot.bar(stacked=True, ax=axis)
+
+    axis.set_ylim((0, 101))
+
+    axis.set_xlabel("Aantal goede categorieën", horizontalalignment="right")
+    y_label = "% bedrijven"
+
+    axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
+    axis.yaxis.set_label_coords(-0.06, 1.05)
+    axis.xaxis.grid(False)
+    axis.xaxis.set_label_coords(0.98, -0.1)
+    xlabels = axis.get_xticklabels()
+    axis.set_xticklabels(xlabels, rotation=0, ha="right")
+    sns.despine(ax=axis, left=True)
+
+    legend = axis.legend(loc="lower left",
+                         title="Categorie",
+                         bbox_to_anchor=(0.2, 0.03), frameon=False,
+                         bbox_transform=fig.transFigure, ncol=5)
+
+    legend._legend_box.align = "left"
+    for patch in legend.get_patches():
+        patch.set_linewidth(0)
+
+    axis.tick_params(which="both", bottom=False)
+    add_axis_label_background(fig=fig, axes=axis, loc="south", margin=0.02)
+
+    if export_svg:
+        svg_image_file = highcharts_directory / Path(im_file.with_suffix(".svg").stem)
+        _logger.info(f"Saving plot to {svg_image_file}")
+        fig.savefig(svg_image_file)
+
+    if export_highcharts:
+        # voor highcharts de titel setten
+        CBSHighChart(
+            data=sum_per_number_of_cat_df,
+            chart_type="column",
+            output_directory=highcharts_directory.as_posix(),
+            output_file_name=im_file.stem,
             title="Verdeling scores per categorie",
             enable_legend=False,
         )
