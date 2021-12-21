@@ -208,6 +208,7 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     values_column = "Values"
     plot_df.index.rename(values_column, inplace=True)
     plot_df[plot_title] = None
+    plot_variable = plot_df["variable"].to_numpy()[0]
     plot_df.drop(names + ["variable"], axis=1, inplace=True)
     plot_df.set_index(plot_title, inplace=True)
     plot_df.index = range(plot_df.index.size)
@@ -332,8 +333,9 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
                     axis.axhline(y=value, color=color, linestyle='-.')
                     axis.text(xoff, value + yoff * x_range, ref_label, color=color, transform=trans)
 
-    image_name = re.sub("\s", "_", plot_title.replace(" - ", "_"))
-    image_name = re.sub(":_.*$", "", image_name)
+    # image_name = re.sub("\s", "_", plot_title.replace(" - ", "_"))
+    # image_name = re.sub(":_.*$", "", image_name)
+    image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
     image_file = image_directory / Path("_".join([plot_key, image_name + image_type]))
     image_file_name = image_file.as_posix()
     _logger.info(f"Saving plot {image_file_name}")

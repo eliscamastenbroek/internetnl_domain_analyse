@@ -635,7 +635,8 @@ class DomainPlotter(object):
         make_latex_overview(all_plots=self.all_plots,
                             variables=self.variables,
                             image_directory=self.image_directory, image_files=self.image_files,
-                            tex_prepend_path=self.tex_prepend_path)
+                            tex_prepend_path=self.tex_prepend_path,
+                            )
 
     #
     def get_plot_cache(self, scan_data_key, plot_key):
