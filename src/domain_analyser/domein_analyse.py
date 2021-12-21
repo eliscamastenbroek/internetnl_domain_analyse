@@ -173,6 +173,7 @@ def main():
     with path_Path(str(working_directory)):
         cache_directory.mkdir(exist_ok=True)
         image_directory.mkdir(exist_ok=True)
+        var_df = None
         _logger.info(f"Running domain analyser in {os.getcwd()}")
         for key, scan_prop in scan_data.items():
             if not scan_prop.get("do_it", True):
@@ -205,6 +206,9 @@ def main():
             )
             scan_prop["analyses"] = domain_analyses
 
+            if var_df is None:
+                var_df = domain_analyses.variables
+
         if cor_plot:
             make_heatmap(correlations=correlations, image_directory=image_directory,
                          highcharts_directory=highcharts_directory, show_plots=args.show_plots,
@@ -226,7 +230,7 @@ def main():
                                         show_plots=args.show_plots,
                                         cache_directory=cache_directory)
 
-        if (bar_plot or cdf_plot):
+        if bar_plot or cdf_plot:
             DomainPlotter(
                 scan_data=scan_data,
                 default_scan=default_scan,
@@ -237,6 +241,7 @@ def main():
                 statistics=statistics,
                 breakdown_labels=breakdown_labels,
                 image_directory=image_directory,
+                variables=var_df,
                 tex_prepend_path=tex_prepend_path,
                 cumulative=cumulative,
                 show_title=show_title,

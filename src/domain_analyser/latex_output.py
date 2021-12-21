@@ -1,5 +1,7 @@
+import pandas as pd
 import logging
 
+from ict_analyser.shared.utils import variable_dict_to_df
 from pylatex import Document, Figure, NoEscape, Command
 from pylatex.base_classes import Environment, CommandBase, Arguments
 from pylatex.package import Package

@@ -21,9 +21,11 @@ from domain_analyser.utils import (read_tables_from_sqlite,
                                    prepare_stat_data_for_write,
                                    get_option_mask,
                                    impose_variable_defaults)
+from domain_analyser.latex_output import make_latex_overview
 from ict_analyser.analyser_tool.utils import (prepare_df_for_statistics,
                                               get_records_select,
                                               rename_all_variables)
+from ict_analyser.shared.utils import variable_dict_to_df
 from ict_analyser.analyser_tool.sample_statistics import SampleStatistics
 from ict_analyser.analyser_tool.variable_properties import VariableProperties
 
@@ -84,7 +86,7 @@ class DomainAnalyser(object):
         self.module_key = module_key
         self.variable_key = variable_key
         self.module_info = module_info
-        self.variables = self.variable_dict2fd(variables, module_info)
+        self.variables = self.variable_dict2df(variables, module_info)
         self.n_digits = n_digits
         self.n_bins = n_bins
 
@@ -176,7 +178,7 @@ class DomainAnalyser(object):
 
         return cache_exists
 
-    def variable_dict2fd(self, variables, module_info: dict = None) -> pd.DataFrame:
+    def variable_dict2df(self, variables, module_info: dict = None) -> pd.DataFrame:
         """
         Converteer de directory met variable info naar een data frame
         Args:
@@ -580,6 +582,7 @@ class DomainPlotter(object):
                  max_plots=None,
                  tex_prepend_path=None,
                  statistics=None,
+                 variables=None,
                  cdf_plot=False,
                  bar_plot=False,
                  cor_plot=False,
@@ -601,6 +604,7 @@ class DomainPlotter(object):
         self.tex_prepend_path = tex_prepend_path
         self.cache_directory = cache_directory
         self.statistics = statistics
+        self.variables = variables
         self.bar_plot = bar_plot
         self.cdf_plot = cdf_plot
         self.cumulative = cumulative
@@ -627,9 +631,11 @@ class DomainPlotter(object):
         if self.all_plots is None:
             with open(self.cache_image_file_list, "rb") as stream:
                 self.all_plots = pickle.load(stream)
-        # make_latex_overview(all_plots=self.all_plots, variables=self.variables,
-        #                    image_directory=self.image_directory, image_files=self.image_files,
-        #                    tex_prepend_path=self.tex_prepend_path)
+
+        make_latex_overview(all_plots=self.all_plots,
+                            variables=self.variables,
+                            image_directory=self.image_directory, image_files=self.image_files,
+                            tex_prepend_path=self.tex_prepend_path)
 
     #
     def get_plot_cache(self, scan_data_key, plot_key):
