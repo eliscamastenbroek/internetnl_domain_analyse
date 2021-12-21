@@ -577,6 +577,7 @@ def make_conditional_pdf_plot(categories, image_directory,
     if cache_directory is not None:
         outfile = Path(cache_directory) / outfile
 
+    image_key = "pdf_per_category"
     plot_settings = categories["plot_settings"]["pdf_per_category"]
     y_max = plot_settings.get("y_max_pdf_plot")
     y_spacing = plot_settings.get("y_spacing_pdf_plot")
@@ -595,6 +596,7 @@ def make_conditional_pdf_plot(categories, image_directory,
     _logger.info(f"Reading correlation from {in_file}")
     conditional_scores_df = pd.read_pickle(in_file.with_suffix(".pkl"))
 
+    im_file = image_directory / Path("_".join([outfile.stem, image_key])).with_suffix(".pdf")
     im_file = image_directory / Path(outfile.stem).with_suffix(".pdf")
 
     figure_properties = CBSPlotSettings()
@@ -695,7 +697,8 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
     if cache_directory is not None:
         outfile = Path(cache_directory) / outfile
 
-    plot_settings = categories["plot_settings"]["verdeling_per_category"]
+    image_key = "verdeling_per_category"
+    plot_settings = categories["plot_settings"][image_key]
     y_max = plot_settings.get("y_max_pdf_plot")
     y_spacing = plot_settings.get("y_spacing_pdf_plot")
     export_svg = plot_settings.get("export_svg")
@@ -731,7 +734,7 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
 
     highcharts_directory.mkdir(exist_ok=True, parents=True)
 
-    im_file = image_directory / Path(outfile.stem).with_suffix(".pdf")
+    im_file = image_directory / Path("_".join([outfile.stem, image_key])).with_suffix(".pdf")
 
     figure_properties = CBSPlotSettings()
 
@@ -765,6 +768,9 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
 
     axis.tick_params(which="both", bottom=False)
     add_axis_label_background(fig=fig, axes=axis, loc="south", margin=0.02)
+
+    _logger.info(f"Saving plot {im_file}")
+    fig.savefig(im_file)
 
     if export_svg:
         svg_image_file = highcharts_directory / Path(im_file.with_suffix(".svg").stem)
