@@ -700,7 +700,7 @@ class DomainPlotter(object):
                     if hc_sub_dir := plot_cdf.get("highcharts_output_directory"):
                         highcharts_directory_cdf = highcharts_directory_cdf / Path(hc_sub_dir)
                     export_svg_cdf = plot_cdf.get("export_svg", False)
-                    export_hc_cdf = plot_cdf.get("export_highcarts")
+                    export_hc_cdf = plot_cdf.get("export_highcharts")
                     plot_cdf = plot_cdf.get("apply", True)
                     if export_hc_cdf is not None:
                         export_highcharts_cdf = export_hc_cdf
@@ -714,7 +714,7 @@ class DomainPlotter(object):
                     if hc_sub_dir := plot_bar.get("highcharts_output_directory"):
                         highcharts_directory_bar = highcharts_directory_bar / Path(hc_sub_dir)
                     export_svg_bar = plot_bar.get("export_svg", False)
-                    export_hc_bar = plot_cdf.get("export_highcarts")
+                    export_hc_bar = plot_bar.get("export_highcharts")
                     tex_horizontal_shift = plot_bar.get("tex_horizontal_shift")
                     plot_bar = plot_bar.get("apply", True)
                     if export_hc_bar is not None:
@@ -847,7 +847,7 @@ class DomainPlotter(object):
                                                           y_max=y_max_pdf_plot,
                                                           y_spacing=y_spacing_pdf_plot,
                                                           translations=self.translations,
-                                                          export_highcharts=export_highcharts_bar,
+                                                          export_highcharts=export_highcharts_cdf,
                                                           export_svg=export_svg_cdf,
                                                           highcharts_directory=highcharts_directory_cdf,
                                                           title=title
