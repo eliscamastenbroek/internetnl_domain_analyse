@@ -106,6 +106,7 @@ def main():
 
     image_directory = Path(general_settings.get("image_directory", "."))
     tex_prepend_path = Path(general_settings.get("tex_prepend_path", "."))
+    tex_horizontal_shift = general_settings.get("tex_horizontal_shift", "-1.15cm")
 
     scan_data = general_settings["scan_data"]
     default_scan = general_settings["default_scan"]
@@ -252,6 +253,7 @@ def main():
                 translations=label_translations,
                 export_highcharts=args.export_highcharts,
                 highcharts_directory=highcharts_directory,
+                tex_horizontal_shift=tex_horizontal_shift
             )
 
 

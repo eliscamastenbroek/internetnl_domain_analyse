@@ -33,7 +33,8 @@ class SubFloat(CommandBase):
 
 
 def make_latex_overview(all_plots, variables, image_directory, image_files,
-                        horizontal_shift="-2cm", tex_prepend_path=None):
+                        tex_horizontal_shift="-2cm", tex_prepend_path=None,
+                        all_shifts=None):
     """
     Maak latex ouput file met alle plaatjes
     Args:
@@ -42,7 +43,7 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
         image_directory: str
         tex_prepend_path: str
         image_files:
-        horizontal_shift: verschuiving naar links 
+        tex_horizontal_shift: verschuiving naar links
     """
     if tex_prepend_path is None:
         full_image_directory = image_directory
@@ -61,12 +62,17 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
                     full_image_name = image_name
                 else:
                     full_image_name = tex_prepend_path / image_name
+                horizontal_shift = tex_horizontal_shift
+                if shift_props := all_shifts.get(original_name):
+                    if hz := shift_props.get(label):
+                        horizontal_shift = hz
                 _logger.debug(f"Adding {full_image_name}")
                 ref = "_".join([original_name, label.lower().replace(" ", "_")])
                 ref_sublabel = Command("label", NoEscape("fig:" + ref))
                 lab = Command("footnotesize", Arguments(label, ref_sublabel))
                 include_graphics = Command("includegraphics", NoEscape(full_image_name))
-                hspace = Command("hspace", Arguments(NoEscape(horizontal_shift), include_graphics))
+                if horizontal_shift is not None:
+                    hspace = Command("hspace", Arguments(NoEscape(horizontal_shift), include_graphics))
                 sub_plot = SubFloat(
                     options=[lab],
                     arguments=Arguments(hspace))

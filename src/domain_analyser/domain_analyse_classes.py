@@ -593,6 +593,7 @@ class DomainPlotter(object):
                  export_highcharts=False,
                  highcharts_directory=None,
                  correlations=None,
+                 tex_horizontal_shift=None
                  ):
 
         self.scan_data = scan_data
@@ -621,6 +622,7 @@ class DomainPlotter(object):
         self.image_directory = image_directory
         self.breakdown_labels = breakdown_labels
         self.all_plots = dict()
+        self.all_shifts = dict()
 
         self.image_files = Path("image_files.pkl")
         self.cache_image_file_list = self.cache_directory / self.image_files
@@ -636,6 +638,8 @@ class DomainPlotter(object):
                             variables=self.variables,
                             image_directory=self.image_directory, image_files=self.image_files,
                             tex_prepend_path=self.tex_prepend_path,
+                            tex_horizontal_shift=tex_horizontal_shift,
+                            all_shifts=self.all_shifts
                             )
 
     #
@@ -684,6 +688,7 @@ class DomainPlotter(object):
                     plot_cdf = plot_cdf.get("apply", True)
             else:
                 plot_cdf = False
+            tex_horizontal_shift = None
             if self.bar_plot:
                 plot_bar = plot_prop.get("bar_plot")
                 highcharts_directory_bar = self.highcharts_directory
@@ -691,6 +696,7 @@ class DomainPlotter(object):
                     if hc_sub_dir := plot_bar.get("highcharts_output_directory"):
                         highcharts_directory_bar = highcharts_directory_bar / Path(hc_sub_dir)
                     export_svg_bar = plot_bar.get("export_svg", False)
+                    tex_horizontal_shift = plot_bar.get("tex_horizontal_shift")
                     plot_bar = plot_bar.get("apply", True)
             else:
                 plot_bar = False
@@ -741,6 +747,7 @@ class DomainPlotter(object):
                     if original_name not in self.all_plots.keys():
                         _logger.debug(f"Initialize dict for {original_name}")
                         self.all_plots[original_name] = dict()
+                        self.all_shifts[original_name] = dict()
 
                     mask = get_option_mask(question_df=question_df, variables=variables,
                                            question_type=question_type)
@@ -795,6 +802,7 @@ class DomainPlotter(object):
 
                         _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
                         self.all_plots[original_name][label] = image_file
+                        self.all_shifts[original_name][label] = tex_horizontal_shift
 
                     if plot_cdf:
                         hist_info = scan_data_analyses.all_hist_per_format[plot_key][original_name]
