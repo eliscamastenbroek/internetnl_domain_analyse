@@ -118,13 +118,26 @@ class DomainAnalyser(object):
         self.cache_directory = cache_directory
         cache_file_base = Path("_".join([cache_file_base, scan_data_key]) + ".pkl")
         self.cache_file = Path(cache_directory) / cache_file_base
-        self.cate_outfile = self.cache_directory / Path(self.categories["categories_output_file"])
-        self.cate_pkl_file = self.cate_outfile.with_suffix(".pkl")
-        self.corr_outfile = self.cache_directory / Path(
-            self.correlations["correlation_output_file"])
-        self.corr_pkl_file = self.corr_outfile.with_suffix(".pkl")
-        self.score_outfile = self.cache_directory / Path(self.correlations["score_output_file"])
-        self.score_pkl_file = self.score_outfile.with_suffix(".pkl")
+        self.cate_outfile = None
+        self.cate_pkl_file = None
+        self.corr_outfile = None
+        self.corr_pkl_file = None
+        self.score_outfile = None
+        self.score_pkl_file = None
+        try:
+            self.cate_outfile = self.cache_directory / Path(self.categories["categories_output_file"])
+        except TypeError:
+            _logger.debug("categories not defined")
+        else:
+            self.cate_pkl_file = self.cate_outfile.with_suffix(".pkl")
+        try:
+            self.corr_outfile = self.cache_directory / Path(self.correlations["correlation_output_file"])
+        except TypeError:
+            _logger.debug("correlations not defined")
+        else:
+            self.corr_pkl_file = self.corr_outfile.with_suffix(".pkl")
+            self.score_outfile = self.cache_directory / Path(self.correlations["score_output_file"])
+            self.score_pkl_file = self.score_outfile.with_suffix(".pkl")
 
         if reset is None:
             self.reset = None

@@ -210,22 +210,22 @@ def main():
             if var_df is None:
                 var_df = domain_analyses.variables
 
-        if cor_plot:
+        if cor_plot and correlations is not None:
             make_heatmap(correlations=correlations, image_directory=image_directory,
                          highcharts_directory=highcharts_directory, show_plots=args.show_plots,
                          cache_directory=cache_directory)
-        if cate_plot:
+        if cate_plot and categories is not None:
             make_conditional_pdf_plot(categories=categories, image_directory=image_directory,
                                       highcharts_directory=highcharts_directory,
                                       show_plots=args.show_plots,
                                       cache_directory=cache_directory)
-        if verdeling_plot:
+        if verdeling_plot and categories is not None:
             make_verdeling_per_aantal_categorie(categories=categories,
                                                 image_directory=image_directory,
                                                 highcharts_directory=highcharts_directory,
                                                 show_plots=args.show_plots,
                                                 cache_directory=cache_directory)
-        if score_plot:
+        if score_plot and correlations is not None:
             make_conditional_score_plot(correlations=correlations, image_directory=image_directory,
                                         highcharts_directory=highcharts_directory,
                                         show_plots=args.show_plots,
