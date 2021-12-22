@@ -691,6 +691,8 @@ class DomainPlotter(object):
             title = plot_prop.get("title")
             export_svg_cdf = False
             export_svg_bar = False
+            export_highcharts_cdf = self.export_highcharts
+            export_highcharts_bar = self.export_highcharts
             if self.cdf_plot:
                 plot_cdf = plot_prop.get("cdf_plot")
                 highcharts_directory_cdf = self.highcharts_directory
@@ -698,7 +700,10 @@ class DomainPlotter(object):
                     if hc_sub_dir := plot_cdf.get("highcharts_output_directory"):
                         highcharts_directory_cdf = highcharts_directory_cdf / Path(hc_sub_dir)
                     export_svg_cdf = plot_cdf.get("export_svg", False)
+                    export_hc_cdf = plot_cdf.get("export_highcarts")
                     plot_cdf = plot_cdf.get("apply", True)
+                    if export_hc_cdf is not None:
+                        export_highcharts_cdf = export_hc_cdf
             else:
                 plot_cdf = False
             tex_horizontal_shift = None
@@ -709,10 +714,15 @@ class DomainPlotter(object):
                     if hc_sub_dir := plot_bar.get("highcharts_output_directory"):
                         highcharts_directory_bar = highcharts_directory_bar / Path(hc_sub_dir)
                     export_svg_bar = plot_bar.get("export_svg", False)
+                    export_hc_bar = plot_cdf.get("export_highcarts")
                     tex_horizontal_shift = plot_bar.get("tex_horizontal_shift")
                     plot_bar = plot_bar.get("apply", True)
+                    if export_hc_bar is not None:
+                        export_highcharts_bar = export_hc_bar
             else:
                 plot_bar = False
+
+
             y_max_pdf_plot = plot_prop.get("y_max_pdf_plot", 10)
             y_spacing_pdf_plot = plot_prop.get("y_spacing_pdf_plot", 5)
             y_max_bar_plot = plot_prop.get("y_max_bar_plot")
@@ -807,7 +817,7 @@ class DomainPlotter(object):
                                                    y_max_bar_plot=y_max_bar_plot,
                                                    y_spacing_bar_plot=y_spacing_bar_plot,
                                                    translations=self.translations,
-                                                   export_highcharts=self.export_highcharts,
+                                                   export_highcharts=export_highcharts_bar,
                                                    export_svg=export_svg_bar,
                                                    highcharts_directory=highcharts_directory_bar,
                                                    title=title
@@ -837,7 +847,7 @@ class DomainPlotter(object):
                                                           y_max=y_max_pdf_plot,
                                                           y_spacing=y_spacing_pdf_plot,
                                                           translations=self.translations,
-                                                          export_highcharts=self.export_highcharts,
+                                                          export_highcharts=export_highcharts_bar,
                                                           export_svg=export_svg_cdf,
                                                           highcharts_directory=highcharts_directory_cdf,
                                                           title=title
