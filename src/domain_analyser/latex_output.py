@@ -84,6 +84,19 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
             ref_label = Command("label", NoEscape("fig:" + original_name))
             plots.append(ref_label)
 
-    file_name = image_directory / image_files.with_suffix("")
+    file_name = image_files.with_suffix("")
     _logger.info(f"Writing tex file list to {file_name}.tex")
     doc.generate_tex(filepath=file_name.as_posix())
+    new_lines = list()
+    start = False
+    with open(file_name.as_posix(), "r") as stream:
+        for line in stream.readlines():
+            if "figure" in line:
+                start = True
+            if "end{document}" in line:
+                start = False
+            if start:
+                new_lines.append(line)
+    with open(file_name.as_posix(), "w") as stream:
+        stream.writelines(new_lines)
+

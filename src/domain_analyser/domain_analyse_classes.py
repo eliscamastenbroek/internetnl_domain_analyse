@@ -722,7 +722,6 @@ class DomainPlotter(object):
             else:
                 plot_bar = False
 
-
             y_max_pdf_plot = plot_prop.get("y_max_pdf_plot", 10)
             y_spacing_pdf_plot = plot_prop.get("y_spacing_pdf_plot", 5)
             y_max_bar_plot = plot_prop.get("y_max_bar_plot")
