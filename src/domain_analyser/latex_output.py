@@ -87,6 +87,7 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
     file_name = image_files.with_suffix("")
     _logger.info(f"Writing tex file list to {file_name}.tex")
     doc.generate_tex(filepath=file_name.as_posix())
+    file_name = image_files.with_suffix(".tex")
     new_lines = list()
     start = False
     with open(file_name.as_posix(), "r") as stream:
