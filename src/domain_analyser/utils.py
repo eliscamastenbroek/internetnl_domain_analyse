@@ -96,7 +96,8 @@ def prepare_stat_data_for_write(all_stats, file_base, variables, module_key, var
     stat_df = reorganise_stat_df(records_stats=data, variables=variables,
                                  module_key=module_key,
                                  variable_key=variable_key,
-                                 n_digits=n_digits)
+                                 n_digits=n_digits,
+                                 sort_index=False)
     if breakdown_labels is not None:
         try:
             labels = breakdown_labels[file_base]
