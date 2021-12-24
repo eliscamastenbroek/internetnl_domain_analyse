@@ -38,7 +38,8 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
     """
     Maak latex ouput file met alle plaatjes
     Args:
-        all_plots: dict met eerste nivear variabele name, dan labels voor SBI, GK, dan file namen 
+        all_shifts:
+        all_plots: dict met eerste nivear variabele name, dan labels voor SBI, GK, dan file namen
         variables: dict met variabele eigenschappen
         image_directory: str
         tex_prepend_path: str

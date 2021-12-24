@@ -171,7 +171,7 @@ class DomainAnalyser(object):
 
         if mode in ("all", "statistics"):
             self.calculate_statistics()
-            if statistics_to_xls:
+            if statistics_to_xls or reset is not None:
                 self.write_statistics()
         if mode in ("all", "correlations"):
             self.calculate_correlations_and_scores()
