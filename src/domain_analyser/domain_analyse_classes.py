@@ -749,7 +749,7 @@ class DomainPlotter(object):
 
             plot_count = 0
             stop_plotting = False
-            for module_name, module_df in stats_df.groupby(level=0):
+            for module_name, module_df in stats_df.groupby(level=0, sort=False):
                 do_this_module = True
                 for mod_key, mod_prop in module_info.items():
                     if mod_prop.get('label') == module_name and not mod_prop.get('include', True):
@@ -760,7 +760,7 @@ class DomainPlotter(object):
                 _logger.info(f"Module {module_name}")
                 if stop_plotting:
                     break
-                for question_name, question_df in module_df.groupby(level=1):
+                for question_name, question_df in module_df.groupby(level=1, sort=False):
                     _logger.debug(f"Question {question_name}")
 
                     original_name = re.sub(r"_\d\.0$", "", question_df["variable"].values[0])
