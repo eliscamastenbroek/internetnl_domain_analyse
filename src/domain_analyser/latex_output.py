@@ -1,8 +1,6 @@
-import pandas as pd
 import logging
 
-from ict_analyser.shared.utils import variable_dict_to_df
-from pylatex import Document, Figure, NoEscape, Command
+from pylatex import Document, Figure, NoEscape, Command, SubFigure
 from pylatex.base_classes import Environment, CommandBase, Arguments
 from pylatex.package import Package
 
@@ -19,7 +17,6 @@ class ExampleEnvironment(Environment):
 
     _latex_name = 'exampleEnvironment'
     packages = [Package('mdframed')]
-
 
 class SubFloat(CommandBase):
     """
@@ -59,25 +56,29 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
         with doc.create(Figure(position="htb")) as plots:
             add_new_line = True
             for label, image_name in images.items():
-                if tex_prepend_path is None:
-                    full_image_name = image_name
-                else:
-                    full_image_name = tex_prepend_path / image_name
-                horizontal_shift = tex_horizontal_shift
-                if shift_props := all_shifts.get(original_name):
-                    if hz := shift_props.get(label):
-                        horizontal_shift = hz
-                _logger.debug(f"Adding {full_image_name}")
-                ref = "_".join([original_name, label.lower().replace(" ", "_")])
-                ref_sublabel = Command("label", NoEscape("fig:" + ref))
-                lab = Command("footnotesize", Arguments(label, ref_sublabel))
-                include_graphics = Command("includegraphics", NoEscape(full_image_name))
-                if horizontal_shift is not None:
-                    hspace = Command("hspace", Arguments(NoEscape(horizontal_shift), include_graphics))
-                sub_plot = SubFloat(
-                    options=[lab],
-                    arguments=Arguments(hspace))
-                plots.append(sub_plot)
+                with doc.create(SubFigure(width=NoEscape(r'\linewidth'))) as sub_plot:
+                    if tex_prepend_path is None:
+                        full_image_name = image_name
+                    else:
+                        full_image_name = tex_prepend_path / image_name
+                    horizontal_shift = tex_horizontal_shift
+                    if shift_props := all_shifts.get(original_name):
+                        if hz := shift_props.get(label):
+                            horizontal_shift = hz
+                    _logger.debug(f"Adding {full_image_name}")
+                    ref = "_".join([original_name, label.lower().replace(" ", "_")])
+                    ref_sublabel = Command("label", NoEscape("fig:" + ref))
+                    lab = Command("footnotesize", Arguments(label))
+                    include_graphics = Command("includegraphics", NoEscape(full_image_name))
+                    if horizontal_shift is not None:
+                        include_graphics = Command("hspace", Arguments(NoEscape(horizontal_shift),
+                                                             include_graphics))
+                    #sub_plot = SubFloat(
+                    #    options=[lab],
+                    #    arguments=Arguments(hspace))
+                    sub_plot.append(include_graphics)
+                    sub_plot.add_caption(lab)
+                    sub_plot.append(ref_sublabel)
                 if add_new_line:
                     plots.append(Command("newline"))
                     add_new_line = False
@@ -101,4 +102,3 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
                 new_lines.append(line)
     with open(file_name.as_posix(), "w") as stream:
         stream.writelines(new_lines)
-
