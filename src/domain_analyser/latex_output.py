@@ -48,11 +48,17 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
     else:
         full_image_directory = tex_prepend_path / image_directory
 
-    doc = Document(default_filepath=full_image_directory)
+    doc_per_module = dict()
 
     for original_name, images in all_plots.items():
         _logger.debug(f"Adding {original_name}")
         caption = variables.loc[original_name, "label"]
+        module = variables.loc[original_name, "module"]
+        try:
+            doc = doc_per_module[module]
+        except KeyError:
+            doc = Document(default_filepath=full_image_directory)
+            doc_per_module[module] = doc
         with doc.create(Figure(position="htb")) as plots:
             add_new_line = True
             for label, image_name in images.items():
@@ -86,19 +92,20 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
             ref_label = Command("label", NoEscape("fig:" + original_name))
             plots.append(ref_label)
 
-    file_name = image_files.with_suffix("")
-    _logger.info(f"Writing tex file list to {file_name}.tex")
-    doc.generate_tex(filepath=file_name.as_posix())
-    file_name = image_files.with_suffix(".tex")
-    new_lines = list()
-    start = False
-    with open(file_name.as_posix(), "r") as stream:
-        for line in stream.readlines():
-            if "figure" in line:
-                start = True
-            if "end{document}" in line:
-                start = False
-            if start:
-                new_lines.append(line)
-    with open(file_name.as_posix(), "w") as stream:
-        stream.writelines(new_lines)
+    for module, doc in doc_per_module.items():
+        file_name = "_".join([image_files.with_suffix(""), module])
+        _logger.info(f"Writing tex file list to {file_name}.tex")
+        doc.generate_tex(filepath=file_name.as_posix())
+        file_name = image_files.with_suffix(".tex")
+        new_lines = list()
+        start = False
+        with open(file_name.as_posix(), "r") as stream:
+            for line in stream.readlines():
+                if "figure" in line:
+                    start = True
+                if "end{document}" in line:
+                    start = False
+                if start:
+                    new_lines.append(line)
+        with open(file_name.as_posix(), "w") as stream:
+            stream.writelines(new_lines)
