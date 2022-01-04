@@ -3,6 +3,7 @@ import logging
 from pylatex import Document, Figure, NoEscape, Command, SubFigure
 from pylatex.base_classes import Environment, CommandBase, Arguments
 from pylatex.package import Package
+from pathlib import Path
 
 _logger = logging.getLogger(__name__)
 
@@ -93,7 +94,7 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
             plots.append(ref_label)
 
     for module, doc in doc_per_module.items():
-        file_name = "_".join([image_files.with_suffix(""), module])
+        file_name = Path("_".join([image_files.with_suffix("").as_posix(), module]))
         _logger.info(f"Writing tex file list to {file_name}.tex")
         doc.generate_tex(filepath=file_name.as_posix())
         file_name = image_files.with_suffix(".tex")
