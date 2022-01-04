@@ -19,6 +19,7 @@ class ExampleEnvironment(Environment):
     _latex_name = 'exampleEnvironment'
     packages = [Package('mdframed')]
 
+
 class SubFloat(CommandBase):
     """
     A class representing a custom LaTeX command.
@@ -79,8 +80,8 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
                     include_graphics = Command("includegraphics", NoEscape(full_image_name))
                     if horizontal_shift is not None:
                         include_graphics = Command("hspace", Arguments(NoEscape(horizontal_shift),
-                                                             include_graphics))
-                    #sub_plot = SubFloat(
+                                                                       include_graphics))
+                    # sub_plot = SubFloat(
                     #    options=[lab],
                     #    arguments=Arguments(hspace))
                     sub_plot.append(include_graphics)
@@ -97,7 +98,7 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
         file_name = Path("_".join([image_files.with_suffix("").as_posix(), module]))
         _logger.info(f"Writing tex file list to {file_name}.tex")
         doc.generate_tex(filepath=file_name.as_posix())
-        file_name = image_files.with_suffix(".tex")
+        file_name = file_name.with_suffix(".tex")
         new_lines = list()
         start = False
         with open(file_name.as_posix(), "r") as stream:
