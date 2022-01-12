@@ -38,7 +38,7 @@ def make_cdf_plot(hist,
                   translations=None,
                   export_highcharts=None,
                   export_svg=False,
-                  highcharts_directory: str = None,
+                  highcharts_directory: Path = None,
                   title: str = None
                   ):
     figure_properties = CBSPlotSettings()

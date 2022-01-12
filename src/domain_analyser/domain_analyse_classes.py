@@ -16,7 +16,7 @@ import yaml
 
 from domain_analyser.domain_plots import (make_cdf_plot, make_bar_plot)
 from domain_analyser.utils import (read_tables_from_sqlite,
-                                   get_domain,
+                                   get_clean_url,
                                    fill_booleans,
                                    prepare_stat_data_for_write,
                                    get_option_mask,
@@ -125,13 +125,15 @@ class DomainAnalyser(object):
         self.score_outfile = None
         self.score_pkl_file = None
         try:
-            self.cate_outfile = self.cache_directory / Path(self.categories["categories_output_file"])
+            self.cate_outfile = self.cache_directory / Path(
+                self.categories["categories_output_file"])
         except TypeError:
             _logger.debug("categories not defined")
         else:
             self.cate_pkl_file = self.cate_outfile.with_suffix(".pkl")
         try:
-            self.corr_outfile = self.cache_directory / Path(self.correlations["correlation_output_file"])
+            self.corr_outfile = self.cache_directory / Path(
+                self.correlations["correlation_output_file"])
         except TypeError:
             _logger.debug("correlations not defined")
         else:
@@ -432,7 +434,7 @@ class DomainAnalyser(object):
             except KeyError:
                 categories[categorie] = [col_name]
 
-        # bereken de score per category en vergelijk met de internet.nl score
+        # bereken de score per category en vergelijk met de internet.nl-score
         self.score_df = self.dataframe[["percentage"]].copy() / 100
         self.score_df.rename(columns={"percentage": "score"}, inplace=True)
         for categorie, columns in categories.items():
@@ -521,9 +523,6 @@ class DomainAnalyser(object):
             records = read_tables_from_sqlite(self.records_filename, self.records_tables_names,
                                               index_name)
 
-            records[self.url_key] = [get_domain(url) for url in records[self.url_key]]
-            records.reset_index(inplace=True)
-
             table_names = ["report", "scoring", "status", "results"]
             index_name = "index"
             _logger.info(f"Reading tables {table_names} from {self.internet_nl_filename}")
@@ -531,8 +530,6 @@ class DomainAnalyser(object):
             _logger.info(f"Done")
             tables.reset_index(inplace=True)
             tables.rename(columns=dict(index=self.url_key), inplace=True)
-
-            tables[self.url_key] = [get_domain(url) for url in tables[self.url_key]]
 
             if self.translations is not None:
                 tables = fill_booleans(tables, self.translations, variables=self.variables)
@@ -564,11 +561,35 @@ class DomainAnalyser(object):
                 elif var_type in ("bool", "percentage", "float"):
                     tables[column] = tables[column].astype('float64')
 
-            self.dataframe = pd.merge(left=records, right=tables, on=self.url_key)
+            # hier gaan we de url name opschonen. sla eerst de oorsponkelijke url op
+            original_url = "_".join([self.url_key, "original"])
+            records[original_url] = records[self.url_key]
+            tables[original_url] = tables[self.url_key]
+
+            records[self.url_key] = [get_clean_url(url) for url in records[self.url_key]]
+            records.dropna(subset=[self.url_key], axis=0, inplace=True)
+            records.reset_index(inplace=True)
+            tables[self.url_key] = [get_clean_url(url) for url in tables[self.url_key]]
+
+            duplicated = tables[self.url_key].duplicated(keep='first')
+            tables = tables[~duplicated]
+            tables.dropna(subset=[self.url_key], axis=0, inplace=True)
+            tables.dropna(how='all', axis=1, inplace=True)
+
+            # doe een left join omdat meerdere be's dezelfde url kunnen hebben. Dit is sowieso
+            # het geval voor holdings. Dan moeten we de score van hodlings ook meerdere keren
+            # meenemen
+            self.dataframe = pd.merge(left=records, right=tables, on=self.url_key, how='left')
             self.dataframe.dropna(subset=[self.weight_key], axis='index', how='any', inplace=True)
+            try:
+                has_url = self.dataframe['url'].notnull()
+            except KeyError as err:
+                _logger.warning(err)
+            else:
+                self.dataframe = self.dataframe[has_url]
             mask = self.dataframe[self.be_id].duplicated()
             self.dataframe = self.dataframe[~mask]
-            self.dataframe.set_index(self.be_id)
+            self.dataframe.set_index(self.be_id, inplace=True, drop=True)
             _logger.info(f"Writing {self.dataframe.index.size} records to "
                          f"cache {self.cache_file.absolute()}")
             with open(str(self.cache_file), "wb") as stream:
