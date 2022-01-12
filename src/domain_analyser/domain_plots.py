@@ -424,7 +424,7 @@ def make_conditional_score_plot(correlations,
         category_label = index_labels[categorie_key]
         score_per_category[category_label] = df.mean()
 
-    score_per_category_df = pd.DataFrame(score_per_category).T
+    score_per_category_df = pd.DataFrame(score_per_category).T * 100
 
     plot_title = "Score per categorie"
     y_label = "Score"
@@ -432,14 +432,15 @@ def make_conditional_score_plot(correlations,
     settings = CBSPlotSettings(color_palette="koelextended")
     fig, axis = plt.subplots()
     fig.subplots_adjust(bottom=0.3, top=0.92)
-    score_per_category_df.plot.bar(ax=axis, rot=0, stacked=True, edgecolor="white", linewidth=1.5)
+    score_per_category_df.plot.bar(ax=axis, rot=0, stacked=False, edgecolor="white", linewidth=1.5)
     yticks = axis.get_yticks()
-    axis.set_ylim((yticks[0], yticks[-1]))
+    #axis.set_ylim((yticks[0], yticks[-1]))
+    axis.set_ylim((0, 100))
 
     axis.set_xlabel("Scorecategorie", rotation="horizontal", horizontalalignment="right")
     axis.xaxis.set_label_coords(0.98, -0.15)
 
-    axis.set_ylabel("Genormaliseerde score per categorie",
+    axis.set_ylabel("Genormaliseerde score per categorie [%]",
                     rotation="horizontal", horizontalalignment="left")
     axis.yaxis.set_label_coords(-0.065, 1.07)
     axis.xaxis.grid(False)
