@@ -124,6 +124,7 @@ class DomainAnalyser(object):
         self.corr_pkl_file = None
         self.score_outfile = None
         self.score_pkl_file = None
+        plot_info = self.correlations["plots"]
         try:
             self.cate_outfile = self.cache_directory / Path(
                 self.categories["categories_output_file"])
@@ -133,12 +134,12 @@ class DomainAnalyser(object):
             self.cate_pkl_file = self.cate_outfile.with_suffix(".pkl")
         try:
             self.corr_outfile = self.cache_directory / Path(
-                self.correlations["correlation_output_file"])
+                plot_info["correlation"]["output_file"])
         except TypeError:
             _logger.debug("correlations not defined")
         else:
             self.corr_pkl_file = self.corr_outfile.with_suffix(".pkl")
-            self.score_outfile = self.cache_directory / Path(self.correlations["score_output_file"])
+            self.score_outfile = self.cache_directory / Path(plot_info["scores_per_interval"]["output_file"])
             self.score_pkl_file = self.score_outfile.with_suffix(".pkl")
 
         if reset is None:
@@ -329,6 +330,26 @@ class DomainAnalyser(object):
 
         return all_stats, all_hist
 
+    def get_correct_categories_count(self):
+        """ bekijk per record hoeveel categorieen goed zijn en geef terug als dataframe """
+
+        col_sel = list()
+
+        for cat_key, cat_prop in self.categories["index_categories"].items():
+            variable = cat_prop["variable"]
+            col_sel.append(variable)
+
+        _logger.debug(f"make selection\n{col_sel}")
+        data_df: pd.DataFrame = self.dataframe[col_sel]
+
+        # alleen 1 wordt als succes beschouwd
+        data_df = data_df == 1
+
+        count = data_df.sum(axis=1)
+        count = count.rename("count")
+
+        return data_df, count
+
     def calculate_categories(self):
         if self.cate_pkl_file.exists() and self.reset is None:
             _logger.info(f"Cache {self.cate_pkl_file} and already exist. "
@@ -339,24 +360,11 @@ class DomainAnalyser(object):
             raise ValueError(msg)
 
         _logger.info("Calculating cateogires")
-        col_sel = list()
-
-        for cat_key, cat_prop in self.categories["index_categories"].items():
-            variable = cat_prop["variable"]
-            col_sel.append(variable)
 
         score_df = self.dataframe["percentage"].copy()
-        weights = self.dataframe[self.weight_key].copy()
         score_df = score_df.rename("score")
-
-        _logger.debug(f"make selection\n{col_sel}")
-        data_df: pd.DataFrame = self.dataframe[col_sel]
-
-        # alleen 1 wordt als succes beschouwd
-        data_df = data_df == 1
-
-        count = data_df.sum(axis=1)
-        count = count.rename("count")
+        weights = self.dataframe[self.weight_key].copy()
+        data_df, count = self.get_correct_categories_count()
 
         tot = pd.concat([score_df, count], axis=1)
 
@@ -415,6 +423,8 @@ class DomainAnalyser(object):
             msg = "For correlations you need the microdata. Run with --reset 1"
             raise ValueError(msg)
 
+        data_df_count, count = self.get_correct_categories_count()
+
         index_columns = self.correlations["index_correlations"]
 
         _logger.info("Calculating correlations")
@@ -426,7 +436,7 @@ class DomainAnalyser(object):
         # alleen 1 wordt als succes beschouwd
         data_df = data_df == 1
 
-        # verkrijg de categorien van variabele met hoge correlatie
+        # verkrijg de categorieën van variabele met hoge correlatie
         categories = dict()
         for col_name, categorie in index_columns.items():
             try:
@@ -441,6 +451,8 @@ class DomainAnalyser(object):
             selection = data_df[columns]
             max_score = len(columns)
             self.score_df[categorie] = selection.sum(axis=1) / max_score
+
+        self.score_df = pd.concat([self.score_df, count], axis=1)
 
         desc = data_df.describe()
         _logger.debug(f"making descr\n{desc}")

@@ -386,29 +386,126 @@ def make_conditional_score_plot(correlations,
                                 title=None,
                                 cache_directory=None
                                 ):
-    outfile = Path(correlations["score_output_file"])
-    if cache_directory is not None:
-        outfile = Path(cache_directory) / outfile
-    in_file = outfile.with_suffix(".pkl")
-
-    if highcharts_directory is None:
-        highcharts_directory = Path(".")
-
-    if hc_sub_dir := correlations.get("highcharts_output_directory"):
-        highcharts_directory = highcharts_directory / Path(hc_sub_dir)
-
-    _logger.info(f"Reading scores from {in_file}")
-    scores = pd.read_pickle(in_file.with_suffix(".pkl"))
+    plot_info = correlations["plots"]
 
     index_labels = correlations["index_labels"]
     categories = correlations["index_categories"]
-
     score_intervallen = correlations["score_intervallen"]
 
-    im_file = image_directory / Path(outfile.stem).with_suffix(".pdf")
+    for plot_key, plot_prop in plot_info.items():
+
+        # we maken hier alleen de score plots
+        if plot_key not in ("scores_per_interval", "scores_per_number_correct") or \
+                not plot_prop.get("do_it", True):
+            continue
+
+        outfile = Path(plot_prop["output_file"])
+        if cache_directory is not None:
+            outfile = Path(cache_directory) / outfile
+        in_file = outfile.with_suffix(".pkl")
+
+        if highcharts_directory is None:
+            highcharts_directory = Path(".")
+
+        if hc_sub_dir := plot_prop.get("highcharts_output_directory"):
+            highcharts_directory = highcharts_directory / Path(hc_sub_dir)
+
+        _logger.info(f"Reading scores from {in_file}")
+        scores = pd.read_pickle(in_file.with_suffix(".pkl"))
+
+        if plot_key == "scores_per_interval":
+            im_file_base = "_".join([outfile.stem, "per_score_interval"])
+            im_file = image_directory / Path(im_file_base).with_suffix(".pdf")
+            plot_score_per_interval(scores=scores,
+                                    score_intervallen=score_intervallen,
+                                    index_labels=index_labels,
+                                    categories=categories,
+                                    highcharts_directory=highcharts_directory,
+                                    im_file=im_file,
+                                    show_plots=show_plots)
+        elif plot_key == "scores_per_number_correct":
+            im_file_base = "_".join([outfile.stem, "per_count_interval"])
+            im_file = image_directory / Path(im_file_base).with_suffix(".pdf")
+            plot_score_per_count(scores=scores,
+                                 categories=categories,
+                                 highcharts_directory=highcharts_directory,
+                                 im_file=im_file,
+                                 show_plots=show_plots)
+
+
+def plot_score_per_count(scores, categories, highcharts_directory, im_file, show_plots):
+    _logger.info("Plot score per count")
+    # add a new columns with the interval label belonging to the gk code bin. Note that we
+    # merge all the grootte klass below 40 to a group smaller than 10
+
+    score_per_category = dict()
+    for categorie_key, category_df in scores.groupby("count"):
+        _logger.debug(f"Plotting {categorie_key}")
+        df = category_df[list(categories.keys())]
+        score_per_category[categorie_key] = df.mean()
+
+    score_per_category_df = pd.DataFrame(score_per_category).T * 100
+
+    plot_title = "Score per count"
+    y_label = "Score"
+
+    settings = CBSPlotSettings(color_palette="koelextended")
+    fig, axis = plt.subplots()
+    fig.subplots_adjust(bottom=0.3, top=0.92)
+    score_per_category_df.plot.bar(ax=axis, rot=0, stacked=False, edgecolor="white", linewidth=1.5)
+    yticks = axis.get_yticks()
+    # axis.set_ylim((yticks[0], yticks[-1]))
+    axis.set_ylim((0, 100))
+
+    axis.set_xlabel("# categorieën goed", rotation="horizontal", horizontalalignment="right")
+    axis.xaxis.set_label_coords(0.98, -0.15)
+
+    axis.set_ylabel("Genormaliseerde score per categorie [%]",
+                    rotation="horizontal", horizontalalignment="left")
+    axis.yaxis.set_label_coords(-0.065, 1.07)
+    axis.xaxis.grid(False)
+    sns.despine(ax=axis, left=True)
+
+    # niet meer volgens de richtlijnen
+    # add_values_to_bars(axis=axis, color="w")
+
+    sns.despine(ax=axis, left=True)
+
+    axis.tick_params(which="both", bottom=False)
+
+    add_axis_label_background(fig=fig, axes=axis, loc="south")
+
+    ncol = (score_per_category_df.columns.size - 1) // 2 + 1
+
+    legend = axis.legend(loc="lower left",
+                         bbox_to_anchor=(0.105, -0.00), frameon=False,
+                         bbox_transform=fig.transFigure, ncol=ncol)
+
+    _logger.info(f"Writing score plot to {im_file}")
+    fig.savefig(im_file.as_posix())
+
+    highcharts_directory.mkdir(exist_ok=True, parents=True)
+
+    CBSHighChart(
+        data=score_per_category_df,
+        chart_type="column_grouped_stacked",
+        output_directory=highcharts_directory.as_posix(),
+        output_file_name=im_file.stem,
+        ylabel=y_label,
+        title=plot_title,
+        enable_legend=False,
+    )
+
+    if show_plots:
+        plt.show()
+
+    _logger.debug("Klaar")
+
+
+def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
+                            highcharts_directory, im_file, show_plots):
     score_labels = list(score_intervallen.keys())
     score_bins = list([s / 100 for s in score_intervallen.values()]) + [1.01]
-
     # add a new columns with the interval label belonging to the gk code bin. Note that we
     # merge all the grootte klass below 40 to a group smaller than 10
     scores["score_category"] = pd.cut(scores["score"],
@@ -434,7 +531,7 @@ def make_conditional_score_plot(correlations,
     fig.subplots_adjust(bottom=0.3, top=0.92)
     score_per_category_df.plot.bar(ax=axis, rot=0, stacked=False, edgecolor="white", linewidth=1.5)
     yticks = axis.get_yticks()
-    #axis.set_ylim((yticks[0], yticks[-1]))
+    # axis.set_ylim((yticks[0], yticks[-1]))
     axis.set_ylim((0, 100))
 
     axis.set_xlabel("Scorecategorie", rotation="horizontal", horizontalalignment="right")
