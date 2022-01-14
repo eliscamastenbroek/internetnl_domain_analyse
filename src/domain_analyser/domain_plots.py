@@ -593,7 +593,8 @@ def make_heatmap(correlations, image_directory,
                  title=None,
                  cache_directory=None
                  ):
-    outfile = Path(correlations["correlation_output_file"])
+    plot_properties = correlations["plots"]["correlation"]
+    outfile = Path(plot_properties["output_file"])
     if cache_directory is not None:
         outfile = Path(cache_directory) / outfile
 
@@ -602,7 +603,7 @@ def make_heatmap(correlations, image_directory,
     if highcharts_directory is None:
         highcharts_directory = Path(".")
 
-    if hc_sub_dir := correlations.get("highcharts_output_directory"):
+    if hc_sub_dir := plot_properties.get("highcharts_output_directory"):
         highcharts_directory = highcharts_directory / Path(hc_sub_dir)
 
     _logger.info(f"Reading correlation from {in_file}")
