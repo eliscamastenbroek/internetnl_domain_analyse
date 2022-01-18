@@ -800,7 +800,9 @@ class DomainPlotter(object):
                     original_name = re.sub(r"_\d\.0$", "", question_df["variable"].values[0])
                     question_type = variables.loc[original_name, "type"]
 
-                    hc_sub_dir, hc_sub_label = get_highcharts_info(variables, original_name)
+                    hc_sub_label, hc_sub_dir = get_highcharts_info(variables_df=variables,
+                                                                   var_name=original_name,
+                                                                   break_down_name=plot_key)
                     if hc_sub_dir is not None:
                         # we overschrijven hier de subdir die onder de statistiek opgegeven is
                         highcharts_directory_bar = self.highcharts_directory / hc_sub_dir
@@ -902,8 +904,8 @@ class DomainPlotter(object):
                         break
 
 
-def get_highcharts_info(variables_df, var_name):
-    """ in de variables dataframe  kunnen we ook expliciet de highcharts directory en highcharts
+def get_highcharts_info(variables_df, var_name, break_down_name):
+    """ in de variables dataframe  kunnen we ook uitdrukkelijk de highcharts directory en highcharts
     label opgeven per variabele. Zoek dat hier op """
     label = None
     directory = None
@@ -914,8 +916,13 @@ def get_highcharts_info(variables_df, var_name):
     else:
         info_per_breakdown = var_prop["info_per_breakdown"]
         if info_per_breakdown is not None:
-            directory = info_per_breakdown.get("highcharts_directory")
-            if directory is not None:
-                directory = Path(directory)
-            label = info_per_breakdown.get("highcharts_label")
+            try:
+                info = info_per_breakdown[break_down_name]
+            except KeyError:
+                _logger.debug(f"variable {var_name} does not have a breakdown defined")
+            else:
+                directory = info.get("highcharts_directory")
+                if directory is not None:
+                    directory = Path(directory)
+                label = info.get("highcharts_label")
     return label, directory

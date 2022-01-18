@@ -205,6 +205,7 @@ def impose_variable_defaults(variables,
             try:
                 variables.loc[var_key, name] = var_prop[name]
             except ValueError:
+                # de info_per_breakdown is een dictionary die we met 'at' moeten imposen
                 variables.at[var_key, name] = var_prop.get(name)
             except KeyError:
                 pass
