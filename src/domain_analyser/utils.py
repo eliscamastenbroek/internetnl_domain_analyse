@@ -180,6 +180,7 @@ def impose_variable_defaults(variables,
     variables["check"] = False
     variables["optional"] = False
     variables["no_impute"] = False
+    variables["info_per_breakdown"] = None
 
     variables["gewicht"] = "units"
     # variables["filter"] = ""
@@ -200,11 +201,11 @@ def impose_variable_defaults(variables,
         for name in (
                 "type", "fixed", "original_name", "question", "label", "check", "optional",
                 "gewicht",
-                "no_impute"):
+                "no_impute", "info_per_breakdown"):
             try:
-
                 variables.loc[var_key, name] = var_prop[name]
-
+            except ValueError:
+                variables.at[var_key, name] = var_prop.get(name)
             except KeyError:
                 pass
         # separately get the options field as that contains a dict and therefore can not be

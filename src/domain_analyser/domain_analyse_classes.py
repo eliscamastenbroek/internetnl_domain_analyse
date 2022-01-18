@@ -139,7 +139,8 @@ class DomainAnalyser(object):
             _logger.debug("correlations not defined")
         else:
             self.corr_pkl_file = self.corr_outfile.with_suffix(".pkl")
-            self.score_outfile = self.cache_directory / Path(plot_info["scores_per_interval"]["output_file"])
+            self.score_outfile = self.cache_directory / Path(
+                plot_info["scores_per_interval"]["output_file"])
             self.score_pkl_file = self.score_outfile.with_suffix(".pkl")
 
         if reset is None:
@@ -799,6 +800,13 @@ class DomainPlotter(object):
                     original_name = re.sub(r"_\d\.0$", "", question_df["variable"].values[0])
                     question_type = variables.loc[original_name, "type"]
 
+                    hc_sub_dir, hc_sub_label = get_highcharts_info(variables, original_name)
+                    if hc_sub_dir is not None:
+                        # we overschrijven hier de subdir die onder de statistiek opgegeven is
+                        highcharts_directory_bar = self.highcharts_directory / hc_sub_dir
+                    if hc_sub_label is not None:
+                        title = hc_sub_label
+
                     if original_name not in self.all_plots.keys():
                         _logger.debug(f"Initialize dict for {original_name}")
                         self.all_plots[original_name] = dict()
@@ -892,3 +900,22 @@ class DomainPlotter(object):
                         _logger.info(f"Maximum number of plot ({self.max_plots}) reached")
                         stop_plotting = True
                         break
+
+
+def get_highcharts_info(variables_df, var_name):
+    """ in de variables dataframe  kunnen we ook expliciet de highcharts directory en highcharts
+    label opgeven per variabele. Zoek dat hier op """
+    label = None
+    directory = None
+    try:
+        var_prop = variables_df.loc[var_name]
+    except KeyError:
+        _logger.debug(f"could not find variable {var_name} in variables datafrrame")
+    else:
+        info_per_breakdown = var_prop["info_per_breakdown"]
+        if info_per_breakdown is not None:
+            directory = info_per_breakdown.get("highcharts_directory")
+            if directory is not None:
+                directory = Path(directory)
+            label = info_per_breakdown.get("highcharts_label")
+    return label, directory
