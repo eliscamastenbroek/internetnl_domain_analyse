@@ -33,7 +33,7 @@ class SubFloat(CommandBase):
 
 def make_latex_overview(all_plots, variables, image_directory, image_files,
                         tex_horizontal_shift="-2cm", tex_prepend_path=None,
-                        all_shifts=None):
+                        all_shifts=None, bovenschrift=False):
     """
     Maak latex ouput file met alle plaatjes
     Args:
@@ -44,6 +44,8 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
         tex_prepend_path: str
         image_files:
         tex_horizontal_shift: verschuiving naar links
+        bovenschrift: boolean
+            Voeg caption bovenaan figuren
     """
     if tex_prepend_path is None:
         full_image_directory = image_directory
@@ -63,9 +65,11 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
             doc_per_module[module] = doc
         with doc.create(Figure(position="htb")) as plots:
             add_new_line = True
-            plots.add_caption(caption)
-            ref_label = Command("label", NoEscape("fig:" + original_name))
-            plots.append(ref_label)
+            if bovenschrift:
+                # hiermee worden caption boven toegevoegd, maar ik wil hier vanaf gaan wijken.
+                plots.add_caption(caption)
+                ref_label = Command("label", NoEscape("fig:" + original_name))
+                plots.append(ref_label)
             for label, image_name in images.items():
                 with doc.create(SubFigure(width=NoEscape(r'\linewidth'))) as sub_plot:
                     if tex_prepend_path is None:
@@ -93,6 +97,11 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
                 if add_new_line:
                     plots.append(Command("newline"))
                     add_new_line = False
+            if not bovenschrift:
+                # voeg een onderschrift toe
+                plots.add_caption(caption)
+                ref_label = Command("label", NoEscape("fig:" + original_name))
+                plots.append(ref_label)
 
     for module, doc in doc_per_module.items():
         file_name = Path("_".join([image_files.with_suffix("").as_posix(), module]))

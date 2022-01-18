@@ -341,7 +341,8 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     _logger.info(f"Saving plot {image_file_name}")
     fig.savefig(image_file)
 
-    highcharts_directory.mkdir(exist_ok=True, parents=True)
+    if highcharts_directory is not None:
+        highcharts_directory.mkdir(exist_ok=True, parents=True)
     if export_svg:
         # met export highcharts gaan we ook een svg exporten
         svg_image_file = highcharts_directory / Path("_".join([plot_key, image_name + ".svg"]))

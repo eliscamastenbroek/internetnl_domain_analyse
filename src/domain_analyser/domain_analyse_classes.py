@@ -722,11 +722,13 @@ class DomainPlotter(object):
 
             stats_df = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key)
 
-            title = plot_prop.get("title")
+            highcharts_title = plot_prop.get("title")
             export_svg_cdf = False
             export_svg_bar = False
             export_highcharts_cdf = self.export_highcharts
             export_highcharts_bar = self.export_highcharts
+            highcharts_directory_cdf = None
+            highcharts_directory_bar = None
             if self.cdf_plot:
                 plot_cdf = plot_prop.get("cdf_plot")
                 highcharts_directory_cdf = self.highcharts_directory
@@ -805,9 +807,15 @@ class DomainPlotter(object):
                                                                    break_down_name=plot_key)
                     if hc_sub_dir is not None:
                         # we overschrijven hier de subdir die onder de statistiek opgegeven is
-                        highcharts_directory_bar = self.highcharts_directory / hc_sub_dir
+                        highcharts_directory = self.highcharts_directory / hc_sub_dir
+                        export_highcharts = export_highcharts_bar
+                    else:
+                        highcharts_directory = None
+                        export_highcharts = False
                     if hc_sub_label is not None:
                         title = hc_sub_label
+                    else:
+                        title = highcharts_title
 
                     if original_name not in self.all_plots.keys():
                         _logger.debug(f"Initialize dict for {original_name}")
@@ -859,9 +867,9 @@ class DomainPlotter(object):
                                                    y_max_bar_plot=y_max_bar_plot,
                                                    y_spacing_bar_plot=y_spacing_bar_plot,
                                                    translations=self.translations,
-                                                   export_highcharts=export_highcharts_bar,
+                                                   export_highcharts=export_highcharts,
                                                    export_svg=export_svg_bar,
-                                                   highcharts_directory=highcharts_directory_bar,
+                                                   highcharts_directory=highcharts_directory,
                                                    title=title
                                                    )
 
