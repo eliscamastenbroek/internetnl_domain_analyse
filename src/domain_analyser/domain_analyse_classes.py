@@ -802,20 +802,30 @@ class DomainPlotter(object):
                     original_name = re.sub(r"_\d\.0$", "", question_df["variable"].values[0])
                     question_type = variables.loc[original_name, "type"]
 
-                    hc_sub_label, hc_sub_dir = get_highcharts_info(variables_df=variables,
-                                                                   var_name=original_name,
-                                                                   break_down_name=plot_key)
-                    if hc_sub_dir is not None:
+                    hc_info = HighchartsInfo(variables_df=variables,
+                                             var_name=original_name,
+                                             breakdown_name=plot_key)
+                    if hc_info.directory is not None:
                         # we overschrijven hier de subdir die onder de statistiek opgegeven is
-                        highcharts_directory = self.highcharts_directory / hc_sub_dir
+                        highcharts_directory = self.highcharts_directory / hc_info.directory
                         export_highcharts = export_highcharts_bar
                     else:
                         highcharts_directory = None
                         export_highcharts = False
-                    if hc_sub_label is not None:
-                        title = hc_sub_label
+                    if hc_info.label is not None:
+                        title = hc_info.label
                     else:
                         title = highcharts_title
+
+                    if hc_info.y_max is not None:
+                        y_max = hc_info.y_max
+                    else:
+                        y_max = y_max_bar_plot
+
+                    if hc_info.y_spacing is not None:
+                        y_spacing = hc_info.y_spacing
+                    else:
+                        y_spacing = y_spacing_bar_plot
 
                     if original_name not in self.all_plots.keys():
                         _logger.debug(f"Initialize dict for {original_name}")
@@ -864,8 +874,8 @@ class DomainPlotter(object):
                                                    barh=self.barh,
                                                    subplot_adjust=subplot_adjust,
                                                    sort_values=sort_values,
-                                                   y_max_bar_plot=y_max_bar_plot,
-                                                   y_spacing_bar_plot=y_spacing_bar_plot,
+                                                   y_max_bar_plot=y_max,
+                                                   y_spacing_bar_plot=y_spacing,
                                                    translations=self.translations,
                                                    export_highcharts=export_highcharts,
                                                    export_svg=export_svg_bar,
@@ -887,6 +897,7 @@ class DomainPlotter(object):
                                                           grp_key=grp_key,
                                                           module_name=module_name,
                                                           question_name=question_name,
+                                                          image_file_base=original_name,
                                                           image_directory=self.image_directory,
                                                           show_plots=self.show_plots,
                                                           figsize=figsize,
@@ -912,25 +923,39 @@ class DomainPlotter(object):
                         break
 
 
-def get_highcharts_info(variables_df, var_name, break_down_name):
-    """ in de variables dataframe  kunnen we ook uitdrukkelijk de highcharts directory en highcharts
-    label opgeven per variabele. Zoek dat hier op """
-    label = None
-    directory = None
-    try:
-        var_prop = variables_df.loc[var_name]
-    except KeyError:
-        _logger.debug(f"could not find variable {var_name} in variables datafrrame")
-    else:
-        info_per_breakdown = var_prop["info_per_breakdown"]
-        if info_per_breakdown is not None:
-            try:
-                info = info_per_breakdown[break_down_name]
-            except KeyError:
-                _logger.debug(f"variable {var_name} does not have a breakdown defined")
-            else:
-                directory = info.get("highcharts_directory")
-                if directory is not None:
-                    directory = Path(directory)
-                label = info.get("highcharts_label")
-    return label, directory
+class HighchartsInfo:
+    def __init__(self, variables_df, var_name, breakdown_name):
+        self.variables_df = variables_df
+        self.var_name = var_name
+        self.breakdown_name = breakdown_name
+
+        self.label = None
+        self.directory = None
+        self.y_max = None
+        self.y_spacing = None
+
+        self.get_highcharts_info()
+
+    def get_highcharts_info(self):
+        """ in de variables dataframe  kunnen we ook uitdrukkelijk de highcharts directory en highcharts
+        label opgeven per variabele. Zoek dat hier op """
+        label = None
+        directory = None
+        try:
+            var_prop = self.variables_df.loc[self.var_name]
+        except KeyError:
+            _logger.debug(f"could not find variable {self.var_name} in variables datafrrame")
+        else:
+            info_per_breakdown = var_prop["info_per_breakdown"]
+            if info_per_breakdown is not None:
+                try:
+                    info = info_per_breakdown[self.breakdown_name]
+                except KeyError:
+                    _logger.debug(f"variable {self.var_name} does not have a breakdown defined")
+                else:
+                    self.directory = info.get("highcharts_directory")
+                    if self.directory is not None:
+                        self.directory = Path(self.directory)
+                    self.label = info.get("highcharts_label")
+                    self.y_max = info.get("y_max")
+                    self.y_spacing = info.get("y_spacing")

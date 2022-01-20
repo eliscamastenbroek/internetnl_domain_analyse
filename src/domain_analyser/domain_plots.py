@@ -29,6 +29,7 @@ def make_cdf_plot(hist,
                   show_plots=False,
                   figsize=None,
                   image_type=None,
+                  image_file_base=None,
                   cummulative=False,
                   reference_lines=None,
                   xoff=None,
@@ -137,8 +138,7 @@ def make_cdf_plot(hist,
 
     plot_title = " - ".join([fnc_str, module_name, question_name, plot_key, grp_key])
 
-    image_name = re.sub("\s", "_", plot_title.replace(" - ", "_"))
-    image_name = re.sub(":_.*$", "", image_name)
+    image_name = "_".join([fnc_str, image_file_base])
     image_file = image_directory / Path("_".join([plot_key, image_name + image_type]))
     image_file_name = image_file.as_posix()
     _logger.info(f"Saving plot {image_file_name}")
