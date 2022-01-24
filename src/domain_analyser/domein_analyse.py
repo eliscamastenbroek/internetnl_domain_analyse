@@ -79,6 +79,12 @@ def parse_args():
                         help="Directory waar alle highcharts naar toe geschreven wordt")
     parser.add_argument("--mode", choices=MODES, default="statistics",
                         help="Type  analyse die we doen")
+    parser.add_argument("--bovenschrift", action="store_true",
+                        help="De latex overview file krijgt de captions boven de figuren",
+                        default=True)
+    parser.add_argument("--onderschrift", action="store_false", dest="bovenschrift",
+                        help="De latex overview file krijgt de captions boven de figuren",
+                        default=False)
 
     parsed_arguments = parser.parse_args()
 
@@ -253,7 +259,8 @@ def main():
                 translations=label_translations,
                 export_highcharts=args.export_highcharts,
                 highcharts_directory=highcharts_directory,
-                tex_horizontal_shift=tex_horizontal_shift
+                tex_horizontal_shift=tex_horizontal_shift,
+                bovenschrift=args.bovenschrift
             )
 
 

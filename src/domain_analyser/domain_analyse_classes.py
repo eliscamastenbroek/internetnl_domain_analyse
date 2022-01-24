@@ -124,7 +124,10 @@ class DomainAnalyser(object):
         self.corr_pkl_file = None
         self.score_outfile = None
         self.score_pkl_file = None
-        plot_info = self.correlations["plots"]
+        if self.correlations is not None:
+            plot_info = self.correlations["plots"]
+        else:
+            plot_info = None
         try:
             self.cate_outfile = self.cache_directory / Path(
                 self.categories["categories_output_file"])
@@ -640,7 +643,8 @@ class DomainPlotter(object):
                  export_highcharts=False,
                  highcharts_directory=None,
                  correlations=None,
-                 tex_horizontal_shift=None
+                 tex_horizontal_shift=None,
+                 bovenschrift=True,
                  ):
 
         self.scan_data = scan_data
@@ -686,7 +690,8 @@ class DomainPlotter(object):
                             image_directory=self.image_directory, image_files=self.image_files,
                             tex_prepend_path=self.tex_prepend_path,
                             tex_horizontal_shift=tex_horizontal_shift,
-                            all_shifts=self.all_shifts
+                            all_shifts=self.all_shifts,
+                            bovenschrift=bovenschrift
                             )
 
     #
@@ -805,13 +810,15 @@ class DomainPlotter(object):
                     hc_info = HighchartsInfo(variables_df=variables,
                                              var_name=original_name,
                                              breakdown_name=plot_key)
+                    export_highcharts = export_highcharts_bar
                     if hc_info.directory is not None:
                         # we overschrijven hier de subdir die onder de statistiek opgegeven is
                         highcharts_directory = self.highcharts_directory / hc_info.directory
-                        export_highcharts = export_highcharts_bar
                     else:
-                        highcharts_directory = None
-                        export_highcharts = False
+                        if plot_bar:
+                            highcharts_directory = highcharts_directory_bar
+                        else:
+                            highcharts_directory = highcharts_directory_cdf
                     if hc_info.label is not None:
                         title = hc_info.label
                     else:
