@@ -83,8 +83,8 @@ def parse_args():
                         help="De latex overview file krijgt de captions boven de figuren",
                         default=True)
     parser.add_argument("--onderschrift", action="store_false", dest="bovenschrift",
-                        help="De latex overview file krijgt de captions boven de figuren",
-                        default=False)
+                        help="De latex overview file krijgt de captions boven de figuren"
+                        )
 
     parsed_arguments = parser.parse_args()
 
