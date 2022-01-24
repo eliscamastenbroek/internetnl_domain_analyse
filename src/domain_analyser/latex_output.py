@@ -91,9 +91,12 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
                     # sub_plot = SubFloat(
                     #    options=[lab],
                     #    arguments=Arguments(hspace))
-                    sub_plot.append(include_graphics)
+                    if not bovenschrift:
+                        sub_plot.append(include_graphics)
                     sub_plot.add_caption(lab)
                     sub_plot.append(ref_sublabel)
+                    if bovenschrift:
+                        sub_plot.append(include_graphics)
                 if add_new_line:
                     plots.append(Command("newline"))
                     add_new_line = False
