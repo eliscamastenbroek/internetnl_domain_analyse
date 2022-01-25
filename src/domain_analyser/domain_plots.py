@@ -406,10 +406,12 @@ def make_conditional_score_plot(correlations,
         in_file = outfile.with_suffix(".pkl")
 
         if highcharts_directory is None:
-            highcharts_directory = Path(".")
+            hc_dir = Path(".")
+        else:
+            hc_dir = Path(highcharts_directory)
 
         if hc_sub_dir := plot_prop.get("highcharts_output_directory"):
-            highcharts_directory = highcharts_directory / Path(hc_sub_dir)
+            hc_dir = hc_dir / Path(hc_sub_dir)
 
         _logger.info(f"Reading scores from {in_file}")
         scores = pd.read_pickle(in_file.with_suffix(".pkl"))
@@ -421,7 +423,7 @@ def make_conditional_score_plot(correlations,
                                     score_intervallen=score_intervallen,
                                     index_labels=index_labels,
                                     categories=categories,
-                                    highcharts_directory=highcharts_directory,
+                                    highcharts_directory=hc_dir,
                                     im_file=im_file,
                                     show_plots=show_plots)
         elif plot_key == "scores_per_number_correct":
@@ -429,7 +431,7 @@ def make_conditional_score_plot(correlations,
             im_file = image_directory / Path(im_file_base).with_suffix(".pdf")
             plot_score_per_count(scores=scores,
                                  categories=categories,
-                                 highcharts_directory=highcharts_directory,
+                                 highcharts_directory=hc_dir,
                                  im_file=im_file,
                                  show_plots=show_plots)
 
@@ -602,10 +604,12 @@ def make_heatmap(correlations, image_directory,
     in_file = outfile.with_suffix(".pkl")
 
     if highcharts_directory is None:
-        highcharts_directory = Path(".")
+        hc_dir = Path(".")
+    else:
+        hc_dir = Path(highcharts_directory)
 
     if hc_sub_dir := plot_properties.get("highcharts_output_directory"):
-        highcharts_directory = highcharts_directory / Path(hc_sub_dir)
+        hc_dir = highcharts_directory / Path(hc_sub_dir)
 
     _logger.info(f"Reading correlation from {in_file}")
     corr = pd.read_pickle(in_file.with_suffix(".pkl"))
@@ -658,9 +662,9 @@ def make_heatmap(correlations, image_directory,
     _logger.info(f"Writing heatmap to {im_file}")
     fig.savefig(im_file.as_posix())
 
-    highcharts_directory.mkdir(exist_ok=True, parents=True)
+    hc_dir.mkdir(exist_ok=True, parents=True)
 
-    hc_out = highcharts_directory / Path(im_file.stem + ".svg")
+    hc_out = hc_dir / Path(im_file.stem + ".svg")
 
     _logger.info(f"Writing heatmap to {hc_out}")
     fig.savefig(hc_out.as_posix())
@@ -688,12 +692,14 @@ def make_conditional_pdf_plot(categories, image_directory,
     in_file = outfile.with_suffix(".pkl")
 
     if highcharts_directory is None:
-        highcharts_directory = Path(".")
+        hc_dir = Path(".")
+    else:
+        hc_dir = Path(highcharts_directory)
 
     if hc_sub_dir := plot_settings.get("highcharts_output_directory"):
-        highcharts_directory = highcharts_directory / Path(hc_sub_dir)
+        hc_dir = hc_dir / Path(hc_sub_dir)
 
-    highcharts_directory.mkdir(exist_ok=True, parents=True)
+    hc_dir.mkdir(exist_ok=True, parents=True)
 
     _logger.info(f"Reading correlation from {in_file}")
     conditional_scores_df = pd.read_pickle(in_file.with_suffix(".pkl"))
@@ -765,7 +771,7 @@ def make_conditional_pdf_plot(categories, image_directory,
     fig.savefig(im_file)
 
     if export_svg:
-        svg_image_file = highcharts_directory / Path(im_file.with_suffix(".svg").stem)
+        svg_image_file = hc_dir / Path(im_file.with_suffix(".svg").stem)
         _logger.info(f"Saving plot to {svg_image_file}")
         fig.savefig(svg_image_file)
 
@@ -774,7 +780,7 @@ def make_conditional_pdf_plot(categories, image_directory,
         CBSHighChart(
             data=conditional_scores_df,
             chart_type="column",
-            output_directory=highcharts_directory.as_posix(),
+            output_directory=hc_dir.as_posix(),
             output_file_name=im_file.stem,
             ylabel=y_label,
             title="Verdeling scores per categorie",
@@ -827,14 +833,14 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
     percentage_per_number_of_cat = 100 * sum_per_number_of_cat_df / sum_of_all_categories
 
     if highcharts_directory is None:
-        highcharts_directory = Path(".")
+        hc_dir = Path(".")
     else:
-        highcharts_directory = Path(highcharts_directory)
+        hc_dir = Path(highcharts_directory)
 
     if hc_sub_dir := plot_settings.get("highcharts_output_directory"):
-        highcharts_directory = highcharts_directory / Path(hc_sub_dir)
+        hc_dir = hc_dir / Path(hc_sub_dir)
 
-    highcharts_directory.mkdir(exist_ok=True, parents=True)
+    hc_dir.mkdir(exist_ok=True, parents=True)
 
     im_file = image_directory / Path("_".join([outfile.stem, image_key])).with_suffix(".pdf")
 
@@ -875,7 +881,7 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
     fig.savefig(im_file)
 
     if export_svg:
-        svg_image_file = highcharts_directory / Path(im_file.with_suffix(".svg").stem)
+        svg_image_file = hc_dir / Path(im_file.with_suffix(".svg").stem)
         _logger.info(f"Saving plot to {svg_image_file}")
         fig.savefig(svg_image_file)
 
@@ -884,7 +890,7 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
         CBSHighChart(
             data=sum_per_number_of_cat_df,
             chart_type="column",
-            output_directory=highcharts_directory.as_posix(),
+            output_directory=hc_dir.as_posix(),
             output_file_name=im_file.stem,
             title="Verdeling scores per categorie",
             enable_legend=False,

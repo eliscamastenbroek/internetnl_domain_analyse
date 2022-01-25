@@ -717,6 +717,7 @@ class DomainPlotter(object):
 
         for plot_key, plot_prop in self.plot_info.items():
             if not plot_prop.get("do_it", True):
+                _logger.debug(f"Skipping plot {plot_key}")
                 continue
 
             stat_prop = self.statistics[plot_key]
@@ -760,7 +761,7 @@ class DomainPlotter(object):
                     tex_horizontal_shift = plot_bar.get("tex_horizontal_shift")
                     plot_bar = plot_bar.get("apply", True)
                     if export_hc_bar is not None:
-                        export_highcharts_bar = export_hc_bar
+                        export_highcharts_cdf = export_hc_bar
             else:
                 plot_bar = False
 
