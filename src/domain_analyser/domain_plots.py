@@ -777,7 +777,8 @@ def make_conditional_pdf_plot(categories, image_directory,
     if export_svg:
         svg_image_file = hc_dir / Path(im_file.with_suffix(".svg"))
         _logger.info(f"Saving plot to {svg_image_file}")
-        fig.savefig(svg_image_file)
+        svg_image_file.parent.mkdir(exist_ok=True, parents=True)
+        fig.savefig(svg_image_file.as_posix())
 
     if export_highcharts:
         # voor highcharts de titel setten
