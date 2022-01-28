@@ -736,19 +736,11 @@ class DomainPlotter(object):
             export_highcharts_bar = self.export_highcharts
             highcharts_directory_cdf = None
             highcharts_directory_bar = None
+            cdf_variables = {}
             if self.cdf_plot:
                 plot_cdf = plot_prop.get("cdf_plot")
-                highcharts_directory_cdf = self.highcharts_directory
                 if isinstance(plot_cdf, dict):
-                    if hc_sub_dir := plot_cdf.get("highcharts_output_directory"):
-                        highcharts_directory_cdf = highcharts_directory_cdf / Path(hc_sub_dir)
-                    export_svg_cdf = plot_cdf.get("export_svg", False)
-                    export_hc_cdf = plot_cdf.get("export_highcharts")
-                    plot_cdf = plot_cdf.get("apply", True)
-                    if export_hc_cdf is not None:
-                        export_highcharts_cdf = export_hc_cdf
-            else:
-                plot_cdf = False
+                    cdf_variables = plot_cdf.get("variables")
             tex_horizontal_shift = None
             if self.bar_plot:
                 plot_bar = plot_prop.get("bar_plot")
@@ -769,6 +761,8 @@ class DomainPlotter(object):
             y_spacing_pdf_plot = plot_prop.get("y_spacing_pdf_plot", 5)
             y_max_bar_plot = plot_prop.get("y_max_bar_plot")
             y_spacing_bar_plot = plot_prop.get("y_spacing_bar_plot")
+
+            box_margin = plot_prop.get("box_margin")
 
             sort_values = plot_prop.get("sort_values", False)
             subplot_adjust = plot_prop.get("subplot_adjust")
@@ -813,6 +807,17 @@ class DomainPlotter(object):
                                              var_name=original_name,
                                              breakdown_name=plot_key)
                     export_highcharts = export_highcharts_bar
+                    if cdf_prop := cdf_variables.get(original_name):
+                        highcharts_directory_cdf = self.highcharts_directory
+                        if hc_sub_dir := cdf_prop.get("highcharts_output_directory"):
+                            highcharts_directory_cdf = highcharts_directory_cdf / Path(hc_sub_dir)
+                        export_svg_cdf = cdf_prop.get("export_svg", False)
+                        export_hc_cdf = cdf_prop.get("export_highcharts")
+                        plot_cdf = cdf_prop.get("apply", True)
+                        if export_hc_cdf is not None:
+                            export_highcharts_cdf = export_hc_cdf
+                    else:
+                        plot_cdf = False
                     if hc_info.directory is not None:
                         # we overschrijven hier de subdir die onder de statistiek opgegeven is
                         highcharts_directory = self.highcharts_directory / hc_info.directory
@@ -882,6 +887,7 @@ class DomainPlotter(object):
                                                    show_title=self.show_title,
                                                    barh=self.barh,
                                                    subplot_adjust=subplot_adjust,
+                                                   box_margin=box_margin,
                                                    sort_values=sort_values,
                                                    y_max_bar_plot=y_max,
                                                    y_spacing_bar_plot=y_spacing,
