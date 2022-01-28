@@ -185,6 +185,7 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
                   figsize=None, image_type=".pdf", reference_lines=None, xoff=0.02, yoff=0.02,
                   show_title=False, barh=False, subplot_adjust=None, sort_values=False,
                   y_max_bar_plot=None, y_spacing_bar_plot=None, translations=None,
+                  box_margin=None,
                   export_svg=False,
                   export_highcharts=False,
                   highcharts_directory=None,
@@ -220,12 +221,19 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
 
     fig, axis = plt.subplots(figsize=figsize)
     if subplot_adjust is None:
-        subplot_adjust = dict()
-    bottom = subplot_adjust.get("bottom", 0.15)
-    left = subplot_adjust.get("left", 0.45)
-    top = subplot_adjust.get("top", 0.95)
-    right = subplot_adjust.get("right", 0.95)
+        s_adjust = dict()
+    else:
+        s_adjust = subplot_adjust
+    bottom = s_adjust.get("bottom", 0.15)
+    left = s_adjust.get("left", 0.45)
+    top = s_adjust.get("top", 0.95)
+    right = s_adjust.get("right", 0.95)
     fig.subplots_adjust(bottom=bottom, left=left, top=top, right=right)
+
+    if box_margin is None:
+        margin = 0.1
+    else:
+        margin = box_margin
 
     line_iter = axis._get_lines
     trans = trn.blended_transform_factory(axis.transAxes, axis.transData)
@@ -321,7 +329,7 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
             axis.tick_params(which="both", left=False)
 
             add_axis_label_background(fig=fig, axes=axis, loc="east", radius_corner_in_mm=1,
-                                      margin=0.1)
+                                      margin=margin)
 
             if reference_lines is not None:
                 color = line_iter.get_next_color()
@@ -454,7 +462,7 @@ def plot_score_per_count(scores, categories, highcharts_directory, im_file, show
 
     settings = CBSPlotSettings(color_palette="koelextended")
     fig, axis = plt.subplots()
-    fig.subplots_adjust(bottom=0.3, top=0.92)
+    fig.subplots_adjust(bottom=0.3, top=0.90)
     score_per_category_df.plot.bar(ax=axis, rot=0, stacked=False, edgecolor="white", linewidth=1.5)
     yticks = axis.get_yticks()
     # axis.set_ylim((yticks[0], yticks[-1]))
@@ -531,7 +539,7 @@ def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
 
     settings = CBSPlotSettings(color_palette="koelextended")
     fig, axis = plt.subplots()
-    fig.subplots_adjust(bottom=0.3, top=0.92)
+    fig.subplots_adjust(bottom=0.3, top=0.90)
     score_per_category_df.plot.bar(ax=axis, rot=0, stacked=False, edgecolor="white", linewidth=1.5)
     yticks = axis.get_yticks()
     # axis.set_ylim((yticks[0], yticks[-1]))
@@ -704,7 +712,6 @@ def make_conditional_pdf_plot(categories, image_directory,
     _logger.info(f"Reading correlation from {in_file}")
     conditional_scores_df = pd.read_pickle(in_file.with_suffix(".pkl"))
 
-    im_file = image_directory / Path("_".join([outfile.stem, image_key])).with_suffix(".pdf")
     im_file = image_directory / Path(outfile.stem).with_suffix(".pdf")
 
     figure_properties = CBSPlotSettings()
@@ -721,9 +728,6 @@ def make_conditional_pdf_plot(categories, image_directory,
     for col_name in conditional_scores_df.columns:
         pdf = 100 * conditional_scores_df[col_name].to_numpy()
         axis.bar(conditional_scores_df.index, pdf, width=delta_bin, label=col_name)
-    # , edgecolor=None, linewidth=0)
-    # conditional_scores_df[0].plot.bar(ax=axis, stacked=True, width=delta_bin / 2)
-    # edgecolor=None, linewidth=0)
 
     xtics = np.linspace(0, 100, endpoint=True, num=6)
     _logger.debug(xtics)
@@ -771,7 +775,7 @@ def make_conditional_pdf_plot(categories, image_directory,
     fig.savefig(im_file)
 
     if export_svg:
-        svg_image_file = hc_dir / Path(im_file.with_suffix(".svg").stem)
+        svg_image_file = hc_dir / Path(im_file.with_suffix(".svg"))
         _logger.info(f"Saving plot to {svg_image_file}")
         fig.savefig(svg_image_file)
 
