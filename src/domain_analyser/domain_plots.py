@@ -775,7 +775,7 @@ def make_conditional_pdf_plot(categories, image_directory,
     fig.savefig(im_file)
 
     if export_svg:
-        svg_image_file = hc_dir / Path(im_file.with_suffix(".svg"))
+        svg_image_file = hc_dir / Path(im_file.stem).with_suffix(".svg")
         _logger.info(f"Saving plot to {svg_image_file}")
         svg_image_file.parent.mkdir(exist_ok=True, parents=True)
         fig.savefig(svg_image_file.as_posix())
