@@ -831,6 +831,8 @@ class DomainPlotter(object):
                     else:
                         title = highcharts_title
 
+                    title = re.sub("\s{2,}", " ", title)
+
                     if hc_info.y_max is not None:
                         y_max = hc_info.y_max
                     else:

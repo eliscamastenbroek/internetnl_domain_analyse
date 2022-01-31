@@ -1,5 +1,4 @@
 import logging
-import re
 from pathlib import Path
 
 from pylatex import Document, Figure, NoEscape, Command, SubFigure
@@ -70,7 +69,6 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
                 # hiermee worden caption boven toegevoegd, maar ik wil hier vanaf gaan wijken.
                 plots.add_caption(caption)
                 ref_label = Command("label", NoEscape("fig:" + original_name))
-                ref_label = re.sub("\s{2,}", " ", ref_label)
                 plots.append(ref_label)
             for label, image_name in images.items():
                 with doc.create(SubFigure(width=NoEscape(r'\linewidth'))) as sub_plot:
