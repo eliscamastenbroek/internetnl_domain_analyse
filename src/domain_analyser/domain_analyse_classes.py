@@ -685,7 +685,7 @@ class DomainPlotter(object):
             with open(self.cache_image_file_list, "rb") as stream:
                 self.all_plots = pickle.load(stream)
 
-        _logger.debug(f"makeking latex with bovenschrift={bovenschrift}")
+        _logger.debug(f"making latex with bovenschrift={bovenschrift}")
         make_latex_overview(all_plots=self.all_plots,
                             variables=self.variables,
                             image_directory=self.image_directory, image_files=self.image_files,
