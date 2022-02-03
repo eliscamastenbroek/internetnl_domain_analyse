@@ -11,10 +11,16 @@ except ModuleNotFoundError:
 import yaml
 from domain_analyser import __version__
 from domain_analyser.domain_analyse_classes import (DomainAnalyser, DomainPlotter)
+from domain_analyser.domain_plots import (make_heatmap, make_conditional_score_plot,
+                                          make_conditional_pdf_plot,
+                                          make_verdeling_per_aantal_categorie)
 
-logging.basicConfig(format='%(asctime)s %(filename)25s[%(lineno)4s] - %(levelname)-8s : %(message)s',
-                    level=logging.DEBUG)
+logging.basicConfig(
+    format='%(asctime)s %(filename)25s[%(lineno)4s] - %(levelname)-8s : %(message)s',
+    level=logging.DEBUG)
 _logger = logging.getLogger()
+
+MODES = {"statistics", "correlations", "categories", "all"}
 
 
 def parse_args():
@@ -51,18 +57,34 @@ def parse_args():
     parser.add_argument("--image_type", default=".pdf", choices={".pdf", ".png", ".jpg"},
                         help="Type of the images")
     parser.add_argument("--show_title", action="store_true", help="Show title in plot")
-    parser.add_argument("--cummulative", action="store_true", help="Plot pdf cummulitve")
-    parser.add_argument("--not_cummulative", action="store_false", dest="cummulative",
-                        help="Do not plot pdf cummulitve")
+    parser.add_argument("--cumulative", action="store_true", help="Plot pdf cmmulitve")
+    parser.add_argument("--not_cumulative", action="store_false", dest="cumulative",
+                        help="Do not plot pdf cumulitve")
     parser.add_argument("--plot_all", action="store_true", help="Plot alles", default=False)
     parser.add_argument("--cdf_plot", action="store_true", help="Plot de cdf function",
                         default=False)
     parser.add_argument("--bar_plot", action="store_true", help="Plot het staafdiagram",
                         default=False)
+    parser.add_argument("--cate_plot", action="store_true",
+                        help="Plot de heatmap of the categories", default=False)
+    parser.add_argument("--verdeling_plot", action="store_true",
+                        help="Plot de verdeling per categorie", default=False)
+    parser.add_argument("--cor_plot", action="store_true", help="Plot de heatmap",
+                        default=False)
+    parser.add_argument("--score_plot", action="store_true", help="Plot de conditionele score",
+                        default=False)
     parser.add_argument("--export_highcharts", help="Export each image to a highcharts file",
                         action="store_true")
     parser.add_argument("--highcharts_output_directory",
                         help="Directory waar alle highcharts naar toe geschreven wordt")
+    parser.add_argument("--mode", choices=MODES, default="statistics",
+                        help="Type  analyse die we doen")
+    parser.add_argument("--bovenschrift", action="store_true",
+                        help="De latex overview file krijgt de captions boven de figuren",
+                        default=True)
+    parser.add_argument("--onderschrift", action="store_false", dest="bovenschrift",
+                        help="De latex overview file krijgt de captions boven de figuren"
+                        )
 
     parsed_arguments = parser.parse_args()
 
@@ -90,6 +112,7 @@ def main():
 
     image_directory = Path(general_settings.get("image_directory", "."))
     tex_prepend_path = Path(general_settings.get("tex_prepend_path", "."))
+    tex_horizontal_shift = general_settings.get("tex_horizontal_shift", "-1.15cm")
 
     scan_data = general_settings["scan_data"]
     default_scan = general_settings["default_scan"]
@@ -101,16 +124,22 @@ def main():
     n_digits = general_settings["n_digits"]
     n_bins = general_settings["n_bins"]
     barh = general_settings.get("barh", False)
-    cummulative = general_settings.get("cummulative", False)
-    if args.cummulative is not None:
-        cummulative = args.cummulative
+    cumulative = general_settings.get("cumulative", False)
+    if args.cumulative is not None:
+        cumulative = args.cumulative
     show_title = general_settings.get("show_title", False)
     if args.show_title is not None:
         show_title = args.show_title
 
     bar_plot = args.bar_plot or args.plot_all
     cdf_plot = args.cdf_plot or args.plot_all
+    cor_plot = args.cor_plot or args.plot_all
+    cate_plot = args.cate_plot or args.plot_all
+    verdeling_plot = args.verdeling_plot or args.plot_all
+    score_plot = args.score_plot or args.plot_all
 
+    categories = settings.get("categories")
+    correlations = settings.get("correlations")
     statistics = settings["statistics"]
     translations = settings["translations"]
     breakdown_labels = settings["breakdown_labels"]
@@ -151,6 +180,7 @@ def main():
     with path_Path(str(working_directory)):
         cache_directory.mkdir(exist_ok=True)
         image_directory.mkdir(exist_ok=True)
+        var_df = None
         _logger.info(f"Running domain analyser in {os.getcwd()}")
         for key, scan_prop in scan_data.items():
             if not scan_prop.get("do_it", True):
@@ -176,9 +206,36 @@ def main():
                 n_digits=n_digits,
                 write_dataframe_to_sqlite=args.write_dataframe_to_sqlite,
                 statistics_to_xls=args.statistics_to_xls,
-                n_bins=n_bins
+                n_bins=n_bins,
+                mode=args.mode,
+                correlations=correlations,
+                categories=categories,
             )
             scan_prop["analyses"] = domain_analyses
+
+            if var_df is None:
+                var_df = domain_analyses.variables
+
+        if cor_plot and correlations is not None:
+            make_heatmap(correlations=correlations, image_directory=image_directory,
+                         highcharts_directory=highcharts_directory, show_plots=args.show_plots,
+                         cache_directory=cache_directory)
+        if cate_plot and categories is not None:
+            make_conditional_pdf_plot(categories=categories, image_directory=image_directory,
+                                      highcharts_directory=highcharts_directory,
+                                      show_plots=args.show_plots,
+                                      cache_directory=cache_directory)
+        if verdeling_plot and categories is not None:
+            make_verdeling_per_aantal_categorie(categories=categories,
+                                                image_directory=image_directory,
+                                                highcharts_directory=highcharts_directory,
+                                                show_plots=args.show_plots,
+                                                cache_directory=cache_directory)
+        if score_plot and correlations is not None:
+            make_conditional_score_plot(correlations=correlations, image_directory=image_directory,
+                                        highcharts_directory=highcharts_directory,
+                                        show_plots=args.show_plots,
+                                        cache_directory=cache_directory)
 
         if bar_plot or cdf_plot:
             DomainPlotter(
@@ -191,15 +248,19 @@ def main():
                 statistics=statistics,
                 breakdown_labels=breakdown_labels,
                 image_directory=image_directory,
+                variables=var_df,
                 tex_prepend_path=tex_prepend_path,
-                cummulative=cummulative,
+                cumulative=cumulative,
                 show_title=show_title,
                 cdf_plot=cdf_plot,
                 bar_plot=bar_plot,
+                cor_plot=cor_plot,
                 cache_directory=cache_directory,
                 translations=label_translations,
                 export_highcharts=args.export_highcharts,
                 highcharts_directory=highcharts_directory,
+                tex_horizontal_shift=tex_horizontal_shift,
+                bovenschrift=args.bovenschrift
             )
 
 

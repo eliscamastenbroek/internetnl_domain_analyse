@@ -44,19 +44,41 @@ def read_tables_from_sqlite(filename: Path, table_names, index_name) -> pd.DataF
     return tables_df
 
 
-def get_domain(url):
-    domain = None
+def get_clean_url(url):
+    clean_url = url
     try:
-        tld = tldextract.extract(url)
-    except TypeError:
-        _logger.debug(f"Type error occurred for {url}")
-    except ssl.SSLEOFError as ssl_err:
-        _logger.debug(f"SSLEOF error occurred for {url}")
-    except requests.exceptions.SSLError as req_err:
-        _logger.debug(f"SSLError error occurred for {url}")
+        url = url.strip()
+    except AttributeError:
+        pass
     else:
-        domain = tld.domain.lower()
-    return domain
+        try:
+            tld = tldextract.extract(url)
+        except TypeError:
+            _logger.debug(f"Type error occurred for {url}")
+        except ssl.SSLEOFError as ssl_err:
+            _logger.debug(f"SSLEOF error occurred for {url}")
+        except requests.exceptions.SSLError as req_err:
+            _logger.debug(f"SSLError error occurred for {url}")
+        else:
+            if tld.subdomain == "" and tld.domain == "" and tld.suffix == "":
+                clean_url = None
+            elif tld.subdomain == "" and tld.suffix == "":
+                clean_url = tld.domain
+            elif tld.subdomain == "" and tld.domain == "":
+                clean_url = tld.suffix
+            elif tld.domain == "" and tld.suffix == "":
+                clean_url = tld.subdomain
+            elif tld.subdomain == "":
+                clean_url = ".".join([tld.domain, tld.suffix])
+            elif tld.suffix == "":
+                clean_url = ".".join([tld.subdomain, tld.domain])
+            elif tld.domain == "":
+                clean_url = ".".join([tld.subdomain, tld.suffix])
+            else:
+                clean_url = ".".join([tld.subdomain, tld.domain, tld.suffix])
+            if clean_url is not None:
+                clean_url = clean_url.lower()
+    return clean_url
 
 
 def fill_booleans(tables, translations, variables):
@@ -96,7 +118,8 @@ def prepare_stat_data_for_write(all_stats, file_base, variables, module_key, var
     stat_df = reorganise_stat_df(records_stats=data, variables=variables,
                                  module_key=module_key,
                                  variable_key=variable_key,
-                                 n_digits=n_digits)
+                                 n_digits=n_digits,
+                                 sort_index=False)
     if breakdown_labels is not None:
         try:
             labels = breakdown_labels[file_base]
@@ -157,6 +180,7 @@ def impose_variable_defaults(variables,
     variables["check"] = False
     variables["optional"] = False
     variables["no_impute"] = False
+    variables["info_per_breakdown"] = None
 
     variables["gewicht"] = "units"
     # variables["filter"] = ""
@@ -177,11 +201,12 @@ def impose_variable_defaults(variables,
         for name in (
                 "type", "fixed", "original_name", "question", "label", "check", "optional",
                 "gewicht",
-                "no_impute"):
+                "no_impute", "info_per_breakdown"):
             try:
-
                 variables.loc[var_key, name] = var_prop[name]
-
+            except ValueError:
+                # de info_per_breakdown is een dictionary die we met 'at' moeten imposen
+                variables.at[var_key, name] = var_prop.get(name)
             except KeyError:
                 pass
         # separately get the options field as that contains a dict and therefore can not be
@@ -255,85 +280,3 @@ def impose_variable_defaults(variables,
 
     _logger.debug("Done")
     return variables
-
-
-def standard_output(self,
-                    stats_df,
-                    index_variables,
-                    file_base,
-                    file_type) -> None:
-    """Dump the statistics stored in the reorganised 'stats_df' to file
-
-    Parameters
-    ----------
-    stats_df: pd.DataFrame
-        Dataframe with the statistics
-    index_variables: list
-       Variables to put on the index
-    file_base: str
-        Base name of the output file
-    file_type: {'xls', 'xlsx', 'txt', 'csv'}
-        Type of the output file
-
-    Returns
-    -------
-    None
-    """
-    allowed_file_types = ("xlsx", "xls", "txt", "csv")
-    if file_type not in allowed_file_types:
-        _logger.warning(
-            f"File type {file_type} not in allowed file type list: {allowed_file_types}."
-            f" Imposing xlsx here")
-        file_type = "xlsx"
-
-    if self.columns_in_survey_order is not None:
-        # set the order of the variable equal to the survey
-        _logger.info(f"Start sorting variables to survey order for {file_base}")
-        stats_df.set_index(self.variable_key,
-                           inplace=True,
-                           drop=True)
-        variables = list()
-        # TODO:
-        # we loopen over de modules om de volgorde van de modules aan te houden in de excel
-        # uitvoer. Modules kunnen ook secties hebben, maar daar wordt hier geen rekening mee
-        # gehouden, dus de vragen binnen een module kunnen in de excel uitvoer nog afwijken
-        # van statline (waar we wel rekening houden met de secties/subsecties)
-        for module_key, module_prop in self.module_info.items():
-            if module_prop.get("include", True):
-                for var_name_clean_in_survey in self.columns_in_survey_order:
-                    mask = stats_df["module_key"] == module_key
-                    stats_module_df = stats_df[mask]
-                    for var_name in stats_module_df.index:
-                        var_name_clean, optie = split_variable_name_option(var_name)
-                        if var_name_clean == var_name_clean_in_survey:
-                            variables.append(var_name)
-        try:
-            stats_df = stats_df.reindex(variables)
-        except ValueError as err:
-            _logger.warning(f"{err}.\nVariables where {variables}")
-        stats_df.reset_index(inplace=True)
-
-    # finally, remove the columns which we defined in the settings file
-    stats_df.set_index(index_variables,
-                       inplace=True,
-                       drop=True)
-
-    file_name = os.path.join(self.output_directory, file_base)
-    if file_type in ("xls", "xlsx"):
-        stat_df_to_excel(file_name,
-                         stat_df=stats_df)
-    elif file_type == "txt":
-        file_name = ".".join([file_name, file_type])
-        stats_df.to_csv(file_name,
-                        sep="\t",
-                        header=True,
-                        decimal=",")
-    elif file_type == "csv":
-        file_name = ".".join([file_name, file_type])
-        stats_df.to_csv(file_name,
-                        sep=";",
-                        header=True,
-                        decimal=",")
-    else:
-        _logger.warning("file type {} not yet implemented".format(file_type))
-    _logger.debug("have stats df")
