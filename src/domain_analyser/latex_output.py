@@ -84,7 +84,8 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
                     ref = "_".join([original_name, label.lower().replace(" ", "_")])
                     ref_sublabel = Command("label", NoEscape("fig:" + ref))
                     lab = Command("footnotesize", Arguments(label))
-                    include_graphics = Command("includegraphics", NoEscape(full_image_name))
+                    include_graphics = Command("includegraphics",
+                                               NoEscape(full_image_name.as_posix()))
                     if horizontal_shift is not None:
                         include_graphics = Command("hspace", Arguments(NoEscape(horizontal_shift),
                                                                        include_graphics))
