@@ -810,7 +810,7 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
     if cache_directory is not None:
         outfile = Path(cache_directory) / outfile
 
-    image_key = "verdeling_per_category"
+    image_key = "verdeling_per_categorie"
     plot_settings = categories["plot_settings"][image_key]
     y_max = plot_settings.get("y_max_pdf_plot")
     y_spacing = plot_settings.get("y_spacing_pdf_plot")
