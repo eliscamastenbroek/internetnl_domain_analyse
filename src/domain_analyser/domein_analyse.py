@@ -19,6 +19,8 @@ logging.basicConfig(
     format='%(asctime)s %(filename)25s[%(lineno)4s] - %(levelname)-8s : %(message)s',
     level=logging.DEBUG)
 _logger = logging.getLogger()
+_log_hc = logging.getLogger("cbsplotlib")
+_log_hc.setLevel(_logger.getEffectiveLevel())
 
 MODES = {"statistics", "correlations", "categories", "all"}
 

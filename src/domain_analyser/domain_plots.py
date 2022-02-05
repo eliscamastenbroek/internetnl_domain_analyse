@@ -893,12 +893,13 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
     if export_highcharts:
         # voor highcharts de titel setten
         CBSHighChart(
-            data=sum_per_number_of_cat_df,
-            chart_type="column",
+            data=percentage_per_number_of_cat.T,
+            chart_type="column_stacked_percentage",
             output_directory=hc_dir.as_posix(),
             output_file_name=im_file.stem,
+            y_lim=(0, 100),
             title="Verdeling scores per categorie",
-            enable_legend=False,
+            enable_legend=True,
         )
 
     if show_plots:
