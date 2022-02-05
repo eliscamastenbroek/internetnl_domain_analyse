@@ -230,7 +230,8 @@ def main():
                                                 image_directory=image_directory,
                                                 highcharts_directory=highcharts_directory,
                                                 show_plots=args.show_plots,
-                                                cache_directory=cache_directory)
+                                                cache_directory=cache_directory,
+                                                export_highcharts=args.export_highcharts)
         if score_plot and correlations is not None:
             make_conditional_score_plot(correlations=correlations, image_directory=image_directory,
                                         highcharts_directory=highcharts_directory,
