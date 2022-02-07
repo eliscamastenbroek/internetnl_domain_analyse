@@ -421,6 +421,11 @@ def make_conditional_score_plot(correlations,
         if hc_sub_dir := plot_prop.get("highcharts_output_directory"):
             hc_dir = hc_dir / Path(hc_sub_dir)
 
+        if hc_label := plot_prop.get("highcharts_label"):
+            label = hc_label
+        else:
+            label = "Leeg"
+
         _logger.info(f"Reading scores from {in_file}")
         scores = pd.read_pickle(in_file.with_suffix(".pkl"))
 
@@ -433,7 +438,8 @@ def make_conditional_score_plot(correlations,
                                     categories=categories,
                                     highcharts_directory=hc_dir,
                                     im_file=im_file,
-                                    show_plots=show_plots)
+                                    show_plots=show_plots,
+                                    plot_title=label)
         elif plot_key == "scores_per_number_correct":
             im_file_base = "_".join([outfile.stem, "per_count_interval"])
             im_file = image_directory / Path(im_file_base).with_suffix(".pdf")
@@ -441,10 +447,11 @@ def make_conditional_score_plot(correlations,
                                  categories=categories,
                                  highcharts_directory=hc_dir,
                                  im_file=im_file,
-                                 show_plots=show_plots)
+                                 show_plots=show_plots,
+                                 plot_title=label)
 
 
-def plot_score_per_count(scores, categories, highcharts_directory, im_file, show_plots):
+def plot_score_per_count(scores, categories, highcharts_directory, im_file, show_plots, plot_title):
     _logger.info("Plot score per count")
     # add a new columns with the interval label belonging to the gk code bin. Note that we
     # merge all the grootte klass below 40 to a group smaller than 10
@@ -457,7 +464,6 @@ def plot_score_per_count(scores, categories, highcharts_directory, im_file, show
 
     score_per_category_df = pd.DataFrame(score_per_category).T * 100
 
-    plot_title = "Score per count"
     y_label = "Score"
 
     settings = CBSPlotSettings(color_palette="koelextended")
@@ -514,7 +520,7 @@ def plot_score_per_count(scores, categories, highcharts_directory, im_file, show
 
 
 def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
-                            highcharts_directory, im_file, show_plots):
+                            highcharts_directory, im_file, show_plots, plot_title):
     score_labels = list(score_intervallen.keys())
     score_bins = list([s / 100 for s in score_intervallen.values()]) + [1.01]
     # add a new columns with the interval label belonging to the gk code bin. Note that we
@@ -534,7 +540,6 @@ def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
 
     score_per_category_df = pd.DataFrame(score_per_category).T * 100
 
-    plot_title = "Score per categorie"
     y_label = "Score"
 
     settings = CBSPlotSettings(color_palette="koelextended")
