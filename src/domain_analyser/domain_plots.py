@@ -865,7 +865,7 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
     axis.set_ylim((0, 101))
 
     x_label = "Aantal geslaagde categorieën"
-    y_label = "Aandeel per categorie"
+    y_label = "Aandeel per categorie [%]"
 
     axis.set_xlabel(x_label, horizontalalignment="right")
 
