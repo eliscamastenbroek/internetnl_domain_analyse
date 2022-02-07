@@ -859,8 +859,10 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
 
     axis.set_ylim((0, 101))
 
-    axis.set_xlabel("Aantal geslaagde categorieën", horizontalalignment="right")
-    y_label = "% bedrijven"
+    x_label = "Aantal geslaagde categorieën"
+    y_label = "Aandeel per categorie"
+
+    axis.set_xlabel(x_label, horizontalalignment="right")
 
     axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
     axis.yaxis.set_label_coords(-0.06, 1.05)
@@ -899,7 +901,8 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
             output_file_name=im_file.stem,
             y_lim=(0, 100),
             title="Verdeling scores per categorie",
-            xlabel="Aantal geslaagde categorieën",
+            xlabel=x_label,
+            ylabel=y_label,
             enable_legend=True,
         )
 
