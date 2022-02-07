@@ -505,7 +505,7 @@ def plot_score_per_count(scores, categories, highcharts_directory, im_file, show
 
     CBSHighChart(
         data=score_per_category_df,
-        chart_type="column_grouped_stacked",
+        chart_type="column_grouped",
         output_directory=highcharts_directory.as_posix(),
         output_file_name=im_file.stem,
         ylabel=y_label,
@@ -581,7 +581,7 @@ def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
 
     CBSHighChart(
         data=score_per_category_df,
-        chart_type="column_grouped_stacked",
+        chart_type="column_grouped",
         output_directory=highcharts_directory.as_posix(),
         output_file_name=im_file.stem,
         ylabel=y_label,
