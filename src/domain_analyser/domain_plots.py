@@ -510,7 +510,7 @@ def plot_score_per_count(scores, categories, highcharts_directory, im_file, show
         output_file_name=im_file.stem,
         ylabel=y_label,
         title=plot_title,
-        enable_legend=False,
+        enable_legend=True,
     )
 
     if show_plots:
@@ -586,7 +586,7 @@ def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
         output_file_name=im_file.stem,
         ylabel=y_label,
         title=plot_title,
-        enable_legend=False,
+        enable_legend=True,
     )
 
     if show_plots:
