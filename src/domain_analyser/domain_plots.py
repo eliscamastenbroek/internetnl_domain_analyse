@@ -899,6 +899,7 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
             output_file_name=im_file.stem,
             y_lim=(0, 100),
             title="Verdeling scores per categorie",
+            xlabel="Aantal geslaagde categorieën",
             enable_legend=True,
         )
 
