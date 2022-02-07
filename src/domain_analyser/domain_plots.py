@@ -837,6 +837,11 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
 
     percentage_per_number_of_cat = 100 * sum_per_number_of_cat_df / sum_of_all_categories
 
+    if hc_title := plot_settings.get("highcharts_label"):
+        title = hc_title
+    else:
+        title = "Verdeling scores per categorie",
+
     if highcharts_directory is None:
         hc_dir = Path(".")
     else:
@@ -900,7 +905,7 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
             output_directory=hc_dir.as_posix(),
             output_file_name=im_file.stem,
             y_lim=(0, 100),
-            title="Verdeling scores per categorie",
+            title=title,
             xlabel=x_label,
             ylabel=y_label,
             enable_legend=True,
