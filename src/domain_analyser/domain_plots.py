@@ -463,6 +463,7 @@ def plot_score_per_count(scores, categories, highcharts_directory, im_file, show
         score_per_category[categorie_key] = df.mean()
 
     score_per_category_df = pd.DataFrame(score_per_category).T * 100
+    score_per_category_df = score_per_category_df.round(1)
 
     y_label = "Score"
 
@@ -540,6 +541,7 @@ def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
         score_per_category[category_label] = df.mean()
 
     score_per_category_df = pd.DataFrame(score_per_category).T * 100
+    score_per_category_df = score_per_category_df.round(1)
 
     y_label = "Score"
 
