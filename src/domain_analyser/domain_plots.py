@@ -20,6 +20,30 @@ cbsplotlib_logger.setLevel(_logger.getEffectiveLevel())
 sns.set_style('whitegrid')
 
 
+class AxisLabel:
+    """
+    class om de eigenschappen van een as label op te slaan
+    """
+
+    def __init__(self, label_properties, text_default=None, positie_default=None):
+        self.label_properties = label_properties
+
+        self.text = text_default
+        self.positie = positie_default
+
+        self.set_properties()
+        if self.text is None:
+            raise ValueError("Geen text gezet. Geef label eigenschappen of default waarden mee")
+        if self.positie is None:
+            raise ValueError("Geen positie gezet. Geef label eigenschappen of default waarden mee")
+
+    def set_properties(self):
+        if self.label_properties is not None:
+            self.text = self.label_properties["text"]
+            if position := self.label_properties.get("positie"):
+                self.positie = position
+
+
 def make_cdf_plot(hist,
                   grp_key,
                   plot_key,
@@ -430,6 +454,11 @@ def make_conditional_score_plot(correlations,
         scores = pd.read_pickle(in_file.with_suffix(".pkl"))
 
         if plot_key == "scores_per_interval":
+            x_label = AxisLabel(plot_prop.get("x_label"), text_default="Eindscoreniveau",
+                                positie_default=(0.98, -0.15))
+            y_label = AxisLabel(plot_prop.get("y_label"), text_default="Subgroepscore [%]",
+                                positie_default=(-0.065, 1.07))
+
             im_file_base = "_".join([outfile.stem, "per_score_interval"])
             im_file = image_directory / Path(im_file_base).with_suffix(".pdf")
             plot_score_per_interval(scores=scores,
@@ -439,8 +468,17 @@ def make_conditional_score_plot(correlations,
                                     highcharts_directory=hc_dir,
                                     im_file=im_file,
                                     show_plots=show_plots,
-                                    plot_title=label)
+                                    plot_title=label,
+                                    x_label=x_label,
+                                    y_label=y_label
+                                    )
         elif plot_key == "scores_per_number_correct":
+            x_label = AxisLabel(plot_prop.get("x_label"),
+                                text_default="Aantal geslaagde categorieën",
+                                positie_default=(0.98, -0.15))
+            y_label = AxisLabel(plot_prop.get("y_label"), text_default="Subgroepscore [%]",
+                                positie_default=(-0.065, 1.07))
+
             im_file_base = "_".join([outfile.stem, "per_count_interval"])
             im_file = image_directory / Path(im_file_base).with_suffix(".pdf")
             plot_score_per_count(scores=scores,
@@ -448,10 +486,14 @@ def make_conditional_score_plot(correlations,
                                  highcharts_directory=hc_dir,
                                  im_file=im_file,
                                  show_plots=show_plots,
-                                 plot_title=label)
+                                 plot_title=label,
+                                 x_label=x_label,
+                                 y_label=y_label
+                                 )
 
 
-def plot_score_per_count(scores, categories, highcharts_directory, im_file, show_plots, plot_title):
+def plot_score_per_count(scores, categories, highcharts_directory, im_file, show_plots, plot_title,
+                         x_label, y_label):
     _logger.info("Plot score per count")
     # add a new columns with the interval label belonging to the gk code bin. Note that we
     # merge all the grootte klass below 40 to a group smaller than 10
@@ -465,8 +507,6 @@ def plot_score_per_count(scores, categories, highcharts_directory, im_file, show
     score_per_category_df = pd.DataFrame(score_per_category).T * 100
     score_per_category_df = score_per_category_df.round(1)
 
-    y_label = "Score"
-
     settings = CBSPlotSettings(color_palette="koelextended")
     fig, axis = plt.subplots()
     fig.subplots_adjust(bottom=0.3, top=0.90)
@@ -475,12 +515,11 @@ def plot_score_per_count(scores, categories, highcharts_directory, im_file, show
     # axis.set_ylim((yticks[0], yticks[-1]))
     axis.set_ylim((0, 100))
 
-    axis.set_xlabel("Aantal geslaagde categorieën", rotation="horizontal", horizontalalignment="right")
-    axis.xaxis.set_label_coords(0.98, -0.15)
+    axis.set_xlabel(x_label.text, rotation="horizontal", horizontalalignment="right")
+    axis.xaxis.set_label_coords(*x_label.positie)
 
-    axis.set_ylabel("Genormaliseerde score per categorie [%]",
-                    rotation="horizontal", horizontalalignment="left")
-    axis.yaxis.set_label_coords(-0.065, 1.07)
+    axis.set_ylabel(y_label.text, rotation="horizontal", horizontalalignment="left")
+    axis.yaxis.set_label_coords(*y_label.positie)
     axis.xaxis.grid(False)
     sns.despine(ax=axis, left=True)
 
@@ -522,7 +561,9 @@ def plot_score_per_count(scores, categories, highcharts_directory, im_file, show
 
 
 def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
-                            highcharts_directory, im_file, show_plots, plot_title):
+                            highcharts_directory, im_file, show_plots, plot_title,
+                            x_label, y_label
+                            ):
     score_labels = list(score_intervallen.keys())
     score_bins = list([s / 100 for s in score_intervallen.values()]) + [1.01]
     # add a new columns with the interval label belonging to the gk code bin. Note that we
@@ -543,8 +584,6 @@ def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
     score_per_category_df = pd.DataFrame(score_per_category).T * 100
     score_per_category_df = score_per_category_df.round(1)
 
-    y_label = "Score"
-
     settings = CBSPlotSettings(color_palette="koelextended")
     fig, axis = plt.subplots()
     fig.subplots_adjust(bottom=0.3, top=0.90)
@@ -553,12 +592,11 @@ def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
     # axis.set_ylim((yticks[0], yticks[-1]))
     axis.set_ylim((0, 100))
 
-    axis.set_xlabel("Eindscoreniveau", rotation="horizontal", horizontalalignment="right")
-    axis.xaxis.set_label_coords(0.98, -0.15)
+    axis.set_xlabel(x_label.text, rotation="horizontal", horizontalalignment="right")
+    axis.xaxis.set_label_coords(*x_label.positie)
 
-    axis.set_ylabel("Genormaliseerde score per categorie [%]",
-                    rotation="horizontal", horizontalalignment="left")
-    axis.yaxis.set_label_coords(-0.065, 1.07)
+    axis.set_ylabel(y_label.text, rotation="horizontal", horizontalalignment="left")
+    axis.yaxis.set_label_coords(*y_label.positie)
     axis.xaxis.grid(False)
     sns.despine(ax=axis, left=True)
 
@@ -588,7 +626,7 @@ def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
         output_directory=highcharts_directory.as_posix(),
         output_file_name=im_file.stem,
         y_lim=(0, 100),
-        ylabel=y_label,
+        ylabel=y_label.text,
         title=plot_title,
         enable_legend=True,
     )
