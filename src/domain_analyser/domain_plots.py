@@ -553,7 +553,7 @@ def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
     # axis.set_ylim((yticks[0], yticks[-1]))
     axis.set_ylim((0, 100))
 
-    axis.set_xlabel("Scorecategorie", rotation="horizontal", horizontalalignment="right")
+    axis.set_xlabel("Eindscoreniveau", rotation="horizontal", horizontalalignment="right")
     axis.xaxis.set_label_coords(0.98, -0.15)
 
     axis.set_ylabel("Genormaliseerde score per categorie [%]",
