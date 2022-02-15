@@ -475,7 +475,7 @@ def plot_score_per_count(scores, categories, highcharts_directory, im_file, show
     # axis.set_ylim((yticks[0], yticks[-1]))
     axis.set_ylim((0, 100))
 
-    axis.set_xlabel("# categorieën goed", rotation="horizontal", horizontalalignment="right")
+    axis.set_xlabel("Aantal geslaagde categorieën", rotation="horizontal", horizontalalignment="right")
     axis.xaxis.set_label_coords(0.98, -0.15)
 
     axis.set_ylabel("Genormaliseerde score per categorie [%]",
@@ -771,7 +771,7 @@ def make_conditional_pdf_plot(categories, image_directory,
     add_axis_label_background(fig=fig, axes=axis, loc="south", margin=0.10)
 
     legend = axis.legend(loc="lower left",
-                         title="# categorieën goed",
+                         title="Aantal geslaagde categorieën",
                          prop={"size": 10},
                          bbox_to_anchor=(0.2, 0.02), frameon=False,
                          bbox_transform=fig.transFigure, ncol=5)
