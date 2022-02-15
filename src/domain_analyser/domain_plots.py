@@ -761,7 +761,7 @@ def make_conditional_pdf_plot(categories, image_directory,
     axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
     axis.yaxis.set_label_coords(-0.04, 1.05)
     axis.xaxis.grid(False)
-    axis.set_xlabel("Totaal score", horizontalalignment="right")
+    axis.set_xlabel("Eindscore", horizontalalignment="right")
     axis.xaxis.set_label_coords(0.98, -0.12)
     sns.despine(ax=axis, left=True)
 
