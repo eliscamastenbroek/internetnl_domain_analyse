@@ -549,7 +549,7 @@ def plot_score_per_count(scores, categories, highcharts_directory, im_file, show
         output_directory=highcharts_directory.as_posix(),
         output_file_name=im_file.stem,
         y_lim=(0, 100),
-        ylabel=y_label,
+        ylabel=y_label.text,
         title=plot_title,
         enable_legend=True,
     )
