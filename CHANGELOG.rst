@@ -2,7 +2,7 @@
 Changelog
 =========
 
-Version 1.r
+Version 1.3
 ===========
 
-- Export naar highcharts en svg toegevoegd
+- Werkende versie voor rapport
