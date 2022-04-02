@@ -740,7 +740,7 @@ class DomainPlotter(object):
             if self.cdf_plot:
                 plot_cdf = plot_prop.get("cdf_plot")
                 if isinstance(plot_cdf, dict):
-                    cdf_variables = plot_cdf.get("variables")
+                    cdf_variables = plot_cdf.get("variables", {})
             tex_horizontal_shift = None
             if self.bar_plot:
                 plot_bar = plot_prop.get("bar_plot")
