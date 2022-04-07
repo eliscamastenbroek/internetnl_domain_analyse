@@ -8,14 +8,13 @@ import matplotlib.colors as mpc
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from cbsplotlib import LOGGER_BASE_NAME
 from cbsplotlib.settings import CBSPlotSettings
 from cbsplotlib.utils import add_axis_label_background
 from cbsplotlib.highcharts import CBSHighChart
 from cbsplotlib.colors import CBS_COLORS_RBG
 
 _logger = logging.getLogger(__name__)
-cbsplotlib_logger = logging.getLogger(LOGGER_BASE_NAME)
+cbsplotlib_logger = logging.getLogger("cbsplotlib")
 cbsplotlib_logger.setLevel(_logger.getEffectiveLevel())
 sns.set_style('whitegrid')
 
