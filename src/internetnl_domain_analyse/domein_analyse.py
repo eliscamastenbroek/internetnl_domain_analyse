@@ -9,11 +9,11 @@ try:
 except ModuleNotFoundError:
     from cbs_utils.misc import Chdir as path_Path
 import yaml
-from domain_analyser import __version__
-from domain_analyser.domain_analyse_classes import (DomainAnalyser, DomainPlotter)
-from domain_analyser.domain_plots import (make_heatmap, make_conditional_score_plot,
-                                          make_conditional_pdf_plot,
-                                          make_verdeling_per_aantal_categorie)
+from internetnl_domain_analyse import __version__
+from internetnl_domain_analyse.domain_analyse_classes import (DomainAnalyser, DomainPlotter)
+from internetnl_domain_analyse.domain_plots import (make_heatmap, make_conditional_score_plot,
+                                                    make_conditional_pdf_plot,
+                                                    make_verdeling_per_aantal_categorie)
 
 logging.basicConfig(
     format='%(asctime)s %(filename)25s[%(lineno)4s] - %(levelname)-8s : %(message)s',

@@ -14,14 +14,14 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from domain_analyser.domain_plots import (make_cdf_plot, make_bar_plot)
-from domain_analyser.utils import (read_tables_from_sqlite,
-                                   get_clean_url,
-                                   fill_booleans,
-                                   prepare_stat_data_for_write,
-                                   get_option_mask,
-                                   impose_variable_defaults)
-from domain_analyser.latex_output import make_latex_overview
+from internetnl_domain_analyse.domain_plots import (make_cdf_plot, make_bar_plot)
+from internetnl_domain_analyse.utils import (read_tables_from_sqlite,
+                                             get_clean_url,
+                                             fill_booleans,
+                                             prepare_stat_data_for_write,
+                                             get_option_mask,
+                                             impose_variable_defaults)
+from internetnl_domain_analyse.latex_output import make_latex_overview
 from ict_analyser.analyser_tool.utils import (prepare_df_for_statistics,
                                               get_records_select,
                                               rename_all_variables)
