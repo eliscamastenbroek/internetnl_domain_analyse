@@ -582,7 +582,8 @@ class DomainAnalyser(object):
             records[original_url] = records[self.url_key]
             tables[original_url] = tables[self.url_key]
 
-            records[self.url_key] = [get_clean_url(url) for url in records[self.url_key]]
+            records[self.url_key] = [get_clean_url(url, cache_dir=self.cache_directory) for url in
+                                     records[self.url_key]]
             records.dropna(subset=[self.url_key], axis=0, inplace=True)
             records.reset_index(inplace=True)
             tables[self.url_key] = [get_clean_url(url) for url in tables[self.url_key]]

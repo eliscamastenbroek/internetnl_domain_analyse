@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import requests
-from tldextract import tldextract
+import tldextract
 
 from ict_analyser.analyser_tool.utils import (reorganise_stat_df)
 
@@ -44,15 +44,19 @@ def read_tables_from_sqlite(filename: Path, table_names, index_name) -> pd.DataF
     return tables_df
 
 
-def get_clean_url(url):
+def get_clean_url(url, cache_dir=None):
     clean_url = url
+    if cache_dir is not None:
+        extract = tldextract.TLDExtract(cache_dir=cache_dir)
+    else:
+        extract = tldextract.tldextract.extract
     try:
         url = url.strip()
     except AttributeError:
         pass
     else:
         try:
-            tld = tldextract.extract(url)
+            tld = extract(url)
         except TypeError:
             _logger.debug(f"Type error occurred for {url}")
         except ssl.SSLEOFError as ssl_err:
