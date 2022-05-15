@@ -204,7 +204,7 @@ def impose_variable_defaults(variables,
         for name in (
                 "type", "fixed", "original_name", "question", "label", "check", "optional",
                 "gewicht",
-                "no_impute", "info_per_breakdown"):
+                "no_impute", "info_per_breakdown", "report_number"):
             try:
                 variables.loc[var_key, name] = var_prop[name]
             except ValueError:

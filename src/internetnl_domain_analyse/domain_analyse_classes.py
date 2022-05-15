@@ -307,10 +307,17 @@ class DomainAnalyser(object):
                                      var_type=var_type,
                                      var_weight_key=var_weight_key,
                                      scaling_factor_key=schaal_factor_key,
-                                     units_scaling_factor_key=units_schaal_factor_key)
+                                     units_scaling_factor_key=units_schaal_factor_key,
+                                     report_numbers=var_prop_klass.report_number
+                                     )
 
-            _logger.debug(f"Storing {stats.records_weighted_mean_agg}")
-            all_stats[var_key] = stats.records_weighted_mean_agg
+            if var_prop_klass.report_number:
+                all_stats[column] = stats.records_sum
+            else:
+                if var_prop.filter is not None and var_prop.report_conditional:
+                    all_stats[column] = stats.records_weighted_conditional_mean_agg
+                else:
+                    all_stats[column] = stats.records_weighted_mean_agg
             all_hist[var_key] = dict()
             try:
                 for grp_key, df in data.groupby(level=0, axis=0):
