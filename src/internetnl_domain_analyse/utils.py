@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import requests
 import tldextract
-
 from ict_analyser.analyser_tool.utils import (reorganise_stat_df)
 
 _logger = logging.getLogger(__name__)

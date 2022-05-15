@@ -3,8 +3,6 @@ import os
 import pickle
 import re
 import sqlite3
-import matplotlib.pyplot as plt
-import seaborn as sns
 import sys
 from collections import Counter
 from pathlib import Path
@@ -13,21 +11,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import yaml
+from ict_analyser.analyser_tool.sample_statistics import SampleStatistics
+from ict_analyser.analyser_tool.utils import (prepare_df_for_statistics,
+                                              get_records_select,
+                                              rename_all_variables)
+from ict_analyser.analyser_tool.variable_properties import VariableProperties
 
 from internetnl_domain_analyse.domain_plots import (make_cdf_plot, make_bar_plot)
+from internetnl_domain_analyse.latex_output import make_latex_overview
 from internetnl_domain_analyse.utils import (read_tables_from_sqlite,
                                              get_clean_url,
                                              fill_booleans,
                                              prepare_stat_data_for_write,
                                              get_option_mask,
                                              impose_variable_defaults)
-from internetnl_domain_analyse.latex_output import make_latex_overview
-from ict_analyser.analyser_tool.utils import (prepare_df_for_statistics,
-                                              get_records_select,
-                                              rename_all_variables)
-from ict_analyser.shared.utils import variable_dict_to_df
-from ict_analyser.analyser_tool.sample_statistics import SampleStatistics
-from ict_analyser.analyser_tool.variable_properties import VariableProperties
 
 _logger = logging.getLogger(__name__)
 

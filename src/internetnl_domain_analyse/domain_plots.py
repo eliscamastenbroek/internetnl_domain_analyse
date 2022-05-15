@@ -2,16 +2,16 @@ import logging
 import re
 from pathlib import Path
 
+import matplotlib.colors as mpc
 import matplotlib.pyplot as plt
 import matplotlib.transforms as trn
-import matplotlib.colors as mpc
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from cbsplotlib.colors import CBS_COLORS_RBG
+from cbsplotlib.highcharts import CBSHighChart
 from cbsplotlib.settings import CBSPlotSettings
 from cbsplotlib.utils import add_axis_label_background
-from cbsplotlib.highcharts import CBSHighChart
-from cbsplotlib.colors import CBS_COLORS_RBG
 
 _logger = logging.getLogger(__name__)
 cbsplotlib_logger = logging.getLogger("cbsplotlib")
