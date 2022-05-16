@@ -2,6 +2,12 @@
 Changelog
 =========
 
+Version 1.5
+===========
+
+- nu ook met normalisatie van pdf
+
+
 Version 1.4
 ===========
 
