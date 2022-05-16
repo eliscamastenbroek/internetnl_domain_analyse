@@ -311,13 +311,10 @@ class DomainAnalyser(object):
                                      report_numbers=var_prop_klass.report_number
                                      )
 
-            if var_prop_klass.report_number:
+            if not np.isnan(var_prop_klass.report_number) and var_prop_klass.report_number:
                 all_stats[column] = stats.records_sum
             else:
-                if var_prop.filter is not None and var_prop.report_conditional:
-                    all_stats[column] = stats.records_weighted_conditional_mean_agg
-                else:
-                    all_stats[column] = stats.records_weighted_mean_agg
+                all_stats[column] = stats.records_weighted_mean_agg
             all_hist[var_key] = dict()
             try:
                 for grp_key, df in data.groupby(level=0, axis=0):
