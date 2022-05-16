@@ -858,6 +858,11 @@ class DomainPlotter(object):
 
                     plot_df = question_df.loc[(module_name, question_name, mask)].copy()
 
+                    if variables.loc[original_name, "report_number"]:
+                        normalize_data = True
+                    else:
+                        normalize_data = False
+
                     if self.translations is not None:
                         plot_df.rename(columns=self.translations, inplace=True)
 
@@ -902,7 +907,8 @@ class DomainPlotter(object):
                                                    export_highcharts=export_highcharts,
                                                    export_svg=export_svg_bar,
                                                    highcharts_directory=highcharts_directory,
-                                                   title=title
+                                                   title=title,
+                                                   normalize_data=normalize_data
                                                    )
 
                         _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
