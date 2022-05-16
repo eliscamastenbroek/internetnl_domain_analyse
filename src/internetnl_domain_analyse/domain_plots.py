@@ -242,6 +242,9 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     if sort_values:
         plot_df.sort_values(by=[values_column], inplace=True, ascending=True)
 
+    if plot_variable == "units":
+        plot_df = 100 * plot_df / plot_df.sum()
+
     fig, axis = plt.subplots(figsize=figsize)
     if subplot_adjust is None:
         s_adjust = dict()
