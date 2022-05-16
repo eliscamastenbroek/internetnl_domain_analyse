@@ -730,6 +730,8 @@ class DomainPlotter(object):
 
             scan_data_analyses = self.scan_data[scan_data_key]["analyses"]
             variables = scan_data_analyses.variables
+            report_number_empty = variables["report_number"].isna()
+            variables.loc[report_number_empty, "report_number"] = False
             module_info = scan_data_analyses.module_info
 
             stats_df = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key)
