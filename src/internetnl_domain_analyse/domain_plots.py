@@ -212,7 +212,8 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
                   export_svg=False,
                   export_highcharts=False,
                   highcharts_directory=None,
-                  title=None
+                  title=None,
+                  normalize_data=False
                   ):
     """ create a bar plot from the question 'plot_df'"""
     figure_properties = CBSPlotSettings()
@@ -242,7 +243,8 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     if sort_values:
         plot_df.sort_values(by=[values_column], inplace=True, ascending=True)
 
-    if plot_variable == "units":
+    if normalize_data:
+        _logger.info("Normalize data")
         plot_df = 100 * plot_df / plot_df.sum()
 
     fig, axis = plt.subplots(figsize=figsize)
@@ -289,7 +291,7 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
             if re.search("score", plot_title, re.IGNORECASE):
                 y_label = "Score %"
             else:
-                y_label = "% bedrijven"
+                y_label = "% van bedrijven"
 
             if translations is not None:
                 for key_in, label_out in translations.items():
