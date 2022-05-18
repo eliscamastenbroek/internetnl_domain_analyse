@@ -134,9 +134,9 @@ def make_cdf_plot(hist,
     fig.canvas.set_window_title(f"{grp_key}  {plot_key}")
 
     if cummulative:
-        y_label = "Cumulatief % bedrijven"
+        y_label = "Cumulatief % van bedrijven"
     else:
-        y_label = "% bedrijven"
+        y_label = "% van bedrijven"
 
     if translations is not None:
         for key_in, label_out in translations.items():
@@ -342,7 +342,7 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
             if re.search("score", plot_title, re.IGNORECASE):
                 x_label = "Score %"
             else:
-                x_label = "% bedrijven"
+                x_label = "% van bedrijven"
 
             if translations is not None:
                 for key_in, label_out in translations.items():
@@ -798,7 +798,7 @@ def make_conditional_pdf_plot(categories, image_directory,
     # this triggers the drawing, otherwise we can not retrieve the xtick labels
     fig.canvas.draw()
 
-    y_label = '% bedrijven'
+    y_label = '% van bedrijven'
 
     axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
     axis.yaxis.set_label_coords(-0.04, 1.05)
