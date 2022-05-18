@@ -33,6 +33,5 @@ scipy>=1.6.0
 yamlloader>=0.5.5
 beautifulsoup4>=4.9.3
 pyparsing>=2.4.7
-importlib_metadata~=4.8.2
 yaml~=0.2.5
 path~=16.2.0
