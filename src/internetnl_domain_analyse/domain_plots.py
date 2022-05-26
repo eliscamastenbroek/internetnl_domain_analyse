@@ -268,6 +268,7 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
 
     x_label = None
     y_label = None
+    y_lim = None
 
     if not barh:
 
@@ -386,6 +387,10 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
         fig.savefig(svg_image_file)
 
     if export_highcharts:
+        if y_max_bar_plot is not None:
+            y_lim = (0, y_max_bar_plot)
+        else:
+            y_lim = None
 
         if title is not None:
             plot_title = title
@@ -401,6 +406,8 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
             output_directory=highcharts_directory.as_posix(),
             output_file_name=image_file.stem,
             ylabel=hc_ylabel,
+            y_lim=y_lim,
+            y_tick_interval=y_spacing_bar_plot,
             title=plot_title,
             enable_legend=False
         )
