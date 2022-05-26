@@ -17,7 +17,7 @@ from internetnl_domain_analyse.domain_plots import (make_heatmap, make_condition
 
 logging.basicConfig(
     format='%(asctime)s %(filename)25s[%(lineno)4s] - %(levelname)-8s : %(message)s',
-    level=logging.DEBUG)
+    level=logging.WARNING)
 _logger = logging.getLogger()
 _log_hc = logging.getLogger("cbsplotlib")
 _log_hc.setLevel(_logger.getEffectiveLevel())
@@ -40,7 +40,7 @@ def parse_args():
                         version="{file} version: {ver}".format(file=os.path.basename(__file__),
                                                                ver=__version__))
     parser.add_argument("--verbose", dest="loglevel", help="set loglevel to INFO",
-                        action="store_const", const=logging.INFO, default=logging.INFO)
+                        action="store_const", const=logging.INFO, default=logging.WARNING)
     parser.add_argument("--debug", dest="loglevel", help="set loglevel to DEBUG"
                         , action="store_const", const=logging.DEBUG)
     parser.add_argument("--records_cache_dir", help="Directory of the records cache")
