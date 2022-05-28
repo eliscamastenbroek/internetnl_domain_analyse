@@ -2,9 +2,10 @@
 Changelog
 =========
 
-Version 1.5
+Version 1.5.1
 ===========
 
+- tex horizontal shift nu platformafhankelijk
 - nu ook met normalisatie van pdf
 - label % bedrijven hard op % van bedrijven gezet
 
