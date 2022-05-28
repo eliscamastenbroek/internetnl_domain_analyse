@@ -2,6 +2,7 @@ import argparse
 import codecs
 import logging
 import os
+import sys
 from pathlib import Path
 
 try:
@@ -115,6 +116,11 @@ def main():
     image_directory = Path(general_settings.get("image_directory", "."))
     tex_prepend_path = Path(general_settings.get("tex_prepend_path", "."))
     tex_horizontal_shift = general_settings.get("tex_horizontal_shift", "-1.15cm")
+    if isinstance(tex_horizontal_shift, dict):
+        if 'win' in sys.platform:
+            tex_horizontal_shift = tex_horizontal_shift["windows"]
+        else:
+            tex_horizontal_shift = tex_horizontal_shift["linux"]
 
     scan_data = general_settings["scan_data"]
     default_scan = general_settings["default_scan"]
