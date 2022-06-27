@@ -733,8 +733,14 @@ class DomainPlotter(object):
 
             scan_data_analyses = self.scan_data[scan_data_key]["analyses"]
             variables = scan_data_analyses.variables
-            report_number_empty = variables["report_number"].isna()
-            variables.loc[report_number_empty, "report_number"] = False
+            try:
+                report_number_empty = variables["report_number"].isna()
+            except KeyError:
+                report_number_empty = True
+                variables["report_number"] = False
+            else:
+                variables.loc[report_number_empty, "report_number"] = False
+
             module_info = scan_data_analyses.module_info
 
             stats_df = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key)
@@ -796,164 +802,168 @@ class DomainPlotter(object):
 
             plot_count = 0
             stop_plotting = False
-            for module_name, module_df in stats_df.groupby(level=0, sort=False):
-                do_this_module = True
-                for mod_key, mod_prop in module_info.items():
-                    if mod_prop.get('label') == module_name and not mod_prop.get('include', True):
-                        do_this_module = False
-                if not do_this_module:
-                    continue
+            if stats_df is not None:
+                for module_name, module_df in stats_df.groupby(level=0, sort=False):
+                    do_this_module = True
+                    for mod_key, mod_prop in module_info.items():
+                        if mod_prop.get('label') == module_name and not mod_prop.get('include',
+                                                                                     True):
+                            do_this_module = False
+                    if not do_this_module:
+                        continue
 
-                _logger.info(f"Module {module_name}")
-                if stop_plotting:
-                    break
-                for question_name, question_df in module_df.groupby(level=1, sort=False):
-                    _logger.debug(f"Question {question_name}")
-
-                    original_name = re.sub(r"_\d\.0$", "", question_df["variable"].values[0])
-                    question_type = variables.loc[original_name, "type"]
-
-                    hc_info = HighchartsInfo(variables_df=variables,
-                                             var_name=original_name,
-                                             breakdown_name=plot_key)
-                    export_highcharts = export_highcharts_bar
-                    if cdf_prop := cdf_variables.get(original_name):
-                        highcharts_directory_cdf = self.highcharts_directory
-                        if hc_sub_dir := cdf_prop.get("highcharts_output_directory"):
-                            highcharts_directory_cdf = highcharts_directory_cdf / Path(hc_sub_dir)
-                        export_svg_cdf = cdf_prop.get("export_svg", False)
-                        export_hc_cdf = cdf_prop.get("export_highcharts")
-                        plot_cdf = cdf_prop.get("apply", True)
-                        if export_hc_cdf is not None:
-                            export_highcharts_cdf = export_hc_cdf
-                    else:
-                        plot_cdf = False
-                    if hc_info.directory is not None:
-                        # we overschrijven hier de subdir die onder de statistiek opgegeven is
-                        highcharts_directory = self.highcharts_directory / hc_info.directory
-                    else:
-                        if plot_bar:
-                            highcharts_directory = highcharts_directory_bar
-                        else:
-                            highcharts_directory = highcharts_directory_cdf
-                    if hc_info.label is not None:
-                        title = hc_info.label
-                    else:
-                        title = highcharts_title
-
-                    title = re.sub("\s{2,}", " ", title)
-
-                    if hc_info.y_max is not None:
-                        y_max = hc_info.y_max
-                    else:
-                        y_max = y_max_bar_plot
-
-                    if hc_info.y_spacing is not None:
-                        y_spacing = hc_info.y_spacing
-                    else:
-                        y_spacing = y_spacing_bar_plot
-
-                    if original_name not in self.all_plots.keys():
-                        _logger.debug(f"Initialize dict for {original_name}")
-                        self.all_plots[original_name] = dict()
-                        self.all_shifts[original_name] = dict()
-
-                    mask = get_option_mask(question_df=question_df, variables=variables,
-                                           question_type=question_type)
-
-                    plot_df = question_df.loc[(module_name, question_name, mask)].copy()
-
-                    if variables.loc[original_name, "report_number"]:
-                        normalize_data = True
-                    else:
-                        normalize_data = False
-
-                    if self.translations is not None:
-                        plot_df.rename(columns=self.translations, inplace=True)
-
-                    xoff = 0
-                    yoff = 0
-
-                    if reference_lines is not None:
-                        for ref_key, ref_prop in reference_lines.items():
-                            ref_stat_df = reference_lines[ref_key]["data"]
-                            ref_quest_df = None
-                            for ref_quest_name, ref_quest_df in ref_stat_df.groupby(level=1):
-                                if ref_quest_name == question_name:
-                                    break
-                            if ref_quest_df is not None:
-                                mask2 = get_option_mask(question_df=ref_quest_df,
-                                                        variables=variables,
-                                                        question_type=question_type)
-                                ref_df = ref_quest_df.loc[
-                                    (module_name, question_name, mask2)].copy()
-                                reference_lines[ref_key]["plot_df"] = ref_df
-
-                    _logger.info(f"Plot nr {plot_count}")
-                    if plot_bar:
-                        image_file = make_bar_plot(plot_df=plot_df,
-                                                   plot_key=plot_key,
-                                                   module_name=module_name,
-                                                   question_name=question_name,
-                                                   image_directory=self.image_directory,
-                                                   show_plots=self.show_plots,
-                                                   figsize=figsize,
-                                                   image_type=self.image_type,
-                                                   reference_lines=reference_lines,
-                                                   xoff=xoff, yoff=yoff,
-                                                   show_title=self.show_title,
-                                                   barh=self.barh,
-                                                   subplot_adjust=subplot_adjust,
-                                                   box_margin=box_margin,
-                                                   sort_values=sort_values,
-                                                   y_max_bar_plot=y_max,
-                                                   y_spacing_bar_plot=y_spacing,
-                                                   translations=self.translations,
-                                                   export_highcharts=export_highcharts,
-                                                   export_svg=export_svg_bar,
-                                                   highcharts_directory=highcharts_directory,
-                                                   title=title,
-                                                   normalize_data=normalize_data
-                                                   )
-
-                        _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
-                        self.all_plots[original_name][label] = image_file
-                        self.all_shifts[original_name][label] = tex_horizontal_shift
-
-                    if plot_cdf:
-                        hist_info = scan_data_analyses.all_hist_per_format[plot_key][original_name]
-
-                        if hist_info is not None:
-                            for grp_key, hist in hist_info.items():
-                                im_file_2 = make_cdf_plot(hist=hist,
-                                                          plot_key=plot_key,
-                                                          grp_key=grp_key,
-                                                          module_name=module_name,
-                                                          question_name=question_name,
-                                                          image_file_base=original_name,
-                                                          image_directory=self.image_directory,
-                                                          show_plots=self.show_plots,
-                                                          figsize=figsize,
-                                                          image_type=self.image_type,
-                                                          reference_lines=reference_lines,
-                                                          cummulative=self.cumulative,
-                                                          xoff=xoff, yoff=yoff,
-                                                          y_max=y_max_pdf_plot,
-                                                          y_spacing=y_spacing_pdf_plot,
-                                                          translations=self.translations,
-                                                          export_highcharts=export_highcharts_cdf,
-                                                          export_svg=export_svg_cdf,
-                                                          highcharts_directory=highcharts_directory_cdf,
-                                                          title=title
-                                                          )
-                        if self.show_plots:
-                            plt.show()
-
-                    plot_count += 1
-                    if self.max_plots is not None and plot_count == self.max_plots:
-                        _logger.info(f"Maximum number of plot ({self.max_plots}) reached")
-                        stop_plotting = True
+                    _logger.info(f"Module {module_name}")
+                    if stop_plotting:
                         break
+                    for question_name, question_df in module_df.groupby(level=1, sort=False):
+                        _logger.debug(f"Question {question_name}")
+
+                        original_name = re.sub(r"_\d\.0$", "", question_df["variable"].values[0])
+                        question_type = variables.loc[original_name, "type"]
+
+                        hc_info = HighchartsInfo(variables_df=variables,
+                                                 var_name=original_name,
+                                                 breakdown_name=plot_key)
+                        export_highcharts = export_highcharts_bar
+                        if cdf_prop := cdf_variables.get(original_name):
+                            highcharts_directory_cdf = self.highcharts_directory
+                            if hc_sub_dir := cdf_prop.get("highcharts_output_directory"):
+                                highcharts_directory_cdf = highcharts_directory_cdf / Path(
+                                    hc_sub_dir)
+                            export_svg_cdf = cdf_prop.get("export_svg", False)
+                            export_hc_cdf = cdf_prop.get("export_highcharts")
+                            plot_cdf = cdf_prop.get("apply", True)
+                            if export_hc_cdf is not None:
+                                export_highcharts_cdf = export_hc_cdf
+                        else:
+                            plot_cdf = False
+                        if hc_info.directory is not None:
+                            # we overschrijven hier de subdir die onder de statistiek opgegeven is
+                            highcharts_directory = self.highcharts_directory / hc_info.directory
+                        else:
+                            if plot_bar:
+                                highcharts_directory = highcharts_directory_bar
+                            else:
+                                highcharts_directory = highcharts_directory_cdf
+                        if hc_info.label is not None:
+                            title = hc_info.label
+                        else:
+                            title = highcharts_title
+
+                        title = re.sub("\s{2,}", " ", title)
+
+                        if hc_info.y_max is not None:
+                            y_max = hc_info.y_max
+                        else:
+                            y_max = y_max_bar_plot
+
+                        if hc_info.y_spacing is not None:
+                            y_spacing = hc_info.y_spacing
+                        else:
+                            y_spacing = y_spacing_bar_plot
+
+                        if original_name not in self.all_plots.keys():
+                            _logger.debug(f"Initialize dict for {original_name}")
+                            self.all_plots[original_name] = dict()
+                            self.all_shifts[original_name] = dict()
+
+                        mask = get_option_mask(question_df=question_df, variables=variables,
+                                               question_type=question_type)
+
+                        plot_df = question_df.loc[(module_name, question_name, mask)].copy()
+
+                        if variables.loc[original_name, "report_number"]:
+                            normalize_data = True
+                        else:
+                            normalize_data = False
+
+                        if self.translations is not None:
+                            plot_df.rename(columns=self.translations, inplace=True)
+
+                        xoff = 0
+                        yoff = 0
+
+                        if reference_lines is not None:
+                            for ref_key, ref_prop in reference_lines.items():
+                                ref_stat_df = reference_lines[ref_key]["data"]
+                                ref_quest_df = None
+                                for ref_quest_name, ref_quest_df in ref_stat_df.groupby(level=1):
+                                    if ref_quest_name == question_name:
+                                        break
+                                if ref_quest_df is not None:
+                                    mask2 = get_option_mask(question_df=ref_quest_df,
+                                                            variables=variables,
+                                                            question_type=question_type)
+                                    ref_df = ref_quest_df.loc[
+                                        (module_name, question_name, mask2)].copy()
+                                    reference_lines[ref_key]["plot_df"] = ref_df
+
+                        _logger.info(f"Plot nr {plot_count}")
+                        if plot_bar:
+                            image_file = make_bar_plot(plot_df=plot_df,
+                                                       plot_key=plot_key,
+                                                       module_name=module_name,
+                                                       question_name=question_name,
+                                                       image_directory=self.image_directory,
+                                                       show_plots=self.show_plots,
+                                                       figsize=figsize,
+                                                       image_type=self.image_type,
+                                                       reference_lines=reference_lines,
+                                                       xoff=xoff, yoff=yoff,
+                                                       show_title=self.show_title,
+                                                       barh=self.barh,
+                                                       subplot_adjust=subplot_adjust,
+                                                       box_margin=box_margin,
+                                                       sort_values=sort_values,
+                                                       y_max_bar_plot=y_max,
+                                                       y_spacing_bar_plot=y_spacing,
+                                                       translations=self.translations,
+                                                       export_highcharts=export_highcharts,
+                                                       export_svg=export_svg_bar,
+                                                       highcharts_directory=highcharts_directory,
+                                                       title=title,
+                                                       normalize_data=normalize_data
+                                                       )
+
+                            _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
+                            self.all_plots[original_name][label] = image_file
+                            self.all_shifts[original_name][label] = tex_horizontal_shift
+
+                        if plot_cdf:
+                            hist_info = scan_data_analyses.all_hist_per_format[plot_key][
+                                original_name]
+
+                            if hist_info is not None:
+                                for grp_key, hist in hist_info.items():
+                                    im_file_2 = make_cdf_plot(hist=hist,
+                                                              plot_key=plot_key,
+                                                              grp_key=grp_key,
+                                                              module_name=module_name,
+                                                              question_name=question_name,
+                                                              image_file_base=original_name,
+                                                              image_directory=self.image_directory,
+                                                              show_plots=self.show_plots,
+                                                              figsize=figsize,
+                                                              image_type=self.image_type,
+                                                              reference_lines=reference_lines,
+                                                              cummulative=self.cumulative,
+                                                              xoff=xoff, yoff=yoff,
+                                                              y_max=y_max_pdf_plot,
+                                                              y_spacing=y_spacing_pdf_plot,
+                                                              translations=self.translations,
+                                                              export_highcharts=export_highcharts_cdf,
+                                                              export_svg=export_svg_cdf,
+                                                              highcharts_directory=highcharts_directory_cdf,
+                                                              title=title
+                                                              )
+                            if self.show_plots:
+                                plt.show()
+
+                        plot_count += 1
+                        if self.max_plots is not None and plot_count == self.max_plots:
+                            _logger.info(f"Maximum number of plot ({self.max_plots}) reached")
+                            stop_plotting = True
+                            break
 
 
 class HighchartsInfo:
