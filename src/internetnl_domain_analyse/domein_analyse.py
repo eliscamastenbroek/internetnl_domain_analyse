@@ -88,7 +88,9 @@ def parse_args():
     parser.add_argument("--onderschrift", action="store_false", dest="bovenschrift",
                         help="De latex overview file krijgt de captions boven de figuren"
                         )
-
+    parser.add_argument("--tld_extract_cache_directory", help="Naam van de directory als je het"
+                                                              "scrtip naar cache wilt laten lezen"
+                                                              "en schrijven")
     parsed_arguments = parser.parse_args()
 
     return parsed_arguments
@@ -203,6 +205,7 @@ def main():
                 reset=args.reset,
                 output_file=output_file,
                 cache_directory=cache_directory,
+                tld_extract_cache_directory=args.tld_extract_cache_directory,
                 statistics=statistics,
                 default_scan=default_scan,
                 variables=variables,
