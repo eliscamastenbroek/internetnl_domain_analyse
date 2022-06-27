@@ -41,6 +41,7 @@ class DomainAnalyser(object):
                  scan_data_key=None,
                  cache_file_base="tables_df",
                  cache_directory=None,
+                 tld_extract_cache_directory=None,
                  output_file=None,
                  reset=None,
                  records_filename=None,
@@ -113,6 +114,7 @@ class DomainAnalyser(object):
             self.internet_nl_filename = Path("internet_nl.sqlite")
 
         self.cache_directory = cache_directory
+        self.tld_extract_cache_directory = tld_extract_cache_directory
         cache_file_base = Path("_".join([cache_file_base, scan_data_key]) + ".pkl")
         self.cache_file = Path(cache_directory) / cache_file_base
         self.cate_outfile = None
@@ -583,8 +585,12 @@ class DomainAnalyser(object):
             records[original_url] = records[self.url_key]
             tables[original_url] = tables[self.url_key]
 
-            records[self.url_key] = [get_clean_url(url, cache_dir=self.cache_directory) for url in
-                                     records[self.url_key]]
+            all_clean_urls = list()
+            for url in records[self.url_key]:
+                clean_url = get_clean_url(url, cache_dir=self.tld_extract_cache_directory)
+                _logger.debug(f"Converted {url} to {clean_url}")
+                all_clean_urls.append(clean_url)
+            records[self.url_key] = all_clean_urls
             records.dropna(subset=[self.url_key], axis=0, inplace=True)
             records.reset_index(inplace=True)
             tables[self.url_key] = [get_clean_url(url) for url in tables[self.url_key]]
