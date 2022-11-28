@@ -131,7 +131,11 @@ def make_cdf_plot(hist,
 
     # this triggers the drawing, otherwise we can not retrieve the xtick labels
     fig.canvas.draw()
-    fig.canvas.set_window_title(f"{grp_key}  {plot_key}")
+    windows_title =f"{grp_key}  {plot_key}"
+    try:
+        fig.canvas.set_window_title(windows_title)
+    except AttributeError as err:
+        fig.canvas.manager.set_window_title(windows_title)
 
     if cummulative:
         y_label = "Cumulatief % van bedrijven"
