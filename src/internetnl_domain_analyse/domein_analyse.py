@@ -163,7 +163,9 @@ def main():
     elif os.getenv("RECORDS_CACHE_DIR") is not None:
         records_cache_dir = os.getenv("RECORDS_CACHE_DIR")
     else:
-        records_cache_dir = Path(".")
+        records_cache_dir = general_settings.get("records_cache_directory", ".")
+    records_cache_dir = Path(records_cache_dir)
+
     if args.records_filename is not None:
         records_filename = Path(args.records_filename)
     elif general_settings.get("records_cache_file") is not None:
