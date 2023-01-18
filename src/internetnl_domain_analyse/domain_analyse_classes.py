@@ -11,12 +11,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import yaml
+
 from ict_analyser.analyser_tool.sample_statistics import SampleStatistics
 from ict_analyser.analyser_tool.utils import (prepare_df_for_statistics,
                                               get_records_select,
                                               rename_all_variables)
 from ict_analyser.analyser_tool.variable_properties import VariableProperties
-
 from internetnl_domain_analyse.domain_plots import (make_cdf_plot, make_bar_plot)
 from internetnl_domain_analyse.latex_output import make_latex_overview
 from internetnl_domain_analyse.utils import (read_tables_from_sqlite,
@@ -36,7 +36,53 @@ def make_plot_cache_file_name(cache_directory, file_base, prefix):
     return cache_directory / Path("_".join([prefix, file_base, "cache_for_plot.pkl"]))
 
 
-class DomainAnalyser(object):
+class RecordsCacheInfo:
+    def __init__(self, records_cache_data: dict, year: str, stat_diretory: str=None):
+        self.records_cache_data = records_cache_data
+        self.stat_directory = stat_diretory
+
+        # pick the last two digit of the year
+        self.year_digits = year[-2:]
+
+        self.cache_dir = None
+        self.file_name = None
+        self.table_names = None
+
+        self.get_cache_file_name()
+        self.get_cache_table_names()
+
+    def get_cache_file_name(self):
+        """
+        Retrieve the cache file name from the dictionary. If environments variables are given, base the
+        directory on the environment name. Names are given like RECORDS_CACHE_DIR_20,  RECORDS_CACHE_DIR_21,
+        for 2020, 2021 resp.
+        """
+
+        records_environment_variable = "_".join(["RECORDS_CACHE_DIR", self.year_digits])
+        records_cache_dir_name = os.getenv(records_environment_variable)
+
+        if records_cache_dir_name is None:
+            records_cache_dir_name = self.records_cache_data.get("records_cache_directory", ".")
+
+        records_cache_dir_name = records_cache_dir_name.replace("{{\s*stat_directory\s*}}", self.stat_directory)
+
+        self.cache_dir = Path(records_cache_dir_name)
+
+        records_file_basename = Path(self.records_cache_data["records_cache_file"])
+
+        self.file_name = self.cache_dir / records_file_basename
+
+    def get_cache_table_names(self):
+        """
+        Get the table names of the cache files.
+        """
+        self.table_names = self.records_cache_data.get("records_table_names")
+        if self.table_names is None:
+            self.table_names = [f"records_df_{self.year_digits}_2",
+                                        f"info_records_df_{self.year_digits}"]
+
+
+class DomainAnalyser:
     def __init__(self,
                  scan_data_key=None,
                  cache_file_base="tables_df",
@@ -44,8 +90,7 @@ class DomainAnalyser(object):
                  tld_extract_cache_directory=None,
                  output_file=None,
                  reset=None,
-                 records_filename=None,
-                 records_table_names=None,
+                 records_cache_info: RecordsCacheInfo=None,
                  internet_nl_filename=None,
                  breakdown_labels=None,
                  statistics: dict = None,
@@ -68,6 +113,8 @@ class DomainAnalyser(object):
                  ):
 
         _logger.info(f"Running here {os.getcwd()}")
+
+        self.records_cache_info = records_cache_info
 
         if output_file is None:
             self.output_file = "output.sqlite"
@@ -97,16 +144,6 @@ class DomainAnalyser(object):
 
         self.categories_coefficient_df = None
         self.correlation_coefficient_df = None
-
-        if records_filename is None:
-            self.records_filename = Path(cache_directory) / Path("records_cache.sqlite")
-        else:
-            self.records_filename = records_filename
-
-        if records_table_names is None:
-            self.records_tables_names = ["records_df_20_2", "info_records_df_20_2"]
-        else:
-            self.records_tables_names = records_table_names
 
         if internet_nl_filename is not None:
             self.internet_nl_filename = internet_nl_filename
@@ -538,8 +575,9 @@ class DomainAnalyser(object):
         if not self.cache_file.exists() or self.reset == 0:
 
             index_name = self.be_id
-            _logger.info(f"Reading table data from {self.records_filename}")
-            records = read_tables_from_sqlite(self.records_filename, self.records_tables_names,
+            _logger.info(f"Reading table data from {self.records_cache_info.file_name}")
+            records = read_tables_from_sqlite(self.records_cache_info.file_name,
+                                              self.records_cache_info.table_names,
                                               index_name)
 
             table_names = ["report", "scoring", "status", "results"]
@@ -628,7 +666,7 @@ class DomainAnalyser(object):
                          f"cache {self.cache_file.absolute()}")
 
 
-class DomainPlotter(object):
+class DomainPlotter:
     def __init__(self, scan_data,
                  default_scan=None,
                  plot_info=None,

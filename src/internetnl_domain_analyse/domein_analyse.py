@@ -4,14 +4,11 @@ import logging
 import os
 import sys
 from pathlib import Path
+from path import Path as path_Path
 
-try:
-    from path import Path as path_Path
-except ModuleNotFoundError:
-    from cbs_utils.misc import Chdir as path_Path
 import yaml
 from internetnl_domain_analyse import __version__
-from internetnl_domain_analyse.domain_analyse_classes import (DomainAnalyser, DomainPlotter)
+from internetnl_domain_analyse.domain_analyse_classes import (DomainAnalyser, DomainPlotter, RecordsCacheInfo)
 from internetnl_domain_analyse.domain_plots import (make_heatmap, make_conditional_score_plot,
                                                     make_conditional_pdf_plot,
                                                     make_verdeling_per_aantal_categorie)
@@ -46,7 +43,6 @@ def parse_args():
                         , action="store_const", const=logging.DEBUG)
     parser.add_argument("--records_cache_dir", help="Directory of the records cache")
     parser.add_argument("--records_filename", help="Name of the records cache")
-    parser.add_argument("--working_directory", help="Directory relative to what we work")
     parser.add_argument("--output_filename", help="Name of the output")
     parser.add_argument("--reset", choices={"0", "1"}, default=None, help="Reset the cached data")
     parser.add_argument("--statistics_to_xls", help="Write the statistics ot an excel file",
@@ -126,9 +122,7 @@ def main():
 
     scan_data = general_settings["scan_data"]
     default_scan = general_settings["default_scan"]
-
-    records_file_name = general_settings["records_cache_file"]
-    records_table_names = general_settings["records_table_names"]
+    stat_directory = general_settings.get("stat_directory")
 
     sheet_renames = general_settings["sheet_renames"]
     n_digits = general_settings["n_digits"]
@@ -158,51 +152,36 @@ def main():
     weights = settings["weight"]
     plot_info = settings["plots"]
 
-    if args.records_cache_dir is not None:
-        records_cache_dir = args.records_cache_dir
-    elif os.getenv("RECORDS_CACHE_DIR") is not None:
-        records_cache_dir = os.getenv("RECORDS_CACHE_DIR")
-    else:
-        records_cache_dir = general_settings.get("records_cache_directory", ".")
-    records_cache_dir = Path(records_cache_dir)
-
-    if args.records_filename is not None:
-        records_filename = Path(args.records_filename)
-    elif general_settings.get("records_cache_file") is not None:
-        records_filename = Path(general_settings["records_cache_file"])
-    else:
-        records_filename = Path("records_cache.sqlite")
-
-    records_filename = records_cache_dir / records_filename
-
     if args.output_filename is None:
         output_file = general_settings.get("output", "internet_nl_stats")
     else:
         output_file = args.output_filename
 
-    if args.working_directory is None:
-        wd = general_settings.get("working_directory", ".")
-        if wd is None:
-            wd = "."
-        working_directory = Path(wd)
+    cache_directory.mkdir(exist_ok=True)
+    image_directory.mkdir(exist_ok=True)
+    var_df = None
+    try:
+        records_cache_data_per_year = general_settings["records_cache_data"]
+    except KeyError as err:
+        _logger.warning(err)
+        raise KeyError("records cache data needs to be given per year!")
 
-    else:
-        working_directory = Path(args.working_directory)
+    _logger.info(f"Running domain analyser in {os.getcwd()}")
+    for key_scan_type, scan_prop_per_year in scan_data.items():
 
-    with path_Path(str(working_directory)):
-        cache_directory.mkdir(exist_ok=True)
-        image_directory.mkdir(exist_ok=True)
-        var_df = None
-        _logger.info(f"Running domain analyser in {os.getcwd()}")
-        for key, scan_prop in scan_data.items():
+        for scan_year, scan_prop in scan_prop_per_year.items():
+
             if not scan_prop.get("do_it", True):
                 continue
-            internet_nl_filename = Path(scan_prop["data_file"])
-            _logger.info(f"Start analyse {key}: {internet_nl_filename}")
+            internet_nl_filename = Path(scan_prop_per_year["data_file"])
+            records_cache_data = records_cache_data_per_year[scan_year]
+            records_cache_info = RecordsCacheInfo(records_cache_data=records_cache_data, year=scan_year,
+                                                  stat_directory=stat_directory)
+
+            _logger.info(f"Start analyse {scan_year}: {internet_nl_filename}")
             domain_analyses = DomainAnalyser(
-                scan_data_key=key,
-                records_filename=records_filename,
-                records_table_names=records_table_names,
+                scan_data_key=key_scan_type,
+                records_cache_info=records_cache_info,
                 internet_nl_filename=internet_nl_filename,
                 reset=args.reset,
                 output_file=output_file,
