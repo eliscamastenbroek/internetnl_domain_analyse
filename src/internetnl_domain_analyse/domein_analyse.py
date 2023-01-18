@@ -4,9 +4,10 @@ import logging
 import os
 import sys
 from pathlib import Path
-from path import Path as path_Path
 
 import yaml
+from path import Path as path_Path
+
 from internetnl_domain_analyse import __version__
 from internetnl_domain_analyse.domain_analyse_classes import (DomainAnalyser, DomainPlotter, RecordsCacheInfo)
 from internetnl_domain_analyse.domain_plots import (make_heatmap, make_conditional_score_plot,
@@ -102,7 +103,7 @@ def main():
         settings = yaml.load(stream=stream, Loader=yaml.Loader)
 
     general_settings = settings["general"]
-    cache_directory = Path(general_settings.get("cache_directory", "."))
+    cache_directory_base_name = general_settings.get("cache_directory", ".")
 
     if args.highcharts_output_directory is not None:
         highcharts_directory = args.highcharts_output_directory
@@ -157,7 +158,6 @@ def main():
     else:
         output_file = args.output_filename
 
-    cache_directory.mkdir(exist_ok=True)
     image_directory.mkdir(exist_ok=True)
     var_df = None
     try:
@@ -173,7 +173,7 @@ def main():
 
             if not scan_prop.get("do_it", True):
                 continue
-            internet_nl_filename = Path(scan_prop_per_year["data_file"])
+            internet_nl_filename = Path(scan_prop["data_file"])
             records_cache_data = records_cache_data_per_year[scan_year]
             records_cache_info = RecordsCacheInfo(records_cache_data=records_cache_data, year=scan_year,
                                                   stat_directory=stat_directory)
@@ -185,7 +185,7 @@ def main():
                 internet_nl_filename=internet_nl_filename,
                 reset=args.reset,
                 output_file=output_file,
-                cache_directory=cache_directory,
+                cache_directory_base_name=cache_directory_base_name,
                 tld_extract_cache_directory=args.tld_extract_cache_directory,
                 statistics=statistics,
                 default_scan=default_scan,
@@ -211,24 +211,24 @@ def main():
         if cor_plot and correlations is not None:
             make_heatmap(correlations=correlations, image_directory=image_directory,
                          highcharts_directory=highcharts_directory, show_plots=args.show_plots,
-                         cache_directory=cache_directory)
+                         cache_directory=cache_directory_base_name)
         if cate_plot and categories is not None:
             make_conditional_pdf_plot(categories=categories, image_directory=image_directory,
                                       highcharts_directory=highcharts_directory,
                                       show_plots=args.show_plots,
-                                      cache_directory=cache_directory)
+                                      cache_directory=cache_directory_base_name)
         if verdeling_plot and categories is not None:
             make_verdeling_per_aantal_categorie(categories=categories,
                                                 image_directory=image_directory,
                                                 highcharts_directory=highcharts_directory,
                                                 show_plots=args.show_plots,
-                                                cache_directory=cache_directory,
+                                                cache_directory=cache_directory_base_name,
                                                 export_highcharts=args.export_highcharts)
         if score_plot and correlations is not None:
             make_conditional_score_plot(correlations=correlations, image_directory=image_directory,
                                         highcharts_directory=highcharts_directory,
                                         show_plots=args.show_plots,
-                                        cache_directory=cache_directory)
+                                        cache_directory=cache_directory_base_name)
 
         if bar_plot or cdf_plot:
             DomainPlotter(
@@ -248,7 +248,7 @@ def main():
                 cdf_plot=cdf_plot,
                 bar_plot=bar_plot,
                 cor_plot=cor_plot,
-                cache_directory=cache_directory,
+                cache_directory=cache_directory_base_name,
                 translations=label_translations,
                 export_highcharts=args.export_highcharts,
                 highcharts_directory=highcharts_directory,

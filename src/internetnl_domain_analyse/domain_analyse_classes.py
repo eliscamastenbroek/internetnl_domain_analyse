@@ -1,4 +1,5 @@
 import logging
+import tqdm
 import os
 import pickle
 import re
@@ -37,12 +38,15 @@ def make_plot_cache_file_name(cache_directory, file_base, prefix):
 
 
 class RecordsCacheInfo:
-    def __init__(self, records_cache_data: dict, year: str, stat_diretory: str=None):
+    def __init__(self, records_cache_data: dict, year: str, stat_directory: str = None):
+        """
+        Store the properties of the caches file in a class
+        """
         self.records_cache_data = records_cache_data
-        self.stat_directory = stat_diretory
+        self.stat_directory = stat_directory
 
         # pick the last two digit of the year
-        self.year_digits = year[-2:]
+        self.year_digits = f"{year}"[-2:]
 
         self.cache_dir = None
         self.file_name = None
@@ -64,7 +68,7 @@ class RecordsCacheInfo:
         if records_cache_dir_name is None:
             records_cache_dir_name = self.records_cache_data.get("records_cache_directory", ".")
 
-        records_cache_dir_name = records_cache_dir_name.replace("{{\s*stat_directory\s*}}", self.stat_directory)
+        records_cache_dir_name = records_cache_dir_name.replace("{{ stat_directory }}", self.stat_directory)
 
         self.cache_dir = Path(records_cache_dir_name)
 
@@ -79,18 +83,18 @@ class RecordsCacheInfo:
         self.table_names = self.records_cache_data.get("records_table_names")
         if self.table_names is None:
             self.table_names = [f"records_df_{self.year_digits}_2",
-                                        f"info_records_df_{self.year_digits}"]
+                                f"info_records_df_{self.year_digits}"]
 
 
 class DomainAnalyser:
     def __init__(self,
                  scan_data_key=None,
                  cache_file_base="tables_df",
-                 cache_directory=None,
+                 cache_directory_base_name=None,
                  tld_extract_cache_directory=None,
                  output_file=None,
                  reset=None,
-                 records_cache_info: RecordsCacheInfo=None,
+                 records_cache_info: RecordsCacheInfo = None,
                  internet_nl_filename=None,
                  breakdown_labels=None,
                  statistics: dict = None,
@@ -150,10 +154,14 @@ class DomainAnalyser:
         else:
             self.internet_nl_filename = Path("internet_nl.sqlite")
 
-        self.cache_directory = cache_directory
-        self.tld_extract_cache_directory = tld_extract_cache_directory
-        cache_file_base = Path("_".join([cache_file_base, scan_data_key]) + ".pkl")
-        self.cache_file = Path(cache_directory) / cache_file_base
+        self.cache_directory = Path("_".join([cache_directory_base_name, self.records_cache_info.year_digits]))
+        self.cache_directory.mkdir(exist_ok=True)
+        if tld_extract_cache_directory is None:
+            self.tld_extract_cache_directory = "tld_cache"
+        else:
+            self.tld_extract_cache_directory = tld_extract_cache_directory
+        cache_file_base = Path("_".join([cache_file_base, self.records_cache_info.year_digits, scan_data_key]) + ".pkl")
+        self.cache_file = self.cache_directory / cache_file_base
         self.cate_outfile = None
         self.cate_pkl_file = None
         self.corr_outfile = None
@@ -620,14 +628,16 @@ class DomainAnalyser:
 
             # hier gaan we de url name opschonen. sla eerst de oorsponkelijke url op
             original_url = "_".join([self.url_key, "original"])
-            records[original_url] = records[self.url_key]
-            tables[original_url] = tables[self.url_key]
+            records = pd.concat([records, records[self.url_key].rename(original_url)], axis=1)
+            tables = pd.concat([tables, tables[self.url_key].rename(original_url)], axis=1)
 
             all_clean_urls = list()
+            _logger.info("Start cleaning urls...")
             for url in records[self.url_key]:
                 clean_url = get_clean_url(url, cache_dir=self.tld_extract_cache_directory)
                 _logger.debug(f"Converted {url} to {clean_url}")
                 all_clean_urls.append(clean_url)
+            _logger.info("Done!")
             records[self.url_key] = all_clean_urls
             records.dropna(subset=[self.url_key], axis=0, inplace=True)
             records.reset_index(inplace=True)
