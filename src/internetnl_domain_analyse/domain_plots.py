@@ -230,7 +230,11 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     names = plot_df.index.names
     plot_df.reset_index(inplace=True)
     plot_title = " - ".join([module_name, question_name])
-    result = plot_df.loc[0, names[2]]
+    try:
+        result = plot_df.loc[0, names[2]]
+    except KeyError as err:
+        _logger.warning(err)
+        return
     if result == "":
         result = "True"
     plot_title += f": {result}"

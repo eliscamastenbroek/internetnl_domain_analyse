@@ -73,9 +73,12 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
             for label, image_name in images.items():
                 with doc.create(SubFigure(width=NoEscape(r'\linewidth'))) as sub_plot:
                     if tex_prepend_path is None:
-                        full_image_name = image_name
+                        full_image_name = Path(image_name)
                     else:
-                        full_image_name = tex_prepend_path / image_name
+                        if image_name is not None:
+                            full_image_name = tex_prepend_path / image_name
+                        else:
+                            full_image_name = Path("bla")
                     horizontal_shift = tex_horizontal_shift
                     if shift_props := all_shifts.get(original_name):
                         if hz := shift_props.get(label):

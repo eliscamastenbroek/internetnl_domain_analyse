@@ -10,6 +10,8 @@ import tldextract
 from ict_analyser.analyser_tool.utils import (reorganise_stat_df)
 
 _logger = logging.getLogger(__name__)
+tld_logger = logging.getLogger("tldextract")
+tld_logger.setLevel(logging.WARNING)
 
 
 def read_tables_from_sqlite(filename: Path, table_names, index_name) -> pd.DataFrame:

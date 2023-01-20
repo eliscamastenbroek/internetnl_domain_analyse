@@ -29,11 +29,13 @@ from internetnl_domain_analyse.utils import (read_tables_from_sqlite,
 
 _logger = logging.getLogger(__name__)
 
+tld_logger = logging.getLogger("tldextract")
+
 mpl_logger = logging.getLogger("matplotlib")
 mpl_logger.setLevel(logging.WARNING)
 
 
-def make_plot_cache_file_name(cache_directory, file_base, prefix):
+def make_plot_cache_file_name(cache_directory, file_base, prefix, year):
     return cache_directory / Path("_".join([prefix, file_base, "cache_for_plot.pkl"]))
 
 
@@ -57,9 +59,9 @@ class RecordsCacheInfo:
 
     def get_cache_file_name(self):
         """
-        Retrieve the cache file name from the dictionary. If environments variables are given, base the
-        directory on the environment name. Names are given like RECORDS_CACHE_DIR_20,  RECORDS_CACHE_DIR_21,
-        for 2020, 2021 resp.
+        Retrieve the cache file name from the dictionary. If environments variables are given,
+        base the directory on the environment name. Names are given like RECORDS_CACHE_DIR_20,
+        RECORDS_CACHE_DIR_21, for 2020, 2021 resp.
         """
 
         records_environment_variable = "_".join(["RECORDS_CACHE_DIR", self.year_digits])
@@ -68,7 +70,8 @@ class RecordsCacheInfo:
         if records_cache_dir_name is None:
             records_cache_dir_name = self.records_cache_data.get("records_cache_directory", ".")
 
-        records_cache_dir_name = records_cache_dir_name.replace("{{ stat_directory }}", self.stat_directory)
+        records_cache_dir_name = records_cache_dir_name.replace("{{ stat_directory }}",
+                                                                self.stat_directory)
 
         self.cache_dir = Path(records_cache_dir_name)
 
@@ -154,13 +157,15 @@ class DomainAnalyser:
         else:
             self.internet_nl_filename = Path("internet_nl.sqlite")
 
-        self.cache_directory = Path("_".join([cache_directory_base_name, self.records_cache_info.year_digits]))
+        self.cache_directory = Path(
+            "_".join([cache_directory_base_name, self.records_cache_info.year_digits]))
         self.cache_directory.mkdir(exist_ok=True)
         if tld_extract_cache_directory is None:
             self.tld_extract_cache_directory = "tld_cache"
         else:
             self.tld_extract_cache_directory = tld_extract_cache_directory
-        cache_file_base = Path("_".join([cache_file_base, self.records_cache_info.year_digits, scan_data_key]) + ".pkl")
+        cache_file_base = Path("_".join(
+            [cache_file_base, self.records_cache_info.year_digits, scan_data_key]) + ".pkl")
         self.cache_file = self.cache_directory / cache_file_base
         self.cate_outfile = None
         self.cate_pkl_file = None
@@ -308,8 +313,12 @@ class DomainAnalyser:
     def calculate_statistics_one_breakdown(self, group_by):
 
         index_names = group_by + [self.be_id]
-        dataframe = prepare_df_for_statistics(self.dataframe, index_names=index_names,
-                                              units_key="units")
+        try:
+            dataframe = prepare_df_for_statistics(self.dataframe, index_names=index_names,
+                                                  units_key="units")
+        except KeyError:
+            _logger.info(f"Breakdonw on {index_names} does not exist")
+            return None, None
 
         all_stats = dict()
         all_hist = dict()
@@ -546,16 +555,24 @@ class DomainAnalyser:
             file_name = Path("_".join([file_base, self.scan_data_key]) + ".pkl")
             cache_file = self.cache_directory / file_name
 
+            group_by = list(props["groupby"].values())
+
             if cache_file.exists() and self.reset is None:
                 _logger.info(f"Reading stats from cache {cache_file}")
                 with open(str(cache_file), "rb") as stream:
                     all_stats, all_hist = pickle.load(stream)
-            else:
-                group_by = list(props["groupby"].values())
+            elif self.dataframe is not None:
+                _logger.info("Calculating statistics from micro data")
                 all_stats, all_hist = self.calculate_statistics_one_breakdown(group_by=group_by)
+                if all_stats is None:
+                    _logger.info(f"Could not calculate statistisc for breakdown {group_by}. Skip")
+                    continue
                 _logger.info(f"Writing stats to cache {cache_file}")
                 with open(str(cache_file), "wb") as stream:
                     pickle.dump([all_stats, all_hist], stream)
+            else:
+                _logger.info(f"Statistics not available for {group_by}. Skipping")
+                continue
 
             stat_df = pd.concat(list(all_stats.values()), axis=1, sort=False)
             self.all_stats_per_format[file_base] = stat_df
@@ -710,7 +727,7 @@ class DomainPlotter:
         self.barh = barh
         self.max_plots = max_plots
         self.tex_prepend_path = tex_prepend_path
-        self.cache_directory = cache_directory
+        self.cache_directory = Path(cache_directory)
         self.statistics = statistics
         self.variables = variables
         self.bar_plot = bar_plot
@@ -732,6 +749,7 @@ class DomainPlotter:
         self.all_shifts = dict()
 
         self.image_files = Path("image_files.pkl")
+        self.cache_directory.mkdir(exist_ok=True)
         self.cache_image_file_list = self.cache_directory / self.image_files
         self.make_plots()
         with open(self.cache_image_file_list, "wb") as stream:
@@ -752,19 +770,22 @@ class DomainPlotter:
                             )
 
     #
-    def get_plot_cache(self, scan_data_key, plot_key):
-        cache_file = make_plot_cache_file_name(cache_directory=self.cache_directory,
+    def get_plot_cache(self, scan_data_key, plot_key, year):
+        last_two_digits = f"{year}"[-2:]
+        cache_directory = "_".join([self.cache_directory.as_posix(), last_two_digits])
+        cache_file = make_plot_cache_file_name(cache_directory=Path(cache_directory),
                                                prefix=scan_data_key,
-                                               file_base=plot_key)
+                                               file_base=plot_key,
+                                               year=year)
         _logger.debug(f"Reading {cache_file}")
         try:
             with open(cache_file, "rb") as stream:
-                stats_df = pickle.load(stream)
+                stats_df_per_year = pickle.load(stream)
         except FileNotFoundError as err:
             _logger.warning(err)
             _logger.warning("Run script with option '--statistics_to_xls'  first")
-            stats_df = None
-        return stats_df
+            stats_df_per_year = None
+        return stats_df_per_year
 
     def make_plots(self):
         _logger.info("Making the plot")
@@ -779,7 +800,9 @@ class DomainPlotter:
             stat_prop = self.statistics[plot_key]
             scan_data_key = stat_prop.get("scan_data", self.default_scan)
 
-            scan_data_analyses = self.scan_data[scan_data_key]["analyses"]
+            scan_data_per_year = self.scan_data[scan_data_key]
+            last_year = list(scan_data_per_year.keys())[-1]
+            scan_data_analyses = scan_data_per_year[last_year]["analyses"]
             variables = scan_data_analyses.variables
             try:
                 report_number_empty = variables["report_number"].isna()
@@ -791,7 +814,19 @@ class DomainPlotter:
 
             module_info = scan_data_analyses.module_info
 
-            stats_df = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key)
+            stats_df_per_year = {}
+            for year in scan_data_per_year.keys():
+                df = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key,
+                                         year=year)
+                stats_df_per_year[year] = df
+
+            index_names = ["Jaar"] + list(df.index.names)
+            new_index_names = list(df.index.names) + ["Jaar"]
+            module_level_name = new_index_names[0]
+            question_level_name = new_index_names[1]
+            stats_df = pd.concat(stats_df_per_year, names=index_names)
+            # zet module vraag optie jaar als volgorde
+            stats_df = stats_df.reorder_levels(new_index_names)
 
             highcharts_title = plot_prop.get("title")
             export_svg_cdf = False
@@ -851,7 +886,8 @@ class DomainPlotter:
             plot_count = 0
             stop_plotting = False
             if stats_df is not None:
-                for module_name, module_df in stats_df.groupby(level=0, sort=False):
+                for module_name, module_df in stats_df.groupby(level=module_level_name,
+                                                               sort=False):
                     do_this_module = True
                     for mod_key, mod_prop in module_info.items():
                         if mod_prop.get('label') == module_name and not mod_prop.get('include',
@@ -863,7 +899,8 @@ class DomainPlotter:
                     _logger.info(f"Module {module_name}")
                     if stop_plotting:
                         break
-                    for question_name, question_df in module_df.groupby(level=1, sort=False):
+                    for question_name, question_df in module_df.groupby(level=question_level_name,
+                                                                        sort=False):
                         _logger.debug(f"Question {question_name}")
 
                         original_name = re.sub(r"_\d\.0$", "", question_df["variable"].values[0])
@@ -935,7 +972,8 @@ class DomainPlotter:
                             for ref_key, ref_prop in reference_lines.items():
                                 ref_stat_df = reference_lines[ref_key]["data"]
                                 ref_quest_df = None
-                                for ref_quest_name, ref_quest_df in ref_stat_df.groupby(level=1):
+                                for ref_quest_name, ref_quest_df in ref_stat_df.groupby(
+                                        level=question_level_name):
                                     if ref_quest_name == question_name:
                                         break
                                 if ref_quest_df is not None:

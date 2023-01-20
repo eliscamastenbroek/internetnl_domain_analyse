@@ -6,10 +6,10 @@ import sys
 from pathlib import Path
 
 import yaml
-from path import Path as path_Path
 
 from internetnl_domain_analyse import __version__
-from internetnl_domain_analyse.domain_analyse_classes import (DomainAnalyser, DomainPlotter, RecordsCacheInfo)
+from internetnl_domain_analyse.domain_analyse_classes import (DomainAnalyser, DomainPlotter,
+                                                              RecordsCacheInfo)
 from internetnl_domain_analyse.domain_plots import (make_heatmap, make_conditional_score_plot,
                                                     make_conditional_pdf_plot,
                                                     make_verdeling_per_aantal_categorie)
@@ -39,7 +39,7 @@ def parse_args():
                         version="{file} version: {ver}".format(file=os.path.basename(__file__),
                                                                ver=__version__))
     parser.add_argument("--verbose", dest="loglevel", help="set loglevel to INFO",
-                        action="store_const", const=logging.INFO, default=logging.WARNING)
+                        action="store_const", const=logging.INFO, default=logging.INFO)
     parser.add_argument("--debug", dest="loglevel", help="set loglevel to DEBUG"
                         , action="store_const", const=logging.DEBUG)
     parser.add_argument("--records_cache_dir", help="Directory of the records cache")
@@ -175,7 +175,8 @@ def main():
                 continue
             internet_nl_filename = Path(scan_prop["data_file"])
             records_cache_data = records_cache_data_per_year[scan_year]
-            records_cache_info = RecordsCacheInfo(records_cache_data=records_cache_data, year=scan_year,
+            records_cache_info = RecordsCacheInfo(records_cache_data=records_cache_data,
+                                                  year=scan_year,
                                                   stat_directory=stat_directory)
 
             _logger.info(f"Start analyse {scan_year}: {internet_nl_filename}")
