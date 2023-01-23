@@ -208,7 +208,10 @@ def make_cdf_plot(hist,
     return image_file_name
 
 
-def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory, show_plots=False,
+def make_bar_plot(plot_df,
+                  plot_key,
+                  plot_variable,
+                  module_name, question_name, image_directory, show_plots=False,
                   figsize=None, image_type=".pdf", reference_lines=None, xoff=0.02, yoff=0.02,
                   show_title=False, barh=False, subplot_adjust=None, sort_values=False,
                   y_max_bar_plot=None, y_spacing_bar_plot=None, translations=None,
@@ -241,8 +244,6 @@ def make_bar_plot(plot_df, plot_key, module_name, question_name, image_directory
     values_column = "Values"
     plot_df.index.rename(values_column, inplace=True)
     plot_df[plot_title] = None
-    plot_variable = plot_df["variable"].to_numpy()[0]
-    plot_df.drop(names + ["variable"], axis=1, inplace=True)
     plot_df.set_index(plot_title, inplace=True)
     plot_df.index = range(plot_df.index.size)
     plot_df = plot_df.T

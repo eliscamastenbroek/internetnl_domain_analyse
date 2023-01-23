@@ -125,6 +125,9 @@ def prepare_stat_data_for_write(all_stats, file_base, variables, module_key, var
                                  variable_key=variable_key,
                                  n_digits=n_digits,
                                  sort_index=False)
+    index_names = list(stat_df.index.names)
+    new_index_names = index_names + [stat_df.columns[0]]
+    stat_df = stat_df.reset_index().set_index(new_index_names, drop=True)
     if breakdown_labels is not None:
         try:
             labels = breakdown_labels[file_base]

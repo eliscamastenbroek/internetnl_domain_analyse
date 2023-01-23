@@ -35,7 +35,7 @@ mpl_logger = logging.getLogger("matplotlib")
 mpl_logger.setLevel(logging.WARNING)
 
 
-def make_plot_cache_file_name(cache_directory, file_base, prefix, year):
+def make_plot_cache_file_name(cache_directory, file_base, prefix):
     return cache_directory / Path("_".join([prefix, file_base, "cache_for_plot.pkl"]))
 
 
@@ -124,9 +124,14 @@ class DomainAnalyser:
         self.records_cache_info = records_cache_info
 
         if output_file is None:
-            self.output_file = "output.sqlite"
+            self.output_file = Path("output.sqlite")
         else:
-            self.output_file = output_file
+            self.output_file = Path(output_file)
+
+        outfile_suff = self.output_file.suffixes
+        outfile_base = self.output_file.with_suffix("").with_suffix("").as_posix()
+        outfile_year = Path("_".join([outfile_base, self.records_cache_info.year_digits]))
+        self.output_file = outfile_year.with_suffix(".".join(outfile_suff))
 
         self.scan_data_key = scan_data_key
         self.breakdown_labels = breakdown_labels
@@ -575,6 +580,8 @@ class DomainAnalyser:
                 continue
 
             stat_df = pd.concat(list(all_stats.values()), axis=1, sort=False)
+            is_nan = stat_df.index == "nan"
+            stat_df = stat_df.loc[~is_nan]
             self.all_stats_per_format[file_base] = stat_df
             self.all_hist_per_format[file_base] = all_hist
             _logger.debug("Done with statistics")
@@ -776,7 +783,7 @@ class DomainPlotter:
         cache_file = make_plot_cache_file_name(cache_directory=Path(cache_directory),
                                                prefix=scan_data_key,
                                                file_base=plot_key,
-                                               year=year)
+                                               )
         _logger.debug(f"Reading {cache_file}")
         try:
             with open(cache_file, "rb") as stream:
@@ -903,8 +910,13 @@ class DomainPlotter:
                                                                         sort=False):
                         _logger.debug(f"Question {question_name}")
 
-                        original_name = re.sub(r"_\d\.0$", "", question_df["variable"].values[0])
+                        # voorlaatste kolom bevat de variabele namen
+                        variable_name_key = question_df.index.names[-2]
+                        plot_variable = \
+                        question_df.index.get_level_values(variable_name_key).values[0]
+                        original_name = re.sub(r"_\d\.0$", "", plot_variable)
                         question_type = variables.loc[original_name, "type"]
+                        question_df_clean = question_df.droplevel(variable_name_key)
 
                         hc_info = HighchartsInfo(variables_df=variables,
                                                  var_name=original_name,
@@ -952,10 +964,11 @@ class DomainPlotter:
                             self.all_plots[original_name] = dict()
                             self.all_shifts[original_name] = dict()
 
-                        mask = get_option_mask(question_df=question_df, variables=variables,
+                        mask = get_option_mask(question_df=question_df_clean,
+                                               variables=variables,
                                                question_type=question_type)
 
-                        plot_df = question_df.loc[(module_name, question_name, mask)].copy()
+                        plot_df = question_df_clean.loc[(module_name, question_name, mask)].copy()
 
                         if variables.loc[original_name, "report_number"]:
                             normalize_data = True
@@ -988,6 +1001,7 @@ class DomainPlotter:
                         if plot_bar:
                             image_file = make_bar_plot(plot_df=plot_df,
                                                        plot_key=plot_key,
+                                                       plot_variable=plot_variable,
                                                        module_name=module_name,
                                                        question_name=question_name,
                                                        image_directory=self.image_directory,
