@@ -708,7 +708,7 @@ class DomainPlotter:
                  barh=False,
                  image_directory=None,
                  cache_directory=None,
-                 image_type=".pdf",
+                 image_type="pdf",
                  max_plots=None,
                  tex_prepend_path=None,
                  statistics=None,
@@ -913,7 +913,7 @@ class DomainPlotter:
                         # voorlaatste kolom bevat de variabele namen
                         variable_name_key = question_df.index.names[-2]
                         plot_variable = \
-                        question_df.index.get_level_values(variable_name_key).values[0]
+                            question_df.index.get_level_values(variable_name_key).values[0]
                         original_name = re.sub(r"_\d\.0$", "", plot_variable)
                         question_type = variables.loc[original_name, "type"]
                         question_df_clean = question_df.droplevel(variable_name_key)
@@ -1022,7 +1022,7 @@ class DomainPlotter:
                                                        export_svg=export_svg_bar,
                                                        highcharts_directory=highcharts_directory,
                                                        title=title,
-                                                       normalize_data=normalize_data
+                                                       normalize_data=normalize_data,
                                                        )
 
                             _logger.debug(f"Store [{original_name}][{label}] : {image_file}")

@@ -131,7 +131,7 @@ def make_cdf_plot(hist,
 
     # this triggers the drawing, otherwise we can not retrieve the xtick labels
     fig.canvas.draw()
-    windows_title =f"{grp_key}  {plot_key}"
+    windows_title = f"{grp_key}  {plot_key}"
     try:
         fig.canvas.set_window_title(windows_title)
     except AttributeError as err:
@@ -212,7 +212,7 @@ def make_bar_plot(plot_df,
                   plot_key,
                   plot_variable,
                   module_name, question_name, image_directory, show_plots=False,
-                  figsize=None, image_type=".pdf", reference_lines=None, xoff=0.02, yoff=0.02,
+                  figsize=None, image_type="pdf", reference_lines=None, xoff=0.02, yoff=0.02,
                   show_title=False, barh=False, subplot_adjust=None, sort_values=False,
                   y_max_bar_plot=None, y_spacing_bar_plot=None, translations=None,
                   box_margin=None,
@@ -220,7 +220,7 @@ def make_bar_plot(plot_df,
                   export_highcharts=False,
                   highcharts_directory=None,
                   title=None,
-                  normalize_data=False
+                  normalize_data=False,
                   ):
     """ create a bar plot from the question 'plot_df'"""
     figure_properties = CBSPlotSettings()
@@ -231,30 +231,12 @@ def make_bar_plot(plot_df,
     _logger.debug(f"Figsize: {figsize}")
 
     names = plot_df.index.names
-    plot_df.reset_index(inplace=True)
     plot_title = " - ".join([module_name, question_name])
-    try:
-        result = plot_df.loc[0, names[2]]
-    except KeyError as err:
-        _logger.warning(err)
-        return
-    if result == "":
-        result = "True"
-    plot_title += f": {result}"
-    values_column = "Values"
-    plot_df.index.rename(values_column, inplace=True)
-    plot_df[plot_title] = None
-    plot_df.set_index(plot_title, inplace=True)
-    plot_df.index = range(plot_df.index.size)
-    plot_df = plot_df.T
-    plot_df.rename(columns={0: values_column}, inplace=True)
-
-    if sort_values:
-        plot_df.sort_values(by=[values_column], inplace=True, ascending=True)
+    plot_df = plot_df.droplevel(names[:3]).T
 
     if normalize_data:
         _logger.info("Normalize data")
-        plot_df = 100 * plot_df / plot_df.sum()
+        plot_df = 100 * plot_df / plot_df.sum(axis=0)
 
     fig, axis = plt.subplots(figsize=figsize)
     if subplot_adjust is None:
@@ -369,20 +351,25 @@ def make_bar_plot(plot_df,
             add_axis_label_background(fig=fig, axes=axis, loc="east", radius_corner_in_mm=1,
                                       margin=margin)
 
-            if reference_lines is not None:
+            number_of_columns = plot_df.columns.values.size
+            axis.legend(loc="lower left", frameon=False, ncol=number_of_columns,
+                        bbox_to_anchor=(0.02, 0.00),
+                        bbox_transform=fig.transFigure)
+
+        if reference_lines is not None:
+            color = line_iter.get_next_color()
+            for ref_key, ref_line in reference_lines.items():
+                ref_label = ref_line["label"]
+                ref_plot_df = ref_line["plot_df"]
+                value = ref_plot_df.values[0][1]
                 color = line_iter.get_next_color()
-                for ref_key, ref_line in reference_lines.items():
-                    ref_label = ref_line["label"]
-                    ref_plot_df = ref_line["plot_df"]
-                    value = ref_plot_df.values[0][1]
-                    color = line_iter.get_next_color()
-                    axis.axhline(y=value, color=color, linestyle='-.')
-                    axis.text(xoff, value + yoff * x_range, ref_label, color=color, transform=trans)
+                axis.axhline(y=value, color=color, linestyle='-.')
+                axis.text(xoff, value + yoff * x_range, ref_label, color=color, transform=trans)
 
     # image_name = re.sub("\s", "_", plot_title.replace(" - ", "_"))
     # image_name = re.sub(":_.*$", "", image_name)
     image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
-    image_file = image_directory / Path("_".join([plot_key, image_name + image_type]))
+    image_file = image_directory / Path("_".join([plot_key, ".".join([image_name, image_type])]))
     image_file_name = image_file.as_posix()
     _logger.info(f"Saving plot {image_file_name}")
     fig.savefig(image_file)

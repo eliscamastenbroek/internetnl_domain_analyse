@@ -22,6 +22,7 @@ _log_hc = logging.getLogger("cbsplotlib")
 _log_hc.setLevel(_logger.getEffectiveLevel())
 
 MODES = {"statistics", "correlations", "categories", "all"}
+IMAGE_TYPES = {"pdf", "png"}
 
 
 def parse_args():
@@ -54,8 +55,6 @@ def parse_args():
                         help="Show each plot before continuing")
     parser.add_argument("--max_plots", action="store", type=int,
                         help="Maximum number of plots. If not given, plot all")
-    parser.add_argument("--image_type", default=".pdf", choices={".pdf", ".png", ".jpg"},
-                        help="Type of the images")
     parser.add_argument("--show_title", action="store_true", help="Show title in plot")
     parser.add_argument("--cumulative", action="store_true", help="Plot pdf cmmulitve")
     parser.add_argument("--not_cumulative", action="store_false", dest="cumulative",
@@ -85,6 +84,8 @@ def parse_args():
     parser.add_argument("--onderschrift", action="store_false", dest="bovenschrift",
                         help="De latex overview file krijgt de captions boven de figuren"
                         )
+    parser.add_argument("--image_type", choices=IMAGE_TYPES, default="pdf",
+                        help="Type van de plaatjes")
     parser.add_argument("--tld_extract_cache_directory", help="Naam van de directory als je het"
                                                               "script naar cache wilt laten lezen"
                                                               "en schrijven")
@@ -254,7 +255,8 @@ def main():
                 export_highcharts=args.export_highcharts,
                 highcharts_directory=highcharts_directory,
                 tex_horizontal_shift=tex_horizontal_shift,
-                bovenschrift=args.bovenschrift
+                bovenschrift=args.bovenschrift,
+                image_type=args.image_type,
             )
 
 
