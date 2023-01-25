@@ -25,7 +25,8 @@ from internetnl_domain_analyse.utils import (read_tables_from_sqlite,
                                              fill_booleans,
                                              prepare_stat_data_for_write,
                                              get_option_mask,
-                                             impose_variable_defaults)
+                                             impose_variable_defaults,
+                                             add_missing_groups)
 
 _logger = logging.getLogger(__name__)
 
@@ -561,6 +562,17 @@ class DomainAnalyser:
             cache_file = self.cache_directory / file_name
 
             group_by = list(props["groupby"].values())
+            group_by_original = None
+            if (group_by_if_not_exist := props.get("groupby_if_not_exist")) and \
+                    self.dataframe is not None:
+                have_missing_groups = False
+                for group in group_by:
+                    if group not in self.dataframe.columns:
+                        have_missing_groups = True
+                if have_missing_groups:
+                    group_by_original = group_by
+                    group_by = list(group_by_if_not_exist.values())
+                    missing_groups = props.get("missing_groups")
 
             if cache_file.exists() and self.reset is None:
                 _logger.info(f"Reading stats from cache {cache_file}")
@@ -569,6 +581,12 @@ class DomainAnalyser:
             elif self.dataframe is not None:
                 _logger.info("Calculating statistics from micro data")
                 all_stats, all_hist = self.calculate_statistics_one_breakdown(group_by=group_by)
+                if group_by_original is not None:
+                    all_stats = add_missing_groups(all_stats,
+                                                   group_by,
+                                                   group_by_original,
+                                                   missing_groups)
+
                 if all_stats is None:
                     _logger.info(f"Could not calculate statistisc for breakdown {group_by}. Skip")
                     continue
@@ -822,10 +840,12 @@ class DomainPlotter:
             module_info = scan_data_analyses.module_info
 
             stats_df_per_year = {}
+            last_year = None
             for year in scan_data_per_year.keys():
                 df = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key,
                                          year=year)
                 stats_df_per_year[year] = df
+                last_year = year
 
             index_names = ["Jaar"] + list(df.index.names)
             new_index_names = list(df.index.names) + ["Jaar"]
@@ -877,7 +897,8 @@ class DomainPlotter:
                 for ref_key, ref_prop in reference_lines.items():
                     stat_prop = self.statistics[ref_key]
                     scan_data_key = stat_prop.get("scan_data", self.default_scan)
-                    ref_stat = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key)
+                    ref_stat = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key,
+                                                   year=last_year)
                     reference_lines[ref_key]["data"] = ref_stat
 
             label = plot_prop.get("label", plot_key)
@@ -947,7 +968,8 @@ class DomainPlotter:
                         else:
                             title = highcharts_title
 
-                        title = re.sub("\s{2,}", " ", title)
+                        if title is not None:
+                            title = re.sub("\s{2,}", " ", title)
 
                         if hc_info.y_max is not None:
                             y_max = hc_info.y_max
@@ -993,9 +1015,13 @@ class DomainPlotter:
                                     mask2 = get_option_mask(question_df=ref_quest_df,
                                                             variables=variables,
                                                             question_type=question_type)
-                                    ref_df = ref_quest_df.loc[
-                                        (module_name, question_name, mask2)].copy()
-                                    reference_lines[ref_key]["plot_df"] = ref_df
+                                    try:
+                                        ref_df = ref_quest_df.loc[
+                                            (module_name, question_name, mask2)].copy()
+                                    except KeyError as err:
+                                        _logger.warning(err)
+                                    else:
+                                        reference_lines[ref_key]["plot_df"] = ref_df
 
                         _logger.info(f"Plot nr {plot_count}")
                         if plot_bar:

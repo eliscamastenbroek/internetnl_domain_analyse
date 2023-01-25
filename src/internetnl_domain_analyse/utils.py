@@ -120,7 +120,8 @@ def prepare_stat_data_for_write(all_stats, file_base, variables, module_key, var
     if connection is not None:
         data.to_sql(name=file_base, con=connection, if_exists="replace")
 
-    stat_df = reorganise_stat_df(records_stats=data, variables=variables,
+    stat_df = reorganise_stat_df(records_stats=data,
+                                 variables=variables,
                                  module_key=module_key,
                                  variable_key=variable_key,
                                  n_digits=n_digits,
@@ -288,3 +289,16 @@ def impose_variable_defaults(variables,
 
     _logger.debug("Done")
     return variables
+
+
+def add_missing_groups(all_stats, group_by, group_by_original, missing_groups):
+    new_stats = {}
+    for indicator, data_df in all_stats.items():
+        for gb_new, gb_org in zip(group_by, group_by_original):
+            data_df.index = data_df.index.rename(gb_org)
+        if missing_groups is not None:
+            df_extra = pd.DataFrame(index=missing_groups,
+                                    columns=data_df.columns)
+            data_df = pd.concat([df_extra, data_df])
+            new_stats[indicator] = data_df
+    return new_stats
