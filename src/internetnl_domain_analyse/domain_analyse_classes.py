@@ -1056,32 +1056,33 @@ class DomainPlotter:
                             self.all_shifts[original_name][label] = tex_horizontal_shift
 
                         if plot_cdf:
-                            hist_info = scan_data_analyses.all_hist_per_format[plot_key][
-                                original_name]
+                            for year in scan_data_per_year.keys():
+                                scan_data_analyses_year = scan_data_per_year[year]["analyses"]
+                                hist_info = scan_data_analyses_year.all_hist_per_format[plot_key][original_name]
 
-                            if hist_info is not None:
-                                for grp_key, hist in hist_info.items():
-                                    im_file_2 = make_cdf_plot(hist=hist,
-                                                              plot_key=plot_key,
-                                                              grp_key=grp_key,
-                                                              module_name=module_name,
-                                                              question_name=question_name,
-                                                              image_file_base=original_name,
-                                                              image_directory=self.image_directory,
-                                                              show_plots=self.show_plots,
-                                                              figsize=figsize,
-                                                              image_type=self.image_type,
-                                                              reference_lines=reference_lines,
-                                                              cummulative=self.cumulative,
-                                                              xoff=xoff, yoff=yoff,
-                                                              y_max=y_max_pdf_plot,
-                                                              y_spacing=y_spacing_pdf_plot,
-                                                              translations=self.translations,
-                                                              export_highcharts=export_highcharts_cdf,
-                                                              export_svg=export_svg_cdf,
-                                                              highcharts_directory=highcharts_directory_cdf,
-                                                              title=title
-                                                              )
+                                if hist_info is not None:
+                                    for grp_key, hist in hist_info.items():
+                                        im_file_2 = make_cdf_plot(hist=hist,
+                                                                  plot_key=plot_key,
+                                                                  grp_key=grp_key,
+                                                                  module_name=module_name,
+                                                                  question_name=question_name,
+                                                                  image_file_base=original_name,
+                                                                  image_directory=self.image_directory,
+                                                                  show_plots=self.show_plots,
+                                                                  figsize=figsize,
+                                                                  image_type=self.image_type,
+                                                                  reference_lines=reference_lines,
+                                                                  cummulative=self.cumulative,
+                                                                  xoff=xoff, yoff=yoff,
+                                                                  y_max=y_max_pdf_plot,
+                                                                  y_spacing=y_spacing_pdf_plot,
+                                                                  translations=self.translations,
+                                                                  export_highcharts=export_highcharts_cdf,
+                                                                  export_svg=export_svg_cdf,
+                                                                  highcharts_directory=highcharts_directory_cdf,
+                                                                  title=title
+                                                                  )
                             if self.show_plots:
                                 plt.show()
 
