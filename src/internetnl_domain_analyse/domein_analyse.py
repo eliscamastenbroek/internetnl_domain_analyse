@@ -74,6 +74,8 @@ def parse_args():
                         default=False)
     parser.add_argument("--export_highcharts", help="Export each image to a highcharts file",
                         action="store_true")
+    parser.add_argument("--force_plots", help="Force making plot, even if it already exists",
+                        action="store_true")
     parser.add_argument("--highcharts_output_directory",
                         help="Directory waar alle highcharts naar toe geschreven wordt")
     parser.add_argument("--mode", choices=MODES, default="statistics",
@@ -86,6 +88,9 @@ def parse_args():
                         )
     parser.add_argument("--image_type", choices=IMAGE_TYPES, default="pdf",
                         help="Type van de plaatjes")
+    parser.add_argument("--variables_to_plot", action="append", nargs="*", default=None,
+                        help="Maak alleen het plaatje van deze variabele. Als niet gegeven dan worden alle variabelen "
+                             "geplot")
     parser.add_argument("--tld_extract_cache_directory", help="Naam van de directory als je het"
                                                               "script naar cache wilt laten lezen"
                                                               "en schrijven")
@@ -257,6 +262,8 @@ def main():
                 tex_horizontal_shift=tex_horizontal_shift,
                 bovenschrift=args.bovenschrift,
                 image_type=args.image_type,
+                variables_to_plot=args.variables_to_plot,
+                force_plots=args.force_plots,
             )
 
 

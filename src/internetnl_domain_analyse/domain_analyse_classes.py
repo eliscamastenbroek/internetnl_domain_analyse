@@ -743,6 +743,8 @@ class DomainPlotter:
                  correlations=None,
                  tex_horizontal_shift=None,
                  bovenschrift=True,
+                 variables_to_plot=None,
+                 force_plots=False,
                  ):
 
         self.scan_data = scan_data
@@ -762,10 +764,12 @@ class DomainPlotter:
         self.translations = translations
         self.correlations = correlations
         self.export_highcharts = export_highcharts
+        self.force_plots = force_plots
         if highcharts_directory is None:
             self.highcharts_directory = Path(".")
         else:
             self.highcharts_directory = Path(highcharts_directory)
+        self.variables_to_plot = variables_to_plot,
 
         self.image_type = image_type
         self.image_directory = image_directory
@@ -886,6 +890,7 @@ class DomainPlotter:
             y_max_pdf_plot = plot_prop.get("y_max_pdf_plot", 10)
             y_spacing_pdf_plot = plot_prop.get("y_spacing_pdf_plot", 5)
             y_max_bar_plot = plot_prop.get("y_max_bar_plot")
+            legend_position = plot_prop.get("legend_position")
             y_spacing_bar_plot = plot_prop.get("y_spacing_bar_plot")
 
             box_margin = plot_prop.get("box_margin")
@@ -939,9 +944,14 @@ class DomainPlotter:
                         question_type = variables.loc[original_name, "type"]
                         question_df_clean = question_df.droplevel(variable_name_key)
 
-                        hc_info = HighchartsInfo(variables_df=variables,
-                                                 var_name=original_name,
-                                                 breakdown_name=plot_key)
+                        variables_to_plot = self.variables_to_plot[0]
+                        if variables_to_plot is not None and original_name not in variables_to_plot[0]:
+                            _logger.debug(f"{original_name} is not in {self.variables_to_plot}.. Skipping")
+                            continue
+
+                        plot_info = PlotInfo(variables_df=variables,
+                                             var_name=original_name,
+                                             breakdown_name=plot_key)
                         export_highcharts = export_highcharts_bar
                         if cdf_prop := cdf_variables.get(original_name):
                             highcharts_directory_cdf = self.highcharts_directory
@@ -955,29 +965,34 @@ class DomainPlotter:
                                 export_highcharts_cdf = export_hc_cdf
                         else:
                             plot_cdf = False
-                        if hc_info.directory is not None:
+                        if plot_info.directory is not None:
                             # we overschrijven hier de subdir die onder de statistiek opgegeven is
-                            highcharts_directory = self.highcharts_directory / hc_info.directory
+                            highcharts_directory = self.highcharts_directory / plot_info.directory
                         else:
                             if plot_bar:
                                 highcharts_directory = highcharts_directory_bar
                             else:
                                 highcharts_directory = highcharts_directory_cdf
-                        if hc_info.label is not None:
-                            title = hc_info.label
+                        if plot_info.label is not None:
+                            title = plot_info.label
                         else:
                             title = highcharts_title
 
                         if title is not None:
                             title = re.sub("\s{2,}", " ", title)
 
-                        if hc_info.y_max is not None:
-                            y_max = hc_info.y_max
+                        if plot_info.y_max is not None:
+                            y_max = plot_info.y_max
                         else:
                             y_max = y_max_bar_plot
 
-                        if hc_info.y_spacing is not None:
-                            y_spacing = hc_info.y_spacing
+                        if plot_info.legend_position is not None:
+                            legend_pos = plot_info.legend_position
+                        else:
+                            legend_pos = legend_position
+
+                        if plot_info.y_spacing is not None:
+                            y_spacing = plot_info.y_spacing
                         else:
                             y_spacing = y_spacing_bar_plot
 
@@ -1048,7 +1063,9 @@ class DomainPlotter:
                                                        export_svg=export_svg_bar,
                                                        highcharts_directory=highcharts_directory,
                                                        title=title,
+                                                       legend_position=legend_pos,
                                                        normalize_data=normalize_data,
+                                                       force_plot=self.force_plots
                                                        )
 
                             _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
@@ -1093,7 +1110,7 @@ class DomainPlotter:
                             break
 
 
-class HighchartsInfo:
+class PlotInfo:
     def __init__(self, variables_df, var_name, breakdown_name):
         self.variables_df = variables_df
         self.var_name = var_name
@@ -1103,10 +1120,11 @@ class HighchartsInfo:
         self.directory = None
         self.y_max = None
         self.y_spacing = None
+        self.legend_position = None
 
-        self.get_highcharts_info()
+        self.get_plot_info()
 
-    def get_highcharts_info(self):
+    def get_plot_info(self):
         """ in de variables dataframe  kunnen we ook uitdrukkelijk de highcharts directory en highcharts
         label opgeven per variabele. Zoek dat hier op """
         label = None
@@ -1129,3 +1147,4 @@ class HighchartsInfo:
                     self.label = info.get("highcharts_label")
                     self.y_max = info.get("y_max")
                     self.y_spacing = info.get("y_spacing")
+                    self.legend_position = info.get("legend_position")

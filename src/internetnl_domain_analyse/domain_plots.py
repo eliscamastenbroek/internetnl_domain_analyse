@@ -215,13 +215,21 @@ def make_bar_plot(plot_df,
                   figsize=None, image_type="pdf", reference_lines=None, xoff=0.02, yoff=0.02,
                   show_title=False, barh=False, subplot_adjust=None, sort_values=False,
                   y_max_bar_plot=None, y_spacing_bar_plot=None, translations=None,
+                  legend_position=None,
                   box_margin=None,
                   export_svg=False,
                   export_highcharts=False,
                   highcharts_directory=None,
                   title=None,
                   normalize_data=False,
+                  force_plot=False
                   ):
+    image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
+    image_file = image_directory / Path("_".join([plot_key, ".".join([image_name, image_type])]))
+    image_file_name = image_file.as_posix()
+    if image_file.exists() and not force_plot:
+        _logger.debug(f"File {image_file_name} already exists. Skipping plot")
+        return image_file_name
     """ create a bar plot from the question 'plot_df'"""
     figure_properties = CBSPlotSettings()
 
@@ -260,6 +268,7 @@ def make_bar_plot(plot_df,
     x_label = None
     y_label = None
     y_lim = None
+
 
     if not barh:
 
@@ -352,8 +361,12 @@ def make_bar_plot(plot_df,
                                       margin=margin)
 
             number_of_columns = plot_df.columns.values.size
+            if legend_position is None:
+                legend_bbox_to_anchor = (0.02, 0.00)
+            else:
+                legend_bbox_to_anchor = legend_position
             axis.legend(loc="lower left", frameon=False, ncol=number_of_columns,
-                        bbox_to_anchor=(0.02, 0.00),
+                        bbox_to_anchor=legend_bbox_to_anchor,
                         bbox_transform=fig.transFigure)
 
         if reference_lines is not None:
@@ -366,11 +379,6 @@ def make_bar_plot(plot_df,
                 axis.axhline(y=value, color=color, linestyle='-.')
                 axis.text(xoff, value + yoff * x_range, ref_label, color=color, transform=trans)
 
-    # image_name = re.sub("\s", "_", plot_title.replace(" - ", "_"))
-    # image_name = re.sub(":_.*$", "", image_name)
-    image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
-    image_file = image_directory / Path("_".join([plot_key, ".".join([image_name, image_type])]))
-    image_file_name = image_file.as_posix()
     _logger.info(f"Saving plot {image_file_name}")
     fig.savefig(image_file)
 
