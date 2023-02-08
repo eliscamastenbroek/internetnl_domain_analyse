@@ -2,6 +2,10 @@
 Changelog
 =========
 
+Version 1.6
+===========
+- Kan nu met meerdere jaren omgaan
+
 Version 1.5.1
 ===========
 
