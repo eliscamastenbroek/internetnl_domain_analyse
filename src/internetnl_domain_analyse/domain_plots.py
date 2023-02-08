@@ -165,10 +165,10 @@ def make_cdf_plot(hist,
 
     plot_title = " - ".join([fnc_str, module_name, question_name, plot_key, grp_key])
 
-    image_name = "_".join([fnc_str, image_file_base])
-    image_file = image_directory / Path("_".join([plot_key, image_name + image_type]))
-    image_file_name = image_file.as_posix()
-    _logger.info(f"Saving plot {image_file_name}")
+    image_name_suffix = "_".join([fnc_str, image_file_base])
+    image_name = "_".join([plot_key, image_name_suffix])
+    image_name_with_ext = ".".join([image_name, image_type])
+    image_file = image_directory / Path(image_name_with_ext)
     fig.savefig(image_file)
 
     stat_file = image_file.with_suffix(".out").as_posix()
