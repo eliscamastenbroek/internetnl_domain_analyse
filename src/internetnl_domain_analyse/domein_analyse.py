@@ -186,10 +186,12 @@ def main():
     plot_info = settings["plots"]
 
     if args.statistics:
-        statistics = set_do_it_vlaggen(required_keys=args.statistics[0],
+        required_keys = [stat[0] for stat in args.statistics]
+        statistics = set_do_it_vlaggen(required_keys=required_keys,
                                        chapter_info=statistics)
     if args.plots:
-        plot_info = set_do_it_vlaggen(required_keys=args.plots[0],
+        required_keys = [plot[0] for plot in args.plots]
+        plot_info = set_do_it_vlaggen(required_keys=required_keys,
                                       chapter_info=plot_info)
 
     if args.output_filename is None:
