@@ -943,11 +943,10 @@ class DomainPlotter:
                         question_type = variables.loc[original_name, "type"]
                         question_df_clean = question_df.droplevel(variable_name_key)
 
-                        if self.variables_to_plot:
-                            variables_to_plot = [variable[0] for variable in self.variables_to_plot[0]]
-                            if original_name not in variables_to_plot:
-                                _logger.debug(f"{original_name} is not in {self.variables_to_plot}.. Skipping")
-                                continue
+                        variables_to_plot = [vv[0] for vv in self.variables_to_plot if vv is not None]
+                        if original_name not in variables_to_plot:
+                            _logger.debug(f"{original_name} is not in {self.variables_to_plot}.. Skipping")
+                            continue
 
                         plot_info = PlotInfo(variables_df=variables,
                                              var_name=original_name,

@@ -297,7 +297,7 @@ def main():
                 tex_horizontal_shift=tex_horizontal_shift,
                 bovenschrift=args.bovenschrift,
                 image_type=args.image_type,
-                variables_to_plot=args.variables_to_plot,
+                variables_to_plot=args.variable_to_plot,
                 force_plots=args.force_plots,
             )
 
