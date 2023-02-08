@@ -205,7 +205,7 @@ def make_cdf_plot(hist,
 
     plt.close()
 
-    return image_file_name
+    return image_name_with_ext
 
 
 def make_bar_plot(plot_df,
