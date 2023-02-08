@@ -88,7 +88,7 @@ def parse_args():
                         )
     parser.add_argument("--image_type", choices=IMAGE_TYPES, default="pdf",
                         help="Type van de plaatjes")
-    parser.add_argument("--variables_to_plot", action="append", nargs="*", default=None,
+    parser.add_argument("--variable_to_plot", action="append", nargs="*", default=None,
                         help="Maak alleen het plaatje van deze variabele. Als niet gegeven dan worden alle variabelen "
                              "geplot")
     parser.add_argument("--statistics", action="append", nargs="*", default=None,
