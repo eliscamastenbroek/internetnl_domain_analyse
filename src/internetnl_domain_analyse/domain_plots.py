@@ -63,7 +63,8 @@ def make_cdf_plot(hist,
                   export_highcharts=None,
                   export_svg=False,
                   highcharts_directory: Path = None,
-                  title: str = None
+                  title: str = None,
+                  year: int = None
                   ):
     figure_properties = CBSPlotSettings()
 
@@ -165,7 +166,7 @@ def make_cdf_plot(hist,
 
     plot_title = " - ".join([fnc_str, module_name, question_name, plot_key, grp_key])
 
-    image_name_suffix = "_".join([fnc_str, image_file_base])
+    image_name_suffix = "_".join([fnc_str, image_file_base, str(year)])
     image_name = "_".join([plot_key, image_name_suffix])
     image_name_with_ext = ".".join([image_name, image_type])
     image_file = image_directory / Path(image_name_with_ext)
@@ -268,7 +269,6 @@ def make_bar_plot(plot_df,
     x_label = None
     y_label = None
     y_lim = None
-
 
     if not barh:
 

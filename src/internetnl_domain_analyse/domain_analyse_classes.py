@@ -1098,7 +1098,8 @@ class DomainPlotter:
                                                                   export_highcharts=export_highcharts_cdf,
                                                                   export_svg=export_svg_cdf,
                                                                   highcharts_directory=highcharts_directory_cdf,
-                                                                  title=title
+                                                                  title=title,
+                                                                  year=year
                                                                   )
                             if self.show_plots:
                                 plt.show()
