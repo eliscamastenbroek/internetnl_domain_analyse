@@ -91,6 +91,8 @@ def parse_args():
     parser.add_argument("--variables_to_plot", action="append", nargs="*", default=None,
                         help="Maak alleen het plaatje van deze variabele. Als niet gegeven dan worden alle variabelen "
                              "geplot")
+    parser.add_argument("--statistics", action="append", nargs="*", default=None,
+                        help="Bereken alleen de breakdowns die gegeven zijn en negeer de settings file flags")
     parser.add_argument("--tld_extract_cache_directory", help="Naam van de directory als je het"
                                                               "script naar cache wilt laten lezen"
                                                               "en schrijven")
@@ -158,6 +160,15 @@ def main():
     module_info = settings["module_info"]
     weights = settings["weight"]
     plot_info = settings["plots"]
+
+    if args.statistics:
+        # als statistics op de commandline gegeven dan zet je alle statistieken uit behalve degene die je specificeert.
+        requested_statistics = args.statistics[0]
+        for stat_key, stat_prop in statistics.items():
+            if stat_key in requested_statistics:
+                stat_prop["do_it"] = True
+            else:
+                stat_prop["do_it"] = False
 
     if args.output_filename is None:
         output_file = general_settings.get("output", "internet_nl_stats")
