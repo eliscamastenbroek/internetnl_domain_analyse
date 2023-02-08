@@ -92,13 +92,37 @@ def parse_args():
                         help="Maak alleen het plaatje van deze variabele. Als niet gegeven dan worden alle variabelen "
                              "geplot")
     parser.add_argument("--statistics", action="append", nargs="*", default=None,
-                        help="Bereken alleen de breakdowns die gegeven zijn en negeer de settings file flags")
+                        help="Bereken alleen de breakdowns die gegeven zijn en negeer de settings file flags."
+                             "Als 'all' in required keys dan doe je alle statistieken")
+    parser.add_argument("--plots", action="append", nargs="*", default=None,
+                        help="Plot alleen de breakdowns die gegeven zijn en negeer de settings file flags."
+                             "Als 'all' gegeven wordt dan maak je gewoon alle plots")
     parser.add_argument("--tld_extract_cache_directory", help="Naam van de directory als je het"
                                                               "script naar cache wilt laten lezen"
                                                               "en schrijven")
     parsed_arguments = parser.parse_args()
 
     return parsed_arguments
+
+
+def set_do_it_vlaggen(required_keys, chapter_info):
+    """
+    Van een hoofdstukje uit je settings file, druk de do_it vlaggen op
+
+    Args:
+        required_keys: list
+            List van de items waarvan je de do_it vlag wilt opdrukken
+        chapter_info: de dictionary waarvan je de vlaggen zet.
+
+    Returns: dict
+        De nieuwe dictionary.
+    """
+    for key, properties in chapter_info.items():
+        if key in required_keys or "all" in required_keys:
+            properties["do_it"] = True
+        else:
+            properties["do_it"] = False
+    return chapter_info
 
 
 def main():
@@ -162,13 +186,11 @@ def main():
     plot_info = settings["plots"]
 
     if args.statistics:
-        # als statistics op de commandline gegeven dan zet je alle statistieken uit behalve degene die je specificeert.
-        requested_statistics = args.statistics[0]
-        for stat_key, stat_prop in statistics.items():
-            if stat_key in requested_statistics:
-                stat_prop["do_it"] = True
-            else:
-                stat_prop["do_it"] = False
+        statistics = set_do_it_vlaggen(required_keys=args.statistics[0],
+                                       chapter_info=statistics)
+    if args.plots:
+        plot_info = set_do_it_vlaggen(required_keys=args.plots[0],
+                                      chapter_info=plot_info)
 
     if args.output_filename is None:
         output_file = general_settings.get("output", "internet_nl_stats")
