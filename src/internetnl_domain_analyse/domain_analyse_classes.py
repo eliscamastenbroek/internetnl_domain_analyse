@@ -825,6 +825,9 @@ class DomainPlotter:
                 _logger.debug(f"Skipping plot {plot_key}")
                 continue
 
+            label = plot_prop.get("label", plot_key)
+            figsize = plot_prop.get("figsize")
+
             stat_prop = self.statistics[plot_key]
             scan_data_key = stat_prop.get("scan_data", self.default_scan)
 
@@ -870,6 +873,8 @@ class DomainPlotter:
                 plot_cdf = plot_prop.get("cdf_plot")
                 if isinstance(plot_cdf, dict):
                     cdf_variables = plot_cdf.get("variables", {})
+                if cdf_fig_size := plot_cdf.get("figsize"):
+                    figsize = cdf_fig_size
             tex_horizontal_shift = None
             if self.bar_plot:
                 plot_bar = plot_prop.get("bar_plot")
@@ -905,8 +910,6 @@ class DomainPlotter:
                                                    year=last_year)
                     reference_lines[ref_key]["data"] = ref_stat
 
-            label = plot_prop.get("label", plot_key)
-            figsize = plot_prop.get("figsize")
 
             if plot_prop.get("use_breakdown_keys", False):
                 breakdown = self.breakdown_labels[plot_key]
@@ -955,9 +958,12 @@ class DomainPlotter:
                         export_highcharts = export_highcharts_bar
                         if cdf_prop := cdf_variables.get(original_name):
                             highcharts_directory_cdf = self.highcharts_directory
-                            if hc_sub_dir := cdf_prop.get("highcharts_output_directory"):
-                                highcharts_directory_cdf = highcharts_directory_cdf / Path(
-                                    hc_sub_dir)
+                            if highcharts_info_per_year := cdf_prop.get("highcharts_info_per_year"):
+                                for hc_year_key, hc_year_prop in highcharts_info_per_year.items():
+                                    hc_dir = highcharts_directory_cdf / Path(hc_year_prop["highcharts_directory"])
+                                    hc_lab = hc_year_prop.get("highcharts_label")
+                                    highcharts_info_per_year[hc_year_key] = dict(highcharts_directory=hc_dir,
+                                                                            highcharts_label=hc_lab)
                             export_svg_cdf = cdf_prop.get("export_svg", False)
                             export_hc_cdf = cdf_prop.get("export_highcharts")
                             plot_cdf = cdf_prop.get("apply", True)
@@ -965,6 +971,7 @@ class DomainPlotter:
                                 export_highcharts_cdf = export_hc_cdf
                         else:
                             plot_cdf = False
+                            highcharts_info_per_year = None
                         if plot_info.directory is not None:
                             # we overschrijven hier de subdir die onder de statistiek opgegeven is
                             highcharts_directory = self.highcharts_directory / plot_info.directory
@@ -1076,6 +1083,7 @@ class DomainPlotter:
                             for year in scan_data_per_year.keys():
                                 scan_data_analyses_year = scan_data_per_year[year]["analyses"]
                                 hist_info = scan_data_analyses_year.all_hist_per_format[plot_key][original_name]
+                                highcharts_info = highcharts_info_per_year[year]
 
                                 if hist_info is not None:
                                     for grp_key, hist in hist_info.items():
@@ -1097,7 +1105,7 @@ class DomainPlotter:
                                                                   translations=self.translations,
                                                                   export_highcharts=export_highcharts_cdf,
                                                                   export_svg=export_svg_cdf,
-                                                                  highcharts_directory=highcharts_directory_cdf,
+                                                                  highcharts_info=highcharts_info,
                                                                   title=title,
                                                                   year=year
                                                                   )
@@ -1126,7 +1134,7 @@ class PlotInfo:
         self.get_plot_info()
 
     def get_plot_info(self):
-        """ in de variables dataframe  kunnen we ook uitdrukkelijk de highcharts directory en highcharts
+        """ In de variables dataframe kunnen we ook uitdrukkelijk de highcharts directory en highcharts
         label opgeven per variabele. Zoek dat hier op """
         label = None
         directory = None

@@ -62,7 +62,7 @@ def make_cdf_plot(hist,
                   translations=None,
                   export_highcharts=None,
                   export_svg=False,
-                  highcharts_directory: Path = None,
+                  highcharts_info: dict = None,
                   title: str = None,
                   year: int = None
                   ):
@@ -77,7 +77,7 @@ def make_cdf_plot(hist,
     bins = hist[1]
     delta_bin = np.diff(bins)[0]
     pdf = 100 * counts / sum_pdf / delta_bin
-    fig, axis = plt.subplots(nrows=1, ncols=1)
+    fig, axis = plt.subplots(nrows=1, ncols=1, figsize=figsize)
     fig.subplots_adjust(bottom=0.25, top=0.92, right=0.98)
     axis.tick_params(which="both", bottom=True)
 
@@ -175,7 +175,10 @@ def make_cdf_plot(hist,
     stat_file = image_file.with_suffix(".out").as_posix()
     _logger.info(f"Saving stats to {stat_file}")
     stats_df.to_csv(stat_file)
+
+    highcharts_directory = Path(highcharts_info.get("highcharts_directory"))
     highcharts_directory.mkdir(exist_ok=True, parents=True)
+    highcharts_label = highcharts_info.get("highcharts_label")
 
     if export_svg:
         svg_image_file = highcharts_directory / Path("_".join([plot_key, image_name + ".svg"]))
@@ -185,8 +188,8 @@ def make_cdf_plot(hist,
     if export_highcharts:
 
         # voor highcharts de titel setten
-        if title is not None:
-            plot_title = title
+        if highcharts_label is not None:
+            plot_title = highcharts_label
         hc_df = pd.DataFrame(index=bins[:-1], data=fnc, columns=[fnc_str])
         hc_df.index = hc_df.index.rename(module_name)
         CBSHighChart(
