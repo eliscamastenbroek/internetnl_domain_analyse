@@ -76,6 +76,8 @@ def parse_args():
                         action="store_true")
     parser.add_argument("--force_plots", help="Force making plot, even if it already exists",
                         action="store_true")
+    parser.add_argument("--latex_files", help="Write the latex files containing all de plots",
+                        action="store_true")
     parser.add_argument("--highcharts_output_directory",
                         help="Directory waar alle highcharts naar toe geschreven wordt")
     parser.add_argument("--mode", choices=MODES, default="statistics",
@@ -299,6 +301,7 @@ def main():
                 image_type=args.image_type,
                 variables_to_plot=args.variable_to_plot,
                 force_plots=args.force_plots,
+                latex_files=args.latex_files,
             )
 
 

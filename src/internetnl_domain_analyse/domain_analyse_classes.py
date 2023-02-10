@@ -744,6 +744,7 @@ class DomainPlotter:
                  bovenschrift=True,
                  variables_to_plot=None,
                  force_plots=False,
+                 latex_files=False,
                  ):
 
         self.scan_data = scan_data
@@ -787,15 +788,16 @@ class DomainPlotter:
             with open(self.cache_image_file_list, "rb") as stream:
                 self.all_plots = pickle.load(stream)
 
-        _logger.debug(f"making latex with bovenschrift={bovenschrift}")
-        make_latex_overview(all_plots=self.all_plots,
-                            variables=self.variables,
-                            image_directory=self.image_directory, image_files=self.image_files,
-                            tex_prepend_path=self.tex_prepend_path,
-                            tex_horizontal_shift=tex_horizontal_shift,
-                            all_shifts=self.all_shifts,
-                            bovenschrift=bovenschrift
-                            )
+        if latex_files:
+            _logger.debug(f"making latex with bovenschrift={bovenschrift}")
+            make_latex_overview(all_plots=self.all_plots,
+                                variables=self.variables,
+                                image_directory=self.image_directory, image_files=self.image_files,
+                                tex_prepend_path=self.tex_prepend_path,
+                                tex_horizontal_shift=tex_horizontal_shift,
+                                all_shifts=self.all_shifts,
+                                bovenschrift=bovenschrift
+                                )
 
     #
     def get_plot_cache(self, scan_data_key, plot_key, year):
@@ -910,7 +912,6 @@ class DomainPlotter:
                                                    year=last_year)
                     reference_lines[ref_key]["data"] = ref_stat
 
-
             if plot_prop.get("use_breakdown_keys", False):
                 breakdown = self.breakdown_labels[plot_key]
                 renames = {v: k for k, v in breakdown.items()}
@@ -963,7 +964,7 @@ class DomainPlotter:
                                     hc_dir = highcharts_directory_cdf / Path(hc_year_prop["highcharts_directory"])
                                     hc_lab = hc_year_prop.get("highcharts_label")
                                     highcharts_info_per_year[hc_year_key] = dict(highcharts_directory=hc_dir,
-                                                                            highcharts_label=hc_lab)
+                                                                                 highcharts_label=hc_lab)
                             export_svg_cdf = cdf_prop.get("export_svg", False)
                             export_hc_cdf = cdf_prop.get("export_highcharts")
                             plot_cdf = cdf_prop.get("apply", True)
