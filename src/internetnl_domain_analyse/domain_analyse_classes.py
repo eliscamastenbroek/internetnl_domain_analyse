@@ -875,8 +875,9 @@ class DomainPlotter:
                 plot_cdf = plot_prop.get("cdf_plot")
                 if isinstance(plot_cdf, dict):
                     cdf_variables = plot_cdf.get("variables", {})
-                if cdf_fig_size := plot_cdf.get("figsize"):
-                    figsize = cdf_fig_size
+                if plot_cdf:
+                    if cdf_fig_size := plot_cdf.get("figsize"):
+                        figsize = cdf_fig_size
             tex_horizontal_shift = None
             if self.bar_plot:
                 plot_bar = plot_prop.get("bar_plot")
