@@ -160,6 +160,7 @@ def make_cdf_plot(hist,
     sns.despine(ax=axis, left=True)
 
     labels = [_.get_text() for _ in axis.get_xticklabels()]
+    axis.xaxis.set_ticks(labels, ha='center')
     axis.set_xticklabels(labels, ha='center')
 
     add_axis_label_background(fig=fig, axes=axis, loc="south")

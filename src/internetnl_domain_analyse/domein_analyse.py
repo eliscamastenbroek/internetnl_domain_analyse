@@ -135,7 +135,7 @@ def set_do_it_vlaggen(required_keys, chapter_info):
 def main():
     args = parse_args()
     print("-" * 100)
-    print(f"Starting {Path(sys.argv[0]).stem} at {datetime.now()} with {sys.argv[1:]}")
+    print(f"Starting at {datetime.now()}: " + f"{Path(sys.argv[0]).stem} " + " ".join(sys.argv[1:]))
     print("-" * 100)
 
     _logger.setLevel(args.loglevel)
@@ -197,12 +197,12 @@ def main():
 
     if args.statistics:
         required_keys = [stat[0] for stat in args.statistics]
-        statistics = set_do_it_vlaggen(required_keys=required_keys,
-                                       chapter_info=statistics)
+    statistics = set_do_it_vlaggen(required_keys=required_keys,
+                                   chapter_info=statistics)
     if args.plots:
         required_keys = [plot[0] for plot in args.plots]
-        plot_info = set_do_it_vlaggen(required_keys=required_keys,
-                                      chapter_info=plot_info)
+    plot_info = set_do_it_vlaggen(required_keys=required_keys,
+                                  chapter_info=plot_info)
 
     if args.output_filename is None:
         output_file = general_settings.get("output", "internet_nl_stats")
