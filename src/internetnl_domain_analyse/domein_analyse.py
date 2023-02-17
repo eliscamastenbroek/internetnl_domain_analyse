@@ -1,6 +1,7 @@
 import argparse
 import codecs
 import logging
+from datetime import datetime
 import os
 import sys
 from pathlib import Path
@@ -39,6 +40,8 @@ def parse_args():
     parser.add_argument("--version", action="version",
                         version="{file} version: {ver}".format(file=os.path.basename(__file__),
                                                                ver=__version__))
+    parser.add_argument("--quiet", dest="loglevel", help="set loglevel to WARNING",
+                        action="store_const", const=logging.WARNING)
     parser.add_argument("--verbose", dest="loglevel", help="set loglevel to INFO",
                         action="store_const", const=logging.INFO, default=logging.INFO)
     parser.add_argument("--debug", dest="loglevel", help="set loglevel to DEBUG"
@@ -91,13 +94,15 @@ def parse_args():
     parser.add_argument("--image_type", choices=IMAGE_TYPES, default="pdf",
                         help="Type van de plaatjes")
     parser.add_argument("--variable_to_plot", action="append", nargs="*", default=None,
-                        help="Maak alleen het plaatje van deze variabele. Als niet gegeven dan worden alle variabelen "
-                             "geplot")
+                        help="Maak alleen het plaatje van deze variabele. "
+                             "Als niet gegeven dan worden alle variabelen geplot")
     parser.add_argument("--statistics", action="append", nargs="*", default=None,
-                        help="Bereken alleen de breakdowns die gegeven zijn en negeer de settings file flags."
+                        help="Bereken alleen de breakdowns die gegeven zijn en negeer de "
+                             "settingsfile flags."
                              "Als 'all' in required keys dan doe je alle statistieken")
     parser.add_argument("--plots", action="append", nargs="*", default=None,
-                        help="Plot alleen de breakdowns die gegeven zijn en negeer de settings file flags."
+                        help="Plot alleen de breakdowns die gegeven zijn en negeer de settingsfile "
+                             "flags."
                              "Als 'all' gegeven wordt dan maak je gewoon alle plots")
     parser.add_argument("--tld_extract_cache_directory", help="Naam van de directory als je het"
                                                               "script naar cache wilt laten lezen"
@@ -129,6 +134,9 @@ def set_do_it_vlaggen(required_keys, chapter_info):
 
 def main():
     args = parse_args()
+    print("-" * 100)
+    print(f"Starting {Path(sys.argv[0]).stem} at {datetime.now()} with {sys.argv[1:]}")
+    print("-" * 100)
 
     _logger.setLevel(args.loglevel)
 

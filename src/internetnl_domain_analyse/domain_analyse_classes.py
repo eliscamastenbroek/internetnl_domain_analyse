@@ -947,10 +947,12 @@ class DomainPlotter:
                         question_type = variables.loc[original_name, "type"]
                         question_df_clean = question_df.droplevel(variable_name_key)
 
-                        if self.variables_to_plot[0] is not None:
-                            variables_to_plot = [vv[0] for vv in self.variables_to_plot[0] if vv is not None]
-                            if original_name not in variables_to_plot:
-                                _logger.debug(f"{original_name} is not in {self.variables_to_plot}.. Skipping")
+                        var_to_plot = self.variables_to_plot[0]
+                        if var_to_plot is not None:
+                            var_to_plot_clean = [vv[0] for vv in var_to_plot if vv is not None]
+                            if original_name not in var_to_plot_clean:
+                                _logger.debug(f"{original_name} not in {self.variables_to_plot}. "
+                                              f"Skipping...")
                                 continue
 
                         plot_info = PlotInfo(variables_df=variables,
@@ -961,10 +963,12 @@ class DomainPlotter:
                             highcharts_directory_cdf = self.highcharts_directory
                             if highcharts_info_per_year := cdf_prop.get("highcharts_info_per_year"):
                                 for hc_year_key, hc_year_prop in highcharts_info_per_year.items():
-                                    hc_dir = highcharts_directory_cdf / Path(hc_year_prop["highcharts_directory"])
+                                    hc_dir = highcharts_directory_cdf / Path(
+                                        hc_year_prop["highcharts_directory"])
                                     hc_lab = hc_year_prop.get("highcharts_label")
-                                    highcharts_info_per_year[hc_year_key] = dict(highcharts_directory=hc_dir,
-                                                                                 highcharts_label=hc_lab)
+                                    highcharts_info_per_year[hc_year_key] = dict(
+                                        highcharts_directory=hc_dir,
+                                        highcharts_label=hc_lab)
                             export_svg_cdf = cdf_prop.get("export_svg", False)
                             export_hc_cdf = cdf_prop.get("export_highcharts")
                             plot_cdf = cdf_prop.get("apply", True)
@@ -1083,7 +1087,8 @@ class DomainPlotter:
                         if plot_cdf:
                             for year in scan_data_per_year.keys():
                                 scan_data_analyses_year = scan_data_per_year[year]["analyses"]
-                                hist_info = scan_data_analyses_year.all_hist_per_format[plot_key][original_name]
+                                hist_info = scan_data_analyses_year.all_hist_per_format[plot_key][
+                                    original_name]
                                 highcharts_info = highcharts_info_per_year[year]
 
                                 if hist_info is not None:

@@ -232,7 +232,7 @@ def make_bar_plot(plot_df,
     image_file = image_directory / Path("_".join([plot_key, ".".join([image_name, image_type])]))
     image_file_name = image_file.as_posix()
     if image_file.exists() and not force_plot:
-        _logger.debug(f"File {image_file_name} already exists. Skipping plot")
+        _logger.info(f"File {image_file_name} already exists. Skipping plot")
         return image_file_name
     """ create a bar plot from the question 'plot_df'"""
     figure_properties = CBSPlotSettings()
