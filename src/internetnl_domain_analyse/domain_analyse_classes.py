@@ -855,12 +855,13 @@ class DomainPlotter:
                 stats_df_per_year[year] = df
                 last_year = year
 
-            index_names = ["Jaar"] + list(df.index.names)
+            jaar_level_name = "Jaar"
+            index_names = [jaar_level_name] + list(df.index.names)
             new_index_names = list(df.index.names) + ["Jaar"]
             module_level_name = new_index_names[0]
             question_level_name = new_index_names[1]
             stats_df = pd.concat(stats_df_per_year, names=index_names)
-            # zet module vraag optie jaar als volgorde
+            # zet module vraag optie jaar als volgorde.
             stats_df = stats_df.reorder_levels(new_index_names)
 
             highcharts_title = plot_prop.get("title")
@@ -1020,6 +1021,10 @@ class DomainPlotter:
 
                         plot_df = question_df_clean.loc[(module_name, question_name, mask)].copy()
 
+                        plot_df = add_missing_years(plot_df,
+                                                    years_to_plot=scan_data_per_year.keys(),
+                                                    jaar_level_name=jaar_level_name)
+
                         if variables.loc[original_name, "report_number"]:
                             normalize_data = True
                         else:
@@ -1164,3 +1169,35 @@ class PlotInfo:
                     self.y_max = info.get("y_max")
                     self.y_spacing = info.get("y_spacing")
                     self.legend_position = info.get("legend_position")
+
+
+def add_missing_years(plot_df, years_to_plot=None, jaar_level_name="Jaar"):
+    """
+    Voeg missende jaren toe
+
+    Args:
+        plot_df: pd.Dataframe
+            Dataframe om te plotetn
+        years_to_plot: list
+            De jaren die we willen plotten
+        jaar_level_name: str
+            de naam van de level= van de jaren
+
+    Returns:
+        pdf.DataFrame
+    """
+
+    years_in_plot = plot_df.index.get_level_values(jaar_level_name)
+    missing_years = set(years_to_plot).difference(years_in_plot)
+    if missing_years:
+        index_names = plot_df.index.names
+        df = plot_df.reset_index().set_index(jaar_level_name)
+        df = df.reindex(years_to_plot)
+        for column_name in index_names:
+            if column_name == jaar_level_name:
+                continue
+            df[column_name] = df[column_name].pad()
+        plot_df = df.reset_index().set_index(index_names, drop=True)
+
+    return plot_df
+
