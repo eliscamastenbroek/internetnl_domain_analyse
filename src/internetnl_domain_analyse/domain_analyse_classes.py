@@ -4,6 +4,7 @@ import pickle
 import re
 import sqlite3
 import sys
+from tqdm import tqdm
 from collections import Counter
 from pathlib import Path
 
@@ -667,17 +668,21 @@ class DomainAnalyser:
                 elif var_type in ("bool", "percentage", "float"):
                     tables[column] = tables[column].astype('float64')
 
-            # hier gaan we de url name opschonen. sla eerst de oorsponkelijke url op
+            # Hier gaan we de url name opschonen. sla eerst de oorsponkelijke url op
             original_url = "_".join([self.url_key, "original"])
             records = pd.concat([records, records[self.url_key].rename(original_url)], axis=1)
             tables = pd.concat([tables, tables[self.url_key].rename(original_url)], axis=1)
 
             all_clean_urls = list()
             _logger.info("Start cleaning urls...")
+            progress_bar = tqdm(total=records.index.size, file=sys.stdout, position=0, ncols=100, leave=True,
+                                colour="GREEN")
             for url in records[self.url_key]:
                 clean_url = get_clean_url(url, cache_dir=self.tld_extract_cache_directory)
                 _logger.debug(f"Converted {url} to {clean_url}")
                 all_clean_urls.append(clean_url)
+                progress_bar.set_description("{:5s} - {:30s}".format("URL", clean_url))
+                progress_bar.update()
             _logger.info("Done!")
             records[self.url_key] = all_clean_urls
             records.dropna(subset=[self.url_key], axis=0, inplace=True)
