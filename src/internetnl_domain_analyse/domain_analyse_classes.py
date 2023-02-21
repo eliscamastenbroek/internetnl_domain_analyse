@@ -229,15 +229,15 @@ class DomainAnalyser:
             else:
                 msg = "The write_data_frame option only works if you force to read the micro " \
                       "data with --reset 0 or --reset 1"
-                raise ValueError(msg)
+                _logger.warning(msg)
 
-        if mode in ("all", "statistics"):
+        if mode in ("all", "statistics") and self.dataframe is not None:
             self.calculate_statistics()
             if statistics_to_xls or reset is not None:
                 self.write_statistics()
-        if mode in ("all", "correlations"):
+        if mode in ("all", "correlations") and self.dataframe is not None:
             self.calculate_correlations_and_scores()
-        if mode in ("all", "categories"):
+        if mode in ("all", "categories") and self.dataframe is not None:
             self.calculate_categories()
 
     def check_if_cache_exist(self, mode: str):
@@ -547,7 +547,7 @@ class DomainAnalyser:
         self.all_hist_per_format = dict()
 
         for file_base, props in self.statistics.items():
-            scan_data = props.get("scan_data", self.default_scan)
+            scan_data = props.get("scan_data", self.scan_data_key)
             if scan_data != self.scan_data_key:
                 _logger.debug(f"SKipping {scan_data} for {self.scan_data_key}")
                 continue
@@ -633,7 +633,12 @@ class DomainAnalyser:
             table_names = ["report", "scoring", "status", "results"]
             index_name = "index"
             _logger.info(f"Reading tables {table_names} from {self.internet_nl_filename}")
-            tables = read_tables_from_sqlite(self.internet_nl_filename, table_names, index_name)
+            try:
+                tables = read_tables_from_sqlite(self.internet_nl_filename, table_names, index_name)
+            except FileNotFoundError as err:
+                _logger.warning(err)
+                _logger.warning("No input data. Skipping ")
+                return
             _logger.info(f"Done")
             tables.reset_index(inplace=True)
             tables.rename(columns=dict(index=self.url_key), inplace=True)
@@ -681,7 +686,10 @@ class DomainAnalyser:
                 clean_url = get_clean_url(url, cache_dir=self.tld_extract_cache_directory)
                 _logger.debug(f"Converted {url} to {clean_url}")
                 all_clean_urls.append(clean_url)
-                progress_bar.set_description("{:5s} - {:30s}".format("URL", clean_url))
+                if clean_url is not None:
+                    progress_bar.set_description("{:5s} - {:30s}".format("URL", clean_url))
+                else:
+                    progress_bar.set_description("{:5s} - {:30s}".format("URL", "None"))
                 progress_bar.update()
             _logger.info("Done!")
             records[self.url_key] = all_clean_urls
@@ -694,7 +702,7 @@ class DomainAnalyser:
             tables.dropna(subset=[self.url_key], axis=0, inplace=True)
             tables.dropna(how='all', axis=1, inplace=True)
 
-            # doe een left join omdat meerdere be's dezelfde url kunnen hebben. Dit is sowieso
+            # Doe een left join omdat meerdere be's dezelfde url kunnen hebben. Dit is sowieso
             # het geval voor holdings. Dan moeten we de score van hodlings ook meerdere keren
             # meenemen
             self.dataframe = pd.merge(left=records, right=tables, on=self.url_key, how='left')
@@ -724,6 +732,7 @@ class DomainAnalyser:
 
 class DomainPlotter:
     def __init__(self, scan_data,
+                 scan_data_key=None,
                  default_scan=None,
                  plot_info=None,
                  show_plots=False,
@@ -753,6 +762,7 @@ class DomainPlotter:
                  ):
 
         self.scan_data = scan_data
+        self.scan_data_key = scan_data_key
         self.default_scan = default_scan
         self.plot_info = plot_info
         self.show_plots = show_plots
@@ -836,7 +846,7 @@ class DomainPlotter:
             figsize = plot_prop.get("figsize")
 
             stat_prop = self.statistics[plot_key]
-            scan_data_key = stat_prop.get("scan_data", self.default_scan)
+            scan_data_key = stat_prop.get("scan_data", self.scan_data_key)
 
             scan_data_per_year = self.scan_data[scan_data_key]
             last_year = list(scan_data_per_year.keys())[-1]
@@ -1066,6 +1076,7 @@ class DomainPlotter:
                             image_file = make_bar_plot(plot_df=plot_df,
                                                        plot_key=plot_key,
                                                        plot_variable=plot_variable,
+                                                       scan_data_key=scan_data_key,
                                                        module_name=module_name,
                                                        question_name=question_name,
                                                        image_directory=self.image_directory,

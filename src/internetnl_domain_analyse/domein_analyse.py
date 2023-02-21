@@ -91,6 +91,7 @@ def parse_args():
     parser.add_argument("--onderschrift", action="store_false", dest="bovenschrift",
                         help="De latex overview file krijgt de captions boven de figuren"
                         )
+    parser.add_argument("--scan_type", help="Type van de scan die we willen processen.")
     parser.add_argument("--image_type", choices=IMAGE_TYPES, default="pdf",
                         help="Type van de plaatjes")
     parser.add_argument("--variable_to_plot", action="append", nargs="*", default=None,
@@ -190,7 +191,7 @@ def main():
     statistics = settings["statistics"]
     translations = settings["translations"]
     breakdown_labels = settings["breakdown_labels"]
-    variables = settings["variables"]
+    variables_per_type = settings["variables"]
     module_info = settings["module_info"]
     weights = settings["weight"]
     plot_info = settings["plots"]
@@ -219,6 +220,16 @@ def main():
 
     _logger.info(f"Running domain analyser in {os.getcwd()}")
     for key_scan_type, scan_prop_per_year in scan_data.items():
+        if args.scan_type is not None and key_scan_type != args.scan_type:
+            _logger.info(f"Scan type {key_scan_type} not requested. Skipping")
+            continue
+
+        try:
+            variables = variables_per_type[key_scan_type]
+        except KeyError as err:
+            msg = "Since version in 2022, we need to give the variables per scan type"
+            _logger.warning(msg)
+            raise KeyError(msg)
 
         for scan_year, scan_prop in scan_prop_per_year.items():
 
@@ -285,6 +296,7 @@ def main():
         if bar_plot or cdf_plot:
             DomainPlotter(
                 scan_data=scan_data,
+                scan_data_key=key_scan_type,
                 default_scan=default_scan,
                 plot_info=plot_info,
                 barh=barh,

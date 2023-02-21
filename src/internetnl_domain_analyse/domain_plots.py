@@ -216,6 +216,7 @@ def make_cdf_plot(hist,
 def make_bar_plot(plot_df,
                   plot_key,
                   plot_variable,
+                  scan_data_key,
                   module_name, question_name, image_directory, show_plots=False,
                   figsize=None, image_type="pdf", reference_lines=None, xoff=0.02, yoff=0.02,
                   show_title=False, barh=False, subplot_adjust=None, sort_values=False,
@@ -230,7 +231,7 @@ def make_bar_plot(plot_df,
                   force_plot=False
                   ):
     image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
-    image_file = image_directory / Path("_".join([plot_key, ".".join([image_name, image_type])]))
+    image_file = image_directory / Path("_".join([scan_data_key, plot_key, ".".join([image_name, image_type])]))
     image_file_name = image_file.as_posix()
     if image_file.exists() and not force_plot:
         _logger.info(f"File {image_file_name} already exists. Skipping plot")
