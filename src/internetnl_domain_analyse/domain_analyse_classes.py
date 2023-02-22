@@ -131,7 +131,7 @@ class DomainAnalyser:
 
         outfile_suff = self.output_file.suffixes
         outfile_base = self.output_file.with_suffix("").with_suffix("").as_posix()
-        outfile_year = Path("_".join([outfile_base, self.records_cache_info.year_digits]))
+        outfile_year = Path("_".join([outfile_base, scan_data_key, self.records_cache_info.year_digits]))
         self.output_file = outfile_year.with_suffix(".".join(outfile_suff))
 
         self.scan_data_key = scan_data_key
