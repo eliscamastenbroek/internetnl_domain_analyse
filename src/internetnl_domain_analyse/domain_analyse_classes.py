@@ -633,12 +633,7 @@ class DomainAnalyser:
             table_names = ["report", "scoring", "status", "results"]
             index_name = "index"
             _logger.info(f"Reading tables {table_names} from {self.internet_nl_filename}")
-            try:
-                tables = read_tables_from_sqlite(self.internet_nl_filename, table_names, index_name)
-            except FileNotFoundError as err:
-                _logger.warning(err)
-                _logger.warning("No input data. Skipping ")
-                return
+            tables = read_tables_from_sqlite(self.internet_nl_filename, table_names, index_name)
             _logger.info(f"Done")
             tables.reset_index(inplace=True)
             tables.rename(columns=dict(index=self.url_key), inplace=True)
@@ -964,8 +959,8 @@ class DomainPlotter:
                         question_type = variables.loc[original_name, "type"]
                         question_df_clean = question_df.droplevel(variable_name_key)
 
-                        var_to_plot = self.variables_to_plot[0]
-                        if var_to_plot is not None:
+                        var_to_plot = self.variables_to_plot[0][0]
+                        if var_to_plot:
                             var_to_plot_clean = [vv[0] for vv in var_to_plot if vv is not None]
                             if original_name not in var_to_plot_clean:
                                 _logger.debug(f"{original_name} not in {self.variables_to_plot}. "
