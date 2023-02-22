@@ -869,7 +869,7 @@ class DomainPlotter:
 
             jaar_level_name = "Jaar"
             index_names = [jaar_level_name] + list(df.index.names)
-            new_index_names = list(df.index.names) + ["Jaar"]
+            new_index_names = list(df.index.names) + [jaar_level_name]
             module_level_name = new_index_names[0]
             question_level_name = new_index_names[1]
             stats_df = pd.concat(stats_df_per_year, names=index_names)
@@ -961,9 +961,14 @@ class DomainPlotter:
                         question_type = variables.loc[original_name, "type"]
                         question_df_clean = question_df.droplevel(variable_name_key)
 
+                        # variables_to_plot wordt als een list van een list in een tuple meegegeven
+                        # dus ([[variable1], [variables2]). Haal eerst level 0 eruit om te tuple
+                        # te verwijderen. Als variable_to_plot niet gegeven is dan is deze waarde
+                        # None, en slaan we het over. Als hij wel gegeven is dan zetten we de list
+                        # van lists om in een platte list
                         var_to_plot = self.variables_to_plot[0]
                         if var_to_plot is not None:
-                            var_to_plot_clean = [vv[0] for vv in var_to_plot[0] if vv is not None]
+                            var_to_plot_clean = [vv[0] for vv in var_to_plot if vv is not None]
                             if original_name not in var_to_plot_clean:
                                 _logger.debug(f"{original_name} not in {self.variables_to_plot}. "
                                               f"Skipping...")
