@@ -46,6 +46,7 @@ class AxisLabel:
 def make_cdf_plot(hist,
                   grp_key,
                   plot_key,
+                  scan_data_key,
                   module_name=None,
                   question_name=None,
                   image_directory=None,
@@ -168,9 +169,10 @@ def make_cdf_plot(hist,
     plot_title = " - ".join([fnc_str, module_name, question_name, plot_key, grp_key])
 
     image_name_suffix = "_".join([fnc_str, image_file_base, str(year)])
-    image_name = "_".join([plot_key, image_name_suffix])
-    image_name_with_ext = ".".join([image_name, image_type])
+    image_name = "_".join([scan_data_key, plot_key, image_name_suffix])
+    image_name_with_ext = ".".join([ image_name, image_type])
     image_file = image_directory / Path(image_name_with_ext)
+
     fig.savefig(image_file)
 
     stat_file = image_file.with_suffix(".out").as_posix()
@@ -231,7 +233,8 @@ def make_bar_plot(plot_df,
                   force_plot=False
                   ):
     image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
-    image_file = image_directory / Path("_".join([scan_data_key, plot_key, ".".join([image_name, image_type])]))
+    image_file = image_directory / Path(
+        "_".join([scan_data_key, plot_key, ".".join([image_name, image_type])]))
     image_file_name = image_file.as_posix()
     if image_file.exists() and not force_plot:
         _logger.info(f"File {image_file_name} already exists. Skipping plot")

@@ -131,7 +131,8 @@ class DomainAnalyser:
 
         outfile_suff = self.output_file.suffixes
         outfile_base = self.output_file.with_suffix("").with_suffix("").as_posix()
-        outfile_year = Path("_".join([outfile_base, scan_data_key, self.records_cache_info.year_digits]))
+        outfile_year = Path(
+            "_".join([outfile_base, scan_data_key, self.records_cache_info.year_digits]))
         self.output_file = outfile_year.with_suffix(".".join(outfile_suff))
 
         self.scan_data_key = scan_data_key
@@ -675,7 +676,8 @@ class DomainAnalyser:
 
             all_clean_urls = list()
             _logger.info("Start cleaning urls...")
-            progress_bar = tqdm(total=records.index.size, file=sys.stdout, position=0, ncols=100, leave=True,
+            progress_bar = tqdm(total=records.index.size, file=sys.stdout, position=0, ncols=100,
+                                leave=True,
                                 colour="GREEN")
             for url in records[self.url_key]:
                 clean_url = get_clean_url(url, cache_dir=self.tld_extract_cache_directory)
@@ -1119,6 +1121,7 @@ class DomainPlotter:
                                     for grp_key, hist in hist_info.items():
                                         im_file_2 = make_cdf_plot(hist=hist,
                                                                   plot_key=plot_key,
+                                                                  scan_data_key=scan_data_key,
                                                                   grp_key=grp_key,
                                                                   module_name=module_name,
                                                                   question_name=question_name,
@@ -1218,4 +1221,3 @@ def add_missing_years(plot_df, years_to_plot=None, jaar_level_name="Jaar"):
         plot_df = df.reset_index().set_index(index_names, drop=True)
 
     return plot_df
-
