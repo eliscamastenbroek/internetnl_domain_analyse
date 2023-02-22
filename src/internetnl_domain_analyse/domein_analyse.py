@@ -231,11 +231,18 @@ def main():
             _logger.warning(msg)
             raise KeyError(msg)
 
+        years_to_add_to_plot_legend = list()
         for scan_year, scan_prop in scan_prop_per_year.items():
 
             if not scan_prop.get("do_it", True):
                 continue
-            internet_nl_filename = Path(scan_prop["data_file"])
+            filename = scan_prop["data_file"]
+            years_to_add_to_plot_legend.append(scan_year)
+            if filename is None:
+                _logger.info(f"File name for year {scan_year} was None. Skip it but add it to"
+                             f"the plot legend")
+                continue
+            internet_nl_filename = Path(filename)
             records_cache_data = records_cache_data_per_year[scan_year]
             records_cache_info = RecordsCacheInfo(records_cache_data=records_cache_data,
                                                   year=scan_year,
@@ -322,6 +329,7 @@ def main():
                 variables_to_plot=args.variable_to_plot,
                 force_plots=args.force_plots,
                 latex_files=args.latex_files,
+                years_to_add_to_plot_legend=years_to_add_to_plot_legend,
             )
 
 

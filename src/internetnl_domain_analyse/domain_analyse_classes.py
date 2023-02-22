@@ -754,6 +754,7 @@ class DomainPlotter:
                  variables_to_plot=None,
                  force_plots=False,
                  latex_files=False,
+                 years_to_add_to_plot_legend=None,
                  ):
 
         self.scan_data = scan_data
@@ -775,6 +776,7 @@ class DomainPlotter:
         self.correlations = correlations
         self.export_highcharts = export_highcharts
         self.force_plots = force_plots
+        self.years_to_add_to_plot_legend = years_to_add_to_plot_legend
         if highcharts_directory is None:
             self.highcharts_directory = Path(".")
         else:
@@ -1032,7 +1034,7 @@ class DomainPlotter:
                         plot_df = question_df_clean.loc[(module_name, question_name, mask)].copy()
 
                         plot_df = add_missing_years(plot_df,
-                                                    years_to_plot=scan_data_per_year.keys(),
+                                                    years_to_plot=self.years_to_add_to_plot_legend,
                                                     jaar_level_name=jaar_level_name)
 
                         if variables.loc[original_name, "report_number"]:
