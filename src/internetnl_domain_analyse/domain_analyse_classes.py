@@ -231,7 +231,7 @@ class DomainAnalyser:
                       "data with --reset 0 or --reset 1"
                 _logger.warning(msg)
 
-        if mode in ("all", "statistics") and self.dataframe is not None:
+        if mode in ("all", "statistics"):
             self.calculate_statistics()
             if statistics_to_xls or reset is not None:
                 self.write_statistics()
