@@ -658,6 +658,13 @@ class DomainAnalyser:
                     # op deze manier kunnen we de vertaling {Nee: 0, Ja: 1} op de column waardes los
                     # laten, zodat we alle Nee met 0 en Ja met 1 vervangen
                     trans = yaml.load(str(var_translate), Loader=yaml.Loader)
+                    if "na" in trans.keys():
+                        # we have added an 'na' option for the translations. Take care of it
+                        is_na = tables[column].isna()
+                        if is_na.any():
+                            _logger.info(f"Filling NaN with na in {column}")
+                            tables.loc[is_na, column] = "na"
+
                     if set(trans.keys()).intersection(set(tables[column].unique())):
                         _logger.debug(f"Convert for {column} trans keys {trans}")
                         tables[column] = tables[column].map(trans)
@@ -805,6 +812,7 @@ class DomainPlotter:
         if latex_files:
             _logger.debug(f"making latex with bovenschrift={bovenschrift}")
             make_latex_overview(all_plots=self.all_plots,
+                                scan_data_key=self.scan_data_key,
                                 variables=self.variables,
                                 image_directory=self.image_directory, image_files=self.image_files,
                                 tex_prepend_path=self.tex_prepend_path,
@@ -1213,7 +1221,10 @@ def add_missing_years(plot_df, years_to_plot=None, jaar_level_name="Jaar"):
     if missing_years:
         index_names = plot_df.index.names
         df = plot_df.reset_index().set_index(jaar_level_name)
-        df = df.reindex(years_to_plot)
+        try:
+            df = df.reindex(years_to_plot)
+        except ValueError as err:
+            _logger.warning(err)
         for column_name in index_names:
             if column_name == jaar_level_name:
                 continue
