@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.7
+===========
+- Nu worden zowel mail als web gelezen
+
+
 Version 1.6
 ===========
 - Kan nu met meerdere jaren omgaan
