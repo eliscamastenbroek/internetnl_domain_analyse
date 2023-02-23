@@ -644,11 +644,15 @@ class DomainAnalyser:
 
             rename_all_variables(tables, self.variables)
 
+            # some urls did not give any results, drop the empty lines. note that
+            # the first column is left out as that is the url name
+            tables.dropna(axis=0, how="all", subset=tables.columns[1:], inplace=True)
+
             for column in tables:
                 try:
                     var_props = self.variables.loc[column, :]
                 except KeyError:
-                    _logger.debug("Column {} not yet defined. Skipping")
+                    _logger.debug(f"Column {column} not defined in settings. Skipping")
                     continue
 
                 var_type = var_props.get("type")
@@ -662,10 +666,17 @@ class DomainAnalyser:
                         # we have added an 'na' option for the translations. Take care of it
                         is_na = tables[column].isna()
                         if is_na.any():
+                            # should not happen anymore because of the dropna above
                             _logger.info(f"Filling NaN with na in {column}")
-                            tables.loc[is_na, column] = "na"
+                            tables[column] = tables[column].fillna("na")
 
-                    if set(trans.keys()).intersection(set(tables[column].unique())):
+                    unique_values = set(tables[column].unique())
+                    vals_to_translate = set(trans.keys()).intersection(unique_values)
+                    missing_values = unique_values.difference(set(trans.keys()))
+                    if vals_to_translate:
+                        if missing_values:
+                            _logger.warning(f"Column {column} misses the translations for "
+                                            f"{missing_values}. Please update your settings")
                         _logger.debug(f"Convert for {column} trans keys {trans}")
                         tables[column] = tables[column].map(trans)
                     else:
@@ -683,18 +694,22 @@ class DomainAnalyser:
 
             all_clean_urls = list()
             _logger.info("Start cleaning urls...")
-            progress_bar = tqdm(total=records.index.size, file=sys.stdout, position=0, ncols=100,
-                                leave=True,
-                                colour="GREEN")
+            if _logger.getEffectiveLevel() > logging.DEBUG:
+                progress_bar = tqdm(total=records.index.size, file=sys.stdout, position=0, ncols=100,
+                                    leave=True,
+                                    colour="GREEN")
+            else:
+                progress_bar = None
             for url in records[self.url_key]:
                 clean_url = get_clean_url(url, cache_dir=self.tld_extract_cache_directory)
                 _logger.debug(f"Converted {url} to {clean_url}")
                 all_clean_urls.append(clean_url)
-                if clean_url is not None:
-                    progress_bar.set_description("{:5s} - {:30s}".format("URL", clean_url))
-                else:
-                    progress_bar.set_description("{:5s} - {:30s}".format("URL", "None"))
-                progress_bar.update()
+                if progress_bar:
+                    if clean_url is not None:
+                        progress_bar.set_description("{:5s} - {:30s}".format("URL", clean_url))
+                    else:
+                        progress_bar.set_description("{:5s} - {:30s}".format("URL", "None"))
+                    progress_bar.update()
             _logger.info("Done!")
             records[self.url_key] = all_clean_urls
             records.dropna(subset=[self.url_key], axis=0, inplace=True)
@@ -871,15 +886,18 @@ class DomainPlotter:
 
             stats_df_per_year = {}
             last_year = None
+            df_index_names = None
             for year in scan_data_per_year.keys():
                 df = self.get_plot_cache(scan_data_key=scan_data_key, plot_key=plot_key,
                                          year=year)
-                stats_df_per_year[year] = df
-                last_year = year
+                if df is not None:
+                    stats_df_per_year[year] = df
+                    last_year = year
+                    df_index_names = list(df.index.names)
 
             jaar_level_name = "Jaar"
-            index_names = [jaar_level_name] + list(df.index.names)
-            new_index_names = list(df.index.names) + [jaar_level_name]
+            index_names = [jaar_level_name] + df_index_names
+            new_index_names = df_index_names + [jaar_level_name]
             module_level_name = new_index_names[0]
             question_level_name = new_index_names[1]
             stats_df = pd.concat(stats_df_per_year, names=index_names)
@@ -1050,7 +1068,8 @@ class DomainPlotter:
 
                         plot_df = add_missing_years(plot_df,
                                                     years_to_plot=self.years_to_add_to_plot_legend,
-                                                    jaar_level_name=jaar_level_name)
+                                                    jaar_level_name=jaar_level_name,
+                                                    column=original_name)
 
                         if variables.loc[original_name, "report_number"]:
                             normalize_data = True
@@ -1200,20 +1219,22 @@ class PlotInfo:
                     self.legend_position = info.get("legend_position")
 
 
-def add_missing_years(plot_df, years_to_plot=None, jaar_level_name="Jaar"):
+def add_missing_years(plot_df, years_to_plot=None, jaar_level_name="Jaar", column=None):
     """
     Voeg missende jaren toe
 
     Args:
-        plot_df: pd.Dataframe
-            Dataframe om te plotetn
+        plot_df: pd.DataFrame
+            DataFrame om te plotetn
         years_to_plot: list
             De jaren die we willen plotten
         jaar_level_name: str
-            de naam van de level= van de jaren
+            De naam van de level= van de jaren
+        column: str
+            Naam van de column voor de foutmelding
 
     Returns:
-        pdf.DataFrame
+        pd.DataFrame
     """
 
     years_in_plot = plot_df.index.get_level_values(jaar_level_name)
@@ -1224,7 +1245,7 @@ def add_missing_years(plot_df, years_to_plot=None, jaar_level_name="Jaar"):
         try:
             df = df.reindex(years_to_plot)
         except ValueError as err:
-            _logger.warning(err)
+            _logger.warning(f"{err}. Check  {column}")
         for column_name in index_names:
             if column_name == jaar_level_name:
                 continue

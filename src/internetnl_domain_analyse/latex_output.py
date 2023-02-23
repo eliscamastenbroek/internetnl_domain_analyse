@@ -31,7 +31,9 @@ class SubFloat(CommandBase):
     _latex_name = 'subfloat'
 
 
-def make_latex_overview(all_plots, variables, image_directory, image_files,
+def make_latex_overview(all_plots,
+                        scan_data_key,
+                        variables, image_directory, image_files,
                         tex_horizontal_shift="-2cm", tex_prepend_path=None,
                         all_shifts=None, bovenschrift=False):
     """
@@ -111,7 +113,7 @@ def make_latex_overview(all_plots, variables, image_directory, image_files,
                 plots.append(ref_label)
 
     for module, doc in doc_per_module.items():
-        file_name = Path("_".join([image_files.with_suffix("").as_posix(), module]))
+        file_name = Path("_".join([scan_data_key, image_files.with_suffix("").as_posix(), module]))
         _logger.info(f"Writing tex file list to {file_name}.tex")
         doc.generate_tex(filepath=file_name.as_posix())
         file_name = file_name.with_suffix(".tex")
