@@ -31,20 +31,22 @@ class SubFloat(CommandBase):
     _latex_name = 'subfloat'
 
 
-def make_latex_overview(all_plots,
-                        scan_data_key,
-                        variables, image_directory, image_files,
-                        tex_horizontal_shift="-2cm", tex_prepend_path=None,
-                        all_shifts=None, bovenschrift=False):
+def make_latex_overview(
+        image_info=None,
+        variables=None,
+        image_directory=None,
+        image_files=None,
+        tex_horizontal_shift="-2cm",
+        tex_prepend_path=None,
+        bovenschrift=False):
     """
     Maak latex ouput file met alle plaatjes
     Args:
-        all_shifts:
-        all_plots: dict met eerste nivear variabele name, dan labels voor SBI, GK, dan file namen
+        image_info: object: ImageInfo
         variables: dict met variabele eigenschappen
         image_directory: str
+        image_files: obj:Path
         tex_prepend_path: str
-        image_files:
         tex_horizontal_shift: verschuiving naar links
         bovenschrift: boolean
             Voeg caption bovenaan figuren
@@ -56,7 +58,7 @@ def make_latex_overview(all_plots,
 
     doc_per_module = dict()
 
-    for original_name, images in all_plots.items():
+    for original_name, image_prop in image_info.data.items():
         _logger.debug(f"Adding {original_name}")
         caption = variables.loc[original_name, "label"]
         module = variables.loc[original_name, "module"]
@@ -72,7 +74,9 @@ def make_latex_overview(all_plots,
                 plots.add_caption(caption)
                 ref_label = Command("label", NoEscape("fig:" + original_name))
                 plots.append(ref_label)
-            for label, image_name in images.items():
+            for sub_image_label, sub_image_prop in image_prop.items():
+                image_name = sub_image_prop["file_name"]
+                horizontal_shift = sub_image_prop.get("tex_right_shift", tex_horizontal_shift)
                 with doc.create(SubFigure(width=NoEscape(r'\linewidth'))) as sub_plot:
                     if tex_prepend_path is None:
                         full_image_name = Path(image_name)
@@ -81,14 +85,10 @@ def make_latex_overview(all_plots,
                             full_image_name = tex_prepend_path / image_name
                         else:
                             full_image_name = Path("bla")
-                    horizontal_shift = tex_horizontal_shift
-                    if shift_props := all_shifts.get(original_name):
-                        if hz := shift_props.get(label):
-                            horizontal_shift = hz
                     _logger.debug(f"Adding {full_image_name}")
-                    ref = "_".join([original_name, label.lower().replace(" ", "_")])
+                    ref = "_".join([original_name, sub_image_label.lower().replace(" ", "_")])
                     ref_sublabel = Command("label", NoEscape("fig:" + ref))
-                    lab = Command("footnotesize", Arguments(label))
+                    lab = Command("footnotesize", Arguments(sub_image_label))
                     include_graphics = Command("includegraphics",
                                                NoEscape(full_image_name.as_posix()))
                     if horizontal_shift is not None:
@@ -113,7 +113,8 @@ def make_latex_overview(all_plots,
                 plots.append(ref_label)
 
     for module, doc in doc_per_module.items():
-        file_name = Path("_".join([scan_data_key, image_files.with_suffix("").as_posix(), module]))
+        file_name = Path("_".join([image_info.scan_data_key,
+                                   image_files.with_suffix("").as_posix(), module]))
         _logger.info(f"Writing tex file list to {file_name}.tex")
         doc.generate_tex(filepath=file_name.as_posix())
         file_name = file_name.with_suffix(".tex")

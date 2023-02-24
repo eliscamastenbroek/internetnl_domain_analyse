@@ -1,6 +1,7 @@
 import logging
 import os
 import pickle
+import codecs
 import re
 import sqlite3
 import sys
@@ -38,6 +39,37 @@ mpl_logger.setLevel(logging.WARNING)
 
 def make_plot_cache_file_name(cache_directory, file_base, prefix):
     return cache_directory / Path("_".join([prefix, file_base, "cache_for_plot.pkl"]))
+
+
+class ImageFileInfo:
+    def __init__(self, scan_data_key, cache_file_name_base="image_info", cache_directory="cache"):
+        self.scan_data_key = scan_data_key
+        self.cache_directory = Path(cache_directory)
+        self.cache_directory.mkdir(exist_ok=True)
+        cache_file_name = Path("_".join([cache_file_name_base, scan_data_key])).with_suffix(".yml")
+        self.cache_file_name = self.cache_directory / cache_file_name
+
+        self.data = None
+
+    def add_entry(self, image_key, sub_image_label, file_name, tex_right_shift=None):
+        """ add a new entry """
+        if image_key not in self.data.keys():
+            self.data[image_key] = dict()
+        self.data[image_key][sub_image_label] = dict(file_name=file_name,
+                                                     tex_right_shift=tex_right_shift)
+
+    def read_cache(self):
+        """ Lees de cache """
+        if self.cache_file_name.exists():
+            with codecs.open(self.cache_file_name.as_posix(), "r", encoding="UTF-8") as stream:
+                self.data = yaml.load(stream=stream, Loader=yaml.Loader)
+        else:
+            self.data = dict()
+
+    def write_cache(self):
+        """ Schrijf de cache """
+        with codecs.open(self.cache_file_name.as_posix(), "w", encoding="UTF-8") as stream:
+            yaml.dump(data=self.data, stream=stream, Dumper=yaml.Dumper)
 
 
 class RecordsCacheInfo:
@@ -695,7 +727,8 @@ class DomainAnalyser:
             all_clean_urls = list()
             _logger.info("Start cleaning urls...")
             if _logger.getEffectiveLevel() > logging.DEBUG:
-                progress_bar = tqdm(total=records.index.size, file=sys.stdout, position=0, ncols=100,
+                progress_bar = tqdm(total=records.index.size, file=sys.stdout, position=0,
+                                    ncols=100,
                                     leave=True,
                                     colour="GREEN")
             else:
@@ -810,31 +843,23 @@ class DomainPlotter:
         self.image_type = image_type
         self.image_directory = image_directory
         self.breakdown_labels = breakdown_labels
-        self.all_plots = dict()
-        self.all_shifts = dict()
 
-        self.image_files = Path("image_files.pkl")
-        self.cache_directory.mkdir(exist_ok=True)
-        self.cache_image_file_list = self.cache_directory / self.image_files
+        self.image_info = ImageFileInfo(scan_data_key=scan_data_key)
+        self.image_info.read_cache()
+
         self.make_plots()
-        with open(self.cache_image_file_list, "wb") as stream:
-            pickle.dump(self.all_plots, stream)
 
-        if self.all_plots is None:
-            with open(self.cache_image_file_list, "rb") as stream:
-                self.all_plots = pickle.load(stream)
+        self.image_info.write_cache()
 
         if latex_files:
             _logger.debug(f"making latex with bovenschrift={bovenschrift}")
-            make_latex_overview(all_plots=self.all_plots,
-                                scan_data_key=self.scan_data_key,
+            make_latex_overview(image_info=self.image_info,
                                 variables=self.variables,
-                                image_directory=self.image_directory, image_files=self.image_files,
+                                image_directory=self.image_directory,
+                                image_files=Path("image_files"),
                                 tex_prepend_path=self.tex_prepend_path,
                                 tex_horizontal_shift=tex_horizontal_shift,
-                                all_shifts=self.all_shifts,
-                                bovenschrift=bovenschrift
-                                )
+                                bovenschrift=bovenschrift)
 
     #
     def get_plot_cache(self, scan_data_key, plot_key, year):
@@ -856,8 +881,6 @@ class DomainPlotter:
 
     def make_plots(self):
         _logger.info("Making the plot")
-
-        self.all_plots = dict()
 
         for plot_key, plot_prop in self.plot_info.items():
             if not plot_prop.get("do_it", True):
@@ -1055,11 +1078,6 @@ class DomainPlotter:
                         else:
                             y_spacing = y_spacing_bar_plot
 
-                        if original_name not in self.all_plots.keys():
-                            _logger.debug(f"Initialize dict for {original_name}")
-                            self.all_plots[original_name] = dict()
-                            self.all_shifts[original_name] = dict()
-
                         mask = get_option_mask(question_df=question_df_clean,
                                                variables=variables,
                                                question_type=question_type)
@@ -1104,38 +1122,41 @@ class DomainPlotter:
 
                         _logger.info(f"Plot nr {plot_count}")
                         if plot_bar:
-                            image_file = make_bar_plot(plot_df=plot_df,
-                                                       plot_key=plot_key,
-                                                       plot_variable=plot_variable,
-                                                       scan_data_key=scan_data_key,
-                                                       module_name=module_name,
-                                                       question_name=question_name,
-                                                       image_directory=self.image_directory,
-                                                       show_plots=self.show_plots,
-                                                       figsize=figsize,
-                                                       image_type=self.image_type,
-                                                       reference_lines=reference_lines,
-                                                       xoff=xoff, yoff=yoff,
-                                                       show_title=self.show_title,
-                                                       barh=self.barh,
-                                                       subplot_adjust=subplot_adjust,
-                                                       box_margin=box_margin,
-                                                       sort_values=sort_values,
-                                                       y_max_bar_plot=y_max,
-                                                       y_spacing_bar_plot=y_spacing,
-                                                       translations=self.translations,
-                                                       export_highcharts=export_highcharts,
-                                                       export_svg=export_svg_bar,
-                                                       highcharts_directory=highcharts_directory,
-                                                       title=title,
-                                                       legend_position=legend_pos,
-                                                       normalize_data=normalize_data,
-                                                       force_plot=self.force_plots
-                                                       )
+                            image_file = make_bar_plot(
+                                plot_df=plot_df,
+                                plot_key=plot_key,
+                                plot_variable=plot_variable,
+                                scan_data_key=scan_data_key,
+                                module_name=module_name,
+                                question_name=question_name,
+                                image_directory=self.image_directory,
+                                show_plots=self.show_plots,
+                                figsize=figsize,
+                                image_type=self.image_type,
+                                reference_lines=reference_lines,
+                                xoff=xoff, yoff=yoff,
+                                show_title=self.show_title,
+                                barh=self.barh,
+                                subplot_adjust=subplot_adjust,
+                                box_margin=box_margin,
+                                sort_values=sort_values,
+                                y_max_bar_plot=y_max,
+                                y_spacing_bar_plot=y_spacing,
+                                translations=self.translations,
+                                export_highcharts=export_highcharts,
+                                export_svg=export_svg_bar,
+                                highcharts_directory=highcharts_directory,
+                                title=title,
+                                legend_position=legend_pos,
+                                normalize_data=normalize_data,
+                                force_plot=self.force_plots
+                            )
 
                             _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
-                            self.all_plots[original_name][label] = image_file
-                            self.all_shifts[original_name][label] = tex_horizontal_shift
+                            self.image_info.add_entry(image_key=original_name,
+                                                      file_name=image_file,
+                                                      sub_image_label=label,
+                                                      tex_right_shift=tex_horizontal_shift)
 
                         if plot_cdf:
                             for year in scan_data_per_year.keys():
@@ -1146,29 +1167,29 @@ class DomainPlotter:
 
                                 if hist_info is not None:
                                     for grp_key, hist in hist_info.items():
-                                        im_file_2 = make_cdf_plot(hist=hist,
-                                                                  plot_key=plot_key,
-                                                                  scan_data_key=scan_data_key,
-                                                                  grp_key=grp_key,
-                                                                  module_name=module_name,
-                                                                  question_name=question_name,
-                                                                  image_file_base=original_name,
-                                                                  image_directory=self.image_directory,
-                                                                  show_plots=self.show_plots,
-                                                                  figsize=figsize,
-                                                                  image_type=self.image_type,
-                                                                  reference_lines=reference_lines,
-                                                                  cummulative=self.cumulative,
-                                                                  xoff=xoff, yoff=yoff,
-                                                                  y_max=y_max_pdf_plot,
-                                                                  y_spacing=y_spacing_pdf_plot,
-                                                                  translations=self.translations,
-                                                                  export_highcharts=export_highcharts_cdf,
-                                                                  export_svg=export_svg_cdf,
-                                                                  highcharts_info=highcharts_info,
-                                                                  title=title,
-                                                                  year=year
-                                                                  )
+                                        im_file_2 = make_cdf_plot(
+                                            hist=hist,
+                                            plot_key=plot_key,
+                                            scan_data_key=scan_data_key,
+                                            grp_key=grp_key,
+                                            module_name=module_name,
+                                            question_name=question_name,
+                                            image_file_base=original_name,
+                                            image_directory=self.image_directory,
+                                            show_plots=self.show_plots,
+                                            figsize=figsize,
+                                            image_type=self.image_type,
+                                            reference_lines=reference_lines,
+                                            cummulative=self.cumulative,
+                                            xoff=xoff, yoff=yoff,
+                                            y_max=y_max_pdf_plot,
+                                            y_spacing=y_spacing_pdf_plot,
+                                            translations=self.translations,
+                                            export_highcharts=export_highcharts_cdf,
+                                            export_svg=export_svg_cdf,
+                                            highcharts_info=highcharts_info,
+                                            title=title,
+                                            year=year)
                             if self.show_plots:
                                 plt.show()
 
