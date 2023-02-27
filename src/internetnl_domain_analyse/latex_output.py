@@ -91,7 +91,7 @@ def make_latex_overview(
                     ref_sublabel = Command("label", NoEscape("fig:" + ref))
                     lab = Command("footnotesize", Arguments(sub_image_label))
                     include_graphics = Command("includegraphics",
-                                               NoEscape(full_image_name.as_posix()))
+                                               NoEscape(full_image_name.with_suffix("").as_posix()))
                     if horizontal_shift is not None:
                         include_graphics = Command("hspace", Arguments(NoEscape(horizontal_shift),
                                                                        include_graphics))
