@@ -74,7 +74,8 @@ def make_latex_overview(
                 plots.add_caption(caption)
                 ref_label = Command("label", NoEscape("fig:" + original_name))
                 plots.append(ref_label)
-            for sub_image_label, sub_image_prop in image_prop.items():
+            for sub_image_key, sub_image_prop in image_prop.items():
+                sub_image_label = sub_image_prop.get("sub_image_label", "Empty")
                 image_name = sub_image_prop["file_name"]
                 horizontal_shift = sub_image_prop.get("tex_right_shift", tex_horizontal_shift)
                 with doc.create(SubFigure(width=NoEscape(r'\linewidth'))) as sub_plot:

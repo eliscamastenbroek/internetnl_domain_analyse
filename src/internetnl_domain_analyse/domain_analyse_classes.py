@@ -51,12 +51,27 @@ class ImageFileInfo:
 
         self.data = None
 
-    def add_entry(self, image_key, sub_image_label, file_name, tex_right_shift=None):
+    def add_entry(self, plot_key, plot_info, image_key, sub_image_label, file_name,
+                  tex_right_shift=None):
         """ add a new entry """
+
         if image_key not in self.data.keys():
             self.data[image_key] = dict()
-        self.data[image_key][sub_image_label] = dict(file_name=file_name,
-                                                     tex_right_shift=tex_right_shift)
+        self.data[image_key][plot_key] = dict(file_name=file_name,
+                                              tex_right_shift=tex_right_shift,
+                                              sub_image_label=sub_image_label)
+        # in order to get the key order in the dict the same as in the input file, alter the order
+        if len(self.data[image_key].keys()) > 1:
+            tmp_data = self.data[image_key].copy()
+            self.data[image_key] = dict()
+            for plot_key in plot_info.keys():
+                try:
+                    tex_prop = tmp_data[plot_key]
+                except KeyError as err:
+                    # this entry is not in the plot. No problem. skip it
+                    pass
+                else:
+                    self.data[image_key][plot_key] = tex_prop
 
     def read_cache(self):
         """ Lees de cache """
@@ -1153,10 +1168,14 @@ class DomainPlotter:
                             )
 
                             _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
-                            self.image_info.add_entry(image_key=original_name,
-                                                      file_name=image_file,
-                                                      sub_image_label=label,
-                                                      tex_right_shift=tex_horizontal_shift)
+                            self.image_info.add_entry(
+                                plot_key=plot_key,
+                                plot_info=self.plot_info,
+                                image_key=original_name,
+                                file_name=image_file,
+                                sub_image_label=label,
+                                tex_right_shift=tex_horizontal_shift,
+                            )
 
                         if plot_cdf:
                             for year in scan_data_per_year.keys():
