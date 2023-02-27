@@ -890,8 +890,12 @@ class DomainPlotter:
             with open(cache_file, "rb") as stream:
                 stats_df_per_year = pickle.load(stream)
         except FileNotFoundError as err:
-            _logger.warning(err)
-            _logger.warning("Run script with option '--statistics_to_xls'  first")
+            if self.scan_data[scan_data_key][year].get("data_file") is None:
+                _logger.debug("We are skipping this year as the data is not available.")
+            else:
+                # we missen de pkl file terwijl we wel een data file hebben. Genereer de foutmelding
+                _logger.warning(err)
+                _logger.warning("Run script with option '--statistics_to_xls'  first")
             stats_df_per_year = None
         return stats_df_per_year
 
