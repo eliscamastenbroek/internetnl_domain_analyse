@@ -35,6 +35,7 @@ def make_latex_overview(
         image_info=None,
         variables=None,
         image_directory=None,
+        cache_directory=None,
         image_files=None,
         tex_horizontal_shift="-2cm",
         tex_prepend_path=None,
@@ -114,8 +115,9 @@ def make_latex_overview(
                 plots.append(ref_label)
 
     for module, doc in doc_per_module.items():
-        file_name = Path("_".join([image_info.scan_data_key,
-                                   image_files.with_suffix("").as_posix(), module]))
+        file_name = cache_directory / Path("_".join([image_info.scan_data_key,
+                                                     image_files.with_suffix("").as_posix(),
+                                                     module]))
         _logger.info(f"Writing tex file list to {file_name}.tex")
         doc.generate_tex(filepath=file_name.as_posix())
         file_name = file_name.with_suffix(".tex")

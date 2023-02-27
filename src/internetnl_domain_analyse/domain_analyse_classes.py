@@ -871,6 +871,7 @@ class DomainPlotter:
             make_latex_overview(image_info=self.image_info,
                                 variables=self.variables,
                                 image_directory=self.image_directory,
+                                cache_directory=self.cache_directory,
                                 image_files=Path("image_files"),
                                 tex_prepend_path=self.tex_prepend_path,
                                 tex_horizontal_shift=tex_horizontal_shift,
