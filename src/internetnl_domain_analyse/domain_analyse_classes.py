@@ -1184,7 +1184,11 @@ class DomainPlotter:
 
                         if plot_cdf:
                             for year in scan_data_per_year.keys():
-                                scan_data_analyses_year = scan_data_per_year[year]["analyses"]
+                                try:
+                                    scan_data_analyses_year = scan_data_per_year[year]["analyses"]
+                                except KeyError:
+                                    _logger.info(f"Year {year} does not have data. Skipping")
+                                    continue
                                 hist_info = scan_data_analyses_year.all_hist_per_format[plot_key][
                                     original_name]
                                 highcharts_info = highcharts_info_per_year[year]
