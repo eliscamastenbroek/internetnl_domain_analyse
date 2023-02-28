@@ -410,7 +410,8 @@ def make_bar_plot(plot_df,
             hc_ylabel = x_label
         else:
             hc_ylabel = y_label
-        _logger.info(f"Saving plot to highcharts")
+        hc_file = "/".join([highcharts_directory.as_posix(), image_file.stem]) + ".json"
+        _logger.info(f"Saving highcharts plot to: {hc_file}")
         plot_df = plot_df.reindex(plot_df.index[::-1])
         CBSHighChart(
             data=plot_df,
