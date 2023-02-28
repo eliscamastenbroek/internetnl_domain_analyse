@@ -73,6 +73,17 @@ class ImageFileInfo:
                 else:
                     self.data[image_key][plot_key] = tex_prop
 
+    def fix_order(self, variables):
+        tmp_info = self.data.copy()
+        self.data = dict()
+        for var_name in variables.index:
+            try:
+                var_entry = tmp_info[var_name]
+            except KeyError as err:
+                _logger.debug(f"no entry for {var_name}. No problem, skipping")
+            else:
+                self.data[var_name] = var_entry
+
     def read_cache(self):
         """ Lees de cache """
         if self.cache_file_name.exists():
@@ -864,6 +875,7 @@ class DomainPlotter:
 
         self.make_plots()
 
+        self.image_info.fix_order(self.variables)
         self.image_info.write_cache()
 
         if latex_files:
@@ -1007,6 +1019,7 @@ class DomainPlotter:
             plot_count = 0
             stop_plotting = False
             if stats_df is not None:
+
                 for module_name, module_df in stats_df.groupby(level=module_level_name,
                                                                sort=False):
                     do_this_module = True
