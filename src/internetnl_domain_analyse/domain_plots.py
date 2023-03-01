@@ -251,6 +251,10 @@ def make_bar_plot(plot_df,
     plot_title = " - ".join([module_name, question_name])
     plot_df = plot_df.droplevel(names[:3]).T
 
+    # inverteer de volgorde
+    plot_df = plot_df[plot_df.columns[::-1]]
+    plot_df = plot_df.reindex(plot_df.index[::-1])
+
     if normalize_data:
         _logger.info("Normalize data")
         plot_df = 100 * plot_df / plot_df.sum(axis=0)
@@ -314,6 +318,7 @@ def make_bar_plot(plot_df,
             sns.despine(ax=axis, left=True)
             axis.tick_params(which="both", bottom=False)
 
+
             if reference_lines is not None:
                 color = line_iter.get_next_color()
                 for ref_key, ref_line in reference_lines.items():
@@ -332,6 +337,9 @@ def make_bar_plot(plot_df,
             _logger.warning(f"skip {plot_title}")
             pass
         else:
+
+            # put the high
+            axis.invert_yaxis()
 
             xticks = axis.get_xticks()
             min_x = xticks[0]
@@ -412,7 +420,6 @@ def make_bar_plot(plot_df,
             hc_ylabel = y_label
         hc_file = "/".join([highcharts_directory.as_posix(), image_file.stem]) + ".json"
         _logger.info(f"Saving highcharts plot to: {hc_file}")
-        plot_df = plot_df.reindex(plot_df.index[::-1])
         CBSHighChart(
             data=plot_df,
             chart_type="bar",
