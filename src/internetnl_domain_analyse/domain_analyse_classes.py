@@ -1128,10 +1128,11 @@ class DomainPlotter:
 
                         plot_df = question_df_clean.loc[(module_name, question_name, mask)].copy()
 
-                        plot_df = add_missing_years(plot_df,
-                                                    years_to_plot=self.years_to_add_to_plot_legend,
-                                                    jaar_level_name=jaar_level_name,
-                                                    column=original_name)
+                        # dit is niet meer nodig omdat de kleuren toch gelijk blijven
+                        #plot_df = add_missing_years(plot_df,
+                        #                            years_to_plot=self.years_to_add_to_plot_legend,
+                        #                            jaar_level_name=jaar_level_name,
+                        #                            column=original_name)
 
                         if variables.loc[original_name, "report_number"]:
                             normalize_data = True
