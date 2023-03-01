@@ -810,7 +810,6 @@ class DomainAnalyser:
                          f"cache {self.cache_file.absolute()}")
             with open(str(self.cache_file), "wb") as stream:
                 self.dataframe.to_pickle(stream)
-            _logger.debug(self.dataframe.info())
 
         else:
             _logger.debug(f"Reading tables from cache {self.cache_file}")
