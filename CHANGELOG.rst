@@ -2,9 +2,10 @@
 Changelog
 =========
 
-Version 1.7
+Version 1.7.2
 ===========
 - Nu worden zowel mail als web gelezen
+- Alle plaatjes voor 2022 publicatie
 
 
 Version 1.6
