@@ -187,6 +187,9 @@ class DomainAnalyser:
             self.output_file = Path("output.sqlite")
         else:
             self.output_file = Path(output_file)
+        self.output_directory = Path("output")
+        self.output_directory.mkdir(exist_ok=True)
+        self.output_file = self.output_directory / self.output_file
 
         outfile_suff = self.output_file.suffixes
         outfile_base = self.output_file.with_suffix("").with_suffix("").as_posix()
@@ -334,7 +337,7 @@ class DomainAnalyser:
         return var_df
 
     def write_statistics(self):
-        _logger.info("Writing statistics")
+        _logger.info(f"Writing statistics {self.output_file}")
         connection = sqlite3.connect(self.output_file)
 
         excel_file = Path(self.output_file).with_suffix(".xlsx")
