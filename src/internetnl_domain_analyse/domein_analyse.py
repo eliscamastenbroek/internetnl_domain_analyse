@@ -136,7 +136,10 @@ def set_do_it_vlaggen(required_keys, chapter_info):
 def main():
     args = parse_args()
     print("-" * 100)
-    print(f"Starting at {datetime.now()}:\n" + f"{Path(sys.argv[0]).stem} " + " ".join(sys.argv[1:]))
+    exe = Path(sys.argv[0]).stem
+    now = datetime.now()
+    print(
+        f"Starting {exe} ({__version__}) at {now} with arguments:\n" + " ".join(sys.argv[1:]))
     print("-" * 100)
 
     _logger.setLevel(args.loglevel)
