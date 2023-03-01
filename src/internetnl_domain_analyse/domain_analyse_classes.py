@@ -5,6 +5,7 @@ import codecs
 import re
 import sqlite3
 import sys
+import pickle
 from tqdm import tqdm
 from collections import Counter
 from pathlib import Path
@@ -22,7 +23,7 @@ from ict_analyser.analyser_tool.variable_properties import VariableProperties
 from internetnl_domain_analyse.domain_plots import (make_cdf_plot, make_bar_plot)
 from internetnl_domain_analyse.latex_output import make_latex_overview
 from internetnl_domain_analyse.utils import (read_tables_from_sqlite,
-                                             get_clean_url,
+                                             get_clean_url, get_all_clean_urls,
                                              fill_booleans,
                                              prepare_stat_data_for_write,
                                              get_option_mask,
@@ -697,14 +698,20 @@ class DomainAnalyser:
             tables.reset_index(inplace=True)
             tables.rename(columns=dict(index=self.url_key), inplace=True)
 
-            if self.translations is not None:
-                tables = fill_booleans(tables, self.translations, variables=self.variables)
-
-            rename_all_variables(tables, self.variables)
-
+            # na are always set to 0
             # some urls did not give any results, drop the empty lines. note that
             # the first column is left out as that is the url name
             tables.dropna(axis=0, how="all", subset=tables.columns[1:], inplace=True)
+
+            tables.fillna("nan", inplace=True)
+            self.translations["nans"] = dict(nan=0)
+
+            if self.translations is not None:
+                tables = fill_booleans(tables,
+                                       translations=self.translations.copy(),
+                                       variables=self.variables)
+
+            rename_all_variables(tables, self.variables)
 
             for column in tables:
                 try:
@@ -720,13 +727,14 @@ class DomainAnalyser:
                     # op deze manier kunnen we de vertaling {Nee: 0, Ja: 1} op de column waardes los
                     # laten, zodat we alle Nee met 0 en Ja met 1 vervangen
                     trans = yaml.load(str(var_translate), Loader=yaml.Loader)
-                    if "na" in trans.keys():
-                        # we have added an 'na' option for the translations. Take care of it
-                        is_na = tables[column].isna()
-                        if is_na.any():
-                            # should not happen anymore because of the dropna above
-                            _logger.info(f"Filling NaN with na in {column}")
-                            tables[column] = tables[column].fillna("na")
+                    for nan_string in ("na", "nan", "NaN"):
+                        if nan_string in trans.keys():
+                            # we have added an 'na' option for the translations. Take care of it
+                            is_na = tables[column].isna()
+                            if is_na.any():
+                                # should not happen anymore because of the dropna above
+                                _logger.info(f"Filling {nan_string} with na in {column}")
+                                tables[column] = tables[column].fillna(nan_string)
 
                     unique_values = set(tables[column].unique())
                     vals_to_translate = set(trans.keys()).intersection(unique_values)
@@ -752,23 +760,24 @@ class DomainAnalyser:
 
             all_clean_urls = list()
             _logger.info("Start cleaning urls...")
+
             if _logger.getEffectiveLevel() > logging.DEBUG:
-                progress_bar = tqdm(total=records.index.size, file=sys.stdout, position=0,
-                                    ncols=100,
-                                    leave=True,
-                                    colour="GREEN")
+                show_progress = True
             else:
-                progress_bar = None
-            for url in records[self.url_key]:
-                clean_url = get_clean_url(url, cache_dir=self.tld_extract_cache_directory)
-                _logger.debug(f"Converted {url} to {clean_url}")
-                all_clean_urls.append(clean_url)
-                if progress_bar:
-                    if clean_url is not None:
-                        progress_bar.set_description("{:5s} - {:30s}".format("URL", clean_url))
-                    else:
-                        progress_bar.set_description("{:5s} - {:30s}".format("URL", "None"))
-                    progress_bar.update()
+                show_progress = False
+            clean_url_cache = self.cache_directory / Path("clean_url_cache.pkl")
+            if clean_url_cache.exists():
+                _logger.info(f"Reading clean urls from cache {clean_url_cache}")
+                with open(clean_url_cache, "rb") as stream:
+                    all_clean_urls = pickle.load(stream)
+            else:
+                all_clean_urls = get_all_clean_urls(urls=records[self.url_key],
+                                                    show_progress=show_progress,
+                                                    cache_directory=self.tld_extract_cache_directory
+                                                    )
+                _logger.info(f"Writing clean urls to cache {clean_url_cache}")
+                with open(clean_url_cache, "wb") as stream:
+                    pickle.dump(all_clean_urls, stream)
             _logger.info("Done!")
             records[self.url_key] = all_clean_urls
             records.dropna(subset=[self.url_key], axis=0, inplace=True)

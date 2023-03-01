@@ -1,7 +1,9 @@
+import sys
 import logging
 import sqlite3
 import ssl
 from pathlib import Path
+from tqdm import tqdm
 
 import numpy as np
 import pandas as pd
@@ -105,8 +107,8 @@ def fill_booleans(tables, translations, variables):
                     intersection = bool_keys.intersection(unique_values)
                     if intersection:
                         nan_val = set(unique_values).difference(bool_keys)
-                        if nan_val:
-                            trans_prop[list(nan_val)[0]] = np.nan
+                        #if nan_val:
+                        #    trans_prop[list(nan_val)[0]] = np.nan
                         for key, val in trans_prop.items():
                             mask = tables[col] == key
                             if any(mask):
@@ -302,3 +304,28 @@ def add_missing_groups(all_stats, group_by, group_by_original, missing_groups):
             data_df = pd.concat([df_extra, data_df])
             new_stats[indicator] = data_df
     return new_stats
+
+
+def get_all_clean_urls(urls, show_progress=False, cache_directory=None):
+
+    if show_progress:
+        progress_bar = tqdm(total=urls.size, file=sys.stdout, position=0,
+                            ncols=100,
+                            leave=True,
+                            colour="GREEN")
+    else:
+        progress_bar = None
+
+    all_clean_urls = list()
+
+    for url in urls:
+        clean_url = get_clean_url(url, cache_dir=cache_directory)
+        _logger.debug(f"Converted {url} to {clean_url}")
+        all_clean_urls.append(clean_url)
+        if progress_bar:
+            if clean_url is not None:
+                progress_bar.set_description("{:5s} - {:30s}".format("URL", clean_url))
+            else:
+                progress_bar.set_description("{:5s} - {:30s}".format("URL", "None"))
+            progress_bar.update()
+    return all_clean_urls
