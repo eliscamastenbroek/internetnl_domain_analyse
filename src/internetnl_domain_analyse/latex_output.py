@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from pylatex import Document, Figure, NoEscape, Command, SubFigure, Section
+from pylatex import Document, Figure, NoEscape, Command, SubFigure
 from pylatex.base_classes import Environment, CommandBase, Arguments
 from pylatex.package import Package
 
@@ -87,9 +87,8 @@ def make_latex_overview(
             doc = Document(default_filepath=full_image_directory)
             doc_per_module[module] = doc
         if section_title is not None:
-            section_label = ":".join(["sec", section_key])
             doc.append(Command("section", section_title))
-            doc.append(Command("label", section_label))
+            doc.append(Command("label", NoEscape("sec:" + section_key)))
         with doc.create(Figure(position="htb")) as plots:
             add_new_line = True
             if bovenschrift:
