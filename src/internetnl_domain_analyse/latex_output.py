@@ -64,10 +64,9 @@ def make_latex_overview(
         _logger.debug(f"Adding {original_name}")
         caption = variables.loc[original_name, "label"]
         module = variables.loc[original_name, "module"]
-
-        section_key = image_prop.get("section")
+        section_key = variables.loc[original_name, "section"]
         section_title = None
-        if section_key is not None:
+        if section_key:
             try:
                 sections_for_module = module_info[module]["sections"]
             except KeyError as err:
@@ -87,9 +86,10 @@ def make_latex_overview(
         except KeyError:
             doc = Document(default_filepath=full_image_directory)
             doc_per_module[module] = doc
-        if section_key is not None:
+        if section_title is not None:
             section_label = ":".join(["sec", section_key])
-            doc.create(Section(title=section_title, label=section_label))
+            section = Command("section", section_title)
+            doc.append(section)
         with doc.create(Figure(position="htb")) as plots:
             add_new_line = True
             if bovenschrift:

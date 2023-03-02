@@ -60,9 +60,11 @@ class ImageFileInfo:
             self.data[image_key] = dict()
         self.data[image_key][plot_key] = dict(file_name=file_name,
                                               tex_right_shift=tex_right_shift,
-                                              sub_image_label=sub_image_label,
-                                              section=section)
-        # in order to get the key order in the dict the same as in the input file, alter the order
+                                              sub_image_label=sub_image_label)
+        if section:
+            self.data[image_key][plot_key]["section"] = section
+
+            # in order to get the key order in the dict the same as in the input file, alter the order
         if len(self.data[image_key].keys()) > 1:
             tmp_data = self.data[image_key].copy()
             self.data[image_key] = dict()
