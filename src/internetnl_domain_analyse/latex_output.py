@@ -147,7 +147,7 @@ def make_latex_overview(
         start = False
         with open(file_name.as_posix(), "r") as stream:
             for line in stream.readlines():
-                if "figure" in line:
+                if "figure" in line or 'section' in line:
                     start = True
                 if "end{document}" in line:
                     start = False
