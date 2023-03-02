@@ -88,8 +88,8 @@ def make_latex_overview(
             doc_per_module[module] = doc
         if section_title is not None:
             section_label = ":".join(["sec", section_key])
-            section = Command("section", section_title)
-            doc.append(section)
+            doc.append(Command("section", section_title))
+            doc.append(Command("label", section_label))
         with doc.create(Figure(position="htb")) as plots:
             add_new_line = True
             if bovenschrift:
