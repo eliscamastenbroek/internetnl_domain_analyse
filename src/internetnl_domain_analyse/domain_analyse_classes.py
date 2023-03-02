@@ -53,14 +53,15 @@ class ImageFileInfo:
         self.data = None
 
     def add_entry(self, plot_key, plot_info, image_key, sub_image_label, file_name,
-                  tex_right_shift=None):
+                  tex_right_shift=None, section=None):
         """ add a new entry """
 
         if image_key not in self.data.keys():
             self.data[image_key] = dict()
         self.data[image_key][plot_key] = dict(file_name=file_name,
                                               tex_right_shift=tex_right_shift,
-                                              sub_image_label=sub_image_label)
+                                              sub_image_label=sub_image_label,
+                                              section=section)
         # in order to get the key order in the dict the same as in the input file, alter the order
         if len(self.data[image_key].keys()) > 1:
             tmp_data = self.data[image_key].copy()
@@ -1057,6 +1058,7 @@ class DomainPlotter:
                             question_df.index.get_level_values(variable_name_key).values[0]
                         original_name = re.sub(r"_\d\.0$", "", plot_variable)
                         question_type = variables.loc[original_name, "type"]
+                        section = variables.loc[original_name, "section"]
                         question_df_clean = question_df.droplevel(variable_name_key)
 
                         # variables_to_plot wordt als een list van een list in een tuple meegegeven
@@ -1205,6 +1207,7 @@ class DomainPlotter:
                                 plot_key=plot_key,
                                 plot_info=self.plot_info,
                                 image_key=original_name,
+                                section=section,
                                 file_name=image_file,
                                 sub_image_label=label,
                                 tex_right_shift=tex_horizontal_shift,
