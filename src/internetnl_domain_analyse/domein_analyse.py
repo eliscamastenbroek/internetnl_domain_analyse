@@ -333,6 +333,7 @@ def main():
                 force_plots=args.force_plots,
                 latex_files=args.latex_files,
                 years_to_add_to_plot_legend=years_to_add_to_plot_legend,
+                module_info=module_info,
             )
 
 

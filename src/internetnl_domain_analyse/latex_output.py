@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from pylatex import Document, Figure, NoEscape, Command, SubFigure
+from pylatex import Document, Figure, NoEscape, Command, SubFigure, Section
 from pylatex.base_classes import Environment, CommandBase, Arguments
 from pylatex.package import Package
 
@@ -39,7 +39,8 @@ def make_latex_overview(
         image_files=None,
         tex_horizontal_shift="-2cm",
         tex_prepend_path=None,
-        bovenschrift=False):
+        bovenschrift=False,
+        module_info=None):
     """
     Maak latex ouput file met alle plaatjes
     Args:
@@ -63,11 +64,31 @@ def make_latex_overview(
         _logger.debug(f"Adding {original_name}")
         caption = variables.loc[original_name, "label"]
         module = variables.loc[original_name, "module"]
+        section_key = variables.loc[original_name, "section"]
+        section_title = None
+        if section_key:
+            try:
+                sections_for_module = module_info[module]["sections"]
+            except KeyError as err:
+                _logger.warning(f"{err}\n"
+                                f"You have added a section {section_key} to module {module},"
+                                f"but no sections can be found under 'module_info'. Please"
+                                f"specify")
+            else:
+                try:
+                    section_prop = sections_for_module[section_key]
+                except KeyError as err2:
+                    _logger.warning(f"{err2}\nNo section key {section_key} was found. skipping")
+                else:
+                    section_title = section_prop["title"]
         try:
             doc = doc_per_module[module]
         except KeyError:
             doc = Document(default_filepath=full_image_directory)
             doc_per_module[module] = doc
+        if section_title:
+            section_label = ":".join(["sec", section_key])
+            doc.create(Section(title=section_title, label=section_label))
         with doc.create(Figure(position="htb")) as plots:
             add_new_line = True
             if bovenschrift:

@@ -159,8 +159,8 @@ def get_option_mask(question_df, variables, question_type):
 
 
 def impose_variable_defaults(variables,
-                             module_info=None,
-                             module_key=None):
+                             module_info:dict =None,
+                             module_key:str =None):
     """
     Impose default values to  the variables data frame
 
@@ -180,6 +180,7 @@ def impose_variable_defaults(variables,
 
     """
     variables["type"] = "bool"
+    variables["section"] = ""
     variables["fixed"] = False
     variables["original_name"] = variables.index.values
     variables["label"] = ""
@@ -211,8 +212,7 @@ def impose_variable_defaults(variables,
         # such that we can access it more easily
         for name in (
                 "type", "fixed", "original_name", "question", "label", "check", "optional",
-                "gewicht",
-                "no_impute", "info_per_breakdown", "report_number"):
+                "gewicht", "no_impute", "info_per_breakdown", "report_number", "section"):
             try:
                 variables.loc[var_key, name] = var_prop[name]
             except ValueError:

@@ -332,7 +332,8 @@ class DomainAnalyser:
                                         0: "properties"})
         var_df.set_index(self.variable_key, drop=True, inplace=True)
 
-        var_df = impose_variable_defaults(var_df, module_info=module_info,
+        var_df = impose_variable_defaults(var_df,
+                                          module_info=module_info,
                                           module_key=self.module_key)
         return var_df
 
@@ -849,6 +850,7 @@ class DomainPlotter:
                  force_plots=False,
                  latex_files=False,
                  years_to_add_to_plot_legend=None,
+                 module_info=None,
                  ):
 
         self.scan_data = scan_data
@@ -898,7 +900,8 @@ class DomainPlotter:
                                 image_files=Path("image_files"),
                                 tex_prepend_path=self.tex_prepend_path,
                                 tex_horizontal_shift=tex_horizontal_shift,
-                                bovenschrift=bovenschrift)
+                                bovenschrift=bovenschrift,
+                                module_info=module_info)
 
     #
     def get_plot_cache(self, scan_data_key, plot_key, year):
@@ -1129,7 +1132,7 @@ class DomainPlotter:
                         plot_df = question_df_clean.loc[(module_name, question_name, mask)].copy()
 
                         # dit is niet meer nodig omdat de kleuren toch gelijk blijven
-                        #plot_df = add_missing_years(plot_df,
+                        # plot_df = add_missing_years(plot_df,
                         #                            years_to_plot=self.years_to_add_to_plot_legend,
                         #                            jaar_level_name=jaar_level_name,
                         #                            column=original_name)
