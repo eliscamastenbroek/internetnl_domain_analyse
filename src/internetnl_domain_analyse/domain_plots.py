@@ -106,6 +106,8 @@ def make_cdf_plot(hist,
     if y_max is not None:
         axis.set_ylim((0, y_max))
 
+    axis.set_xlim((-0.1, 100.1))
+
     stats = dict()
     stats["mean"] = (pdf * bins[:-1]).sum()
     for ii, percentile in enumerate([0, 25, 50, 75, 100]):

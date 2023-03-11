@@ -64,7 +64,7 @@ class ImageFileInfo:
         if section:
             self.data[image_key][plot_key]["section"] = section
 
-            # in order to get the key order in the dict the same as in the input file, alter the order
+        # in order to get the key order in the dict the same as in the input file, alter the order
         if len(self.data[image_key].keys()) > 1:
             tmp_data = self.data[image_key].copy()
             self.data[image_key] = dict()
@@ -465,7 +465,7 @@ class DomainAnalyser:
         return all_stats, all_hist
 
     def get_correct_categories_count(self):
-        """ bekijk per record hoeveel categorieen goed zijn en geef terug als dataframe """
+        """ Bekijk per record hoeveel categorieën goed zijn en geef terug als dataframe """
 
         col_sel = list()
 
@@ -487,13 +487,13 @@ class DomainAnalyser:
     def calculate_categories(self):
         if self.cate_pkl_file.exists() and self.reset is None:
             _logger.info(f"Cache {self.cate_pkl_file} and already exist. "
-                         f"Skip calculation cateogires and go to plot")
+                         f"Skip calculation categories and go to plot")
             return
         if self.dataframe is None:
             msg = "For correlations you need the microdata. Run with --reset 1"
             raise ValueError(msg)
 
-        _logger.info("Calculating cateogires")
+        _logger.info("Calculating categories")
 
         score_df = self.dataframe["percentage"].copy()
         score_df = score_df.rename("score")

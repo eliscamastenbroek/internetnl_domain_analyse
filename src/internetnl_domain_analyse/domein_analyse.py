@@ -321,7 +321,6 @@ def main():
                 show_title=show_title,
                 cdf_plot=cdf_plot,
                 bar_plot=bar_plot,
-                cor_plot=cor_plot,
                 cache_directory=cache_directory_base_name,
                 translations=label_translations,
                 export_highcharts=args.export_highcharts,
