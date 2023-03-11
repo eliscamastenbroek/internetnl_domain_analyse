@@ -987,7 +987,9 @@ class DomainPlotter:
             if self.cdf_plot:
                 plot_cdf = plot_prop.get("cdf_plot")
                 if isinstance(plot_cdf, dict):
-                    cdf_variables = plot_cdf.get("variables", {})
+                    cdf_variables = plot_cdf["variables"][scan_data_key]
+                    highcharts_title = cdf_variables.get("title")
+                export_svg_cdf = False
                 if plot_cdf:
                     if cdf_fig_size := plot_cdf.get("figsize"):
                         figsize = cdf_fig_size
