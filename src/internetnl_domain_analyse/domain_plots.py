@@ -93,6 +93,7 @@ def make_cdf_plot(hist,
 
     xgrid = bins[:-1] + delta_bin / 2
 
+    axis.set_xlim((0, 100))
     axis.bar(xgrid, fnc, width=delta_bin, edgecolor=None, linewidth=0)
 
     start, end = axis.get_ylim()
@@ -106,7 +107,6 @@ def make_cdf_plot(hist,
     if y_max is not None:
         axis.set_ylim((0, y_max))
 
-    axis.set_xlim((-0.1, 100.1))
 
     stats = dict()
     stats["mean"] = (pdf * bins[:-1]).sum()
