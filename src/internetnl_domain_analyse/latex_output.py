@@ -109,7 +109,8 @@ def make_latex_overview(
                         else:
                             full_image_name = Path("bla")
                     _logger.debug(f"Adding {full_image_name}")
-                    ref = "_".join([original_name, sub_image_label.lower().replace(" ", "_")])
+                    ref = "_".join([image_info.scan_data_key, original_name,
+                                    sub_image_label.lower().replace(" ", "_")])
                     ref_sublabel = Command("label", NoEscape("fig:" + ref))
                     lab = Command("footnotesize", Arguments(sub_image_label))
                     include_graphics = Command("includegraphics",
