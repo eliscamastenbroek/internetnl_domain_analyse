@@ -94,7 +94,8 @@ def make_latex_overview(
             if bovenschrift:
                 # hiermee worden caption boven toegevoegd, maar ik wil hier vanaf gaan wijken.
                 plots.add_caption(caption)
-                ref_label = Command("label", NoEscape("fig:" + original_name))
+                ref = "_".join([image_info.scan_data_key, original_name])
+                ref_label = Command("label", NoEscape("fig:" + ref))
                 plots.append(ref_label)
             for sub_image_key, sub_image_prop in image_prop.items():
                 sub_image_label = sub_image_prop.get("sub_image_label", "Empty")
