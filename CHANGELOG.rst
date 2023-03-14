@@ -2,6 +2,10 @@
 Changelog
 =========
 
+Version 1.8
+===========
+- Nu kan je breakdowns ook als combinaties geven. Nodig voor publicatie 2023
+
 Version 1.7.2
 ===========
 - Nu worden zowel mail als web gelezen
