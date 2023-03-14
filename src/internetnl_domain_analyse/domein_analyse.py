@@ -128,6 +128,11 @@ def set_do_it_vlaggen(required_keys, chapter_info):
     for key, properties in chapter_info.items():
         if key in required_keys or "all" in required_keys:
             properties["do_it"] = True
+            combination: list = properties.get("combination")
+            if combination is not None:
+                # als de breakdown een combination is dan moet we de onderliggende breakdowns allemaal
+                # activeren
+                set_do_it_vlaggen(required_keys=combination, chapter_info=chapter_info)
         else:
             properties["do_it"] = False
     return chapter_info
