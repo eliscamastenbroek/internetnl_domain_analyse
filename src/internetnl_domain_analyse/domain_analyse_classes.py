@@ -641,32 +641,49 @@ class DomainAnalyser:
                     group_by = list(group_by_if_not_exist.values())
                     missing_groups = props.get("missing_groups")
 
-            if cache_file.exists() and self.reset is None:
-                _logger.info(f"Reading stats from cache {cache_file}")
-                with open(str(cache_file), "rb") as stream:
-                    all_stats, all_hist = pickle.load(stream)
-            elif self.dataframe is not None:
-                _logger.info("Calculating statistics from micro data")
-                all_stats, all_hist = self.calculate_statistics_one_breakdown(group_by=group_by)
-                if group_by_original is not None:
-                    all_stats = add_missing_groups(all_stats,
-                                                   group_by,
-                                                   group_by_original,
-                                                   missing_groups)
+            combination: list = props.get("combination")
 
-                if all_stats is None:
-                    _logger.info(f"Could not calculate statistisc for breakdown {group_by}. Skip")
+            if combination is None:
+                if cache_file.exists() and self.reset is None:
+                    _logger.info(f"Reading stats from cache {cache_file}")
+                    with open(str(cache_file), "rb") as stream:
+                        all_stats, all_hist = pickle.load(stream)
+                elif self.dataframe is not None:
+                    _logger.info("Calculating statistics from micro data")
+                    all_stats, all_hist = self.calculate_statistics_one_breakdown(group_by=group_by)
+                    if group_by_original is not None:
+                        all_stats = add_missing_groups(all_stats,
+                                                       group_by,
+                                                       group_by_original,
+                                                       missing_groups)
+
+                    if all_stats is None:
+                        _logger.info(f"Could not calculate statistics for breakdown {group_by}. Skip")
+                        continue
+
+                    # maak er een pandas data frame van
+                    stat_df = pd.concat(list(all_stats.values()), axis=1, sort=False)
+                    is_nan = stat_df.index == "nan"
+                    stat_df = stat_df.loc[~is_nan]
+
+                    _logger.info(f"Writing stats to cache {cache_file}")
+                    with open(str(cache_file), "wb") as stream:
+                        pickle.dump([stat_df, all_hist], stream)
+                else:
+                    _logger.info(f"Statistics not available for {group_by}. Skipping")
                     continue
-                _logger.info(f"Writing stats to cache {cache_file}")
-                with open(str(cache_file), "wb") as stream:
-                    pickle.dump([all_stats, all_hist], stream)
-            else:
-                _logger.info(f"Statistics not available for {group_by}. Skipping")
-                continue
 
-            stat_df = pd.concat(list(all_stats.values()), axis=1, sort=False)
-            is_nan = stat_df.index == "nan"
-            stat_df = stat_df.loc[~is_nan]
+            else:
+                stats = list()
+                for file_com in combination:
+                    try:
+                        prev_stats = self.all_stats_per_format[file_com]
+                    except KeyError:
+                        raise KeyError(f"Trying to add to combination {file_com}, but does not exists")
+                    else:
+                        stats.append(prev_stats)
+                stat_df = pd.concat(stats, axis=0, sort=False)
+
             self.all_stats_per_format[file_base] = stat_df
             self.all_hist_per_format[file_base] = all_hist
             _logger.debug("Done with statistics")
