@@ -113,7 +113,7 @@ def parse_args():
     return parsed_arguments
 
 
-def set_do_it_vlaggen(required_keys, chapter_info):
+def set_do_it_vlaggen(required_keys, chapter_info, recursive=False):
     """
     Van een hoofdstukje uit je settings file, druk de do_it vlaggen op
 
@@ -121,6 +121,9 @@ def set_do_it_vlaggen(required_keys, chapter_info):
         required_keys: list
             List van de items waarvan je de do_it vlag wilt opdrukken
         chapter_info: de dictionary waarvan je de vlaggen zet.
+        recursive: bool
+            Als dit een recursieve call is, dan willen we de waardes die niet in de lijst zitten
+            niet op False zetten
 
     Returns: dict
         De nieuwe dictionary.
@@ -130,10 +133,12 @@ def set_do_it_vlaggen(required_keys, chapter_info):
             properties["do_it"] = True
             combination: list = properties.get("combination")
             if combination is not None:
-                # als de breakdown een combination is dan moet we de onderliggende breakdowns allemaal
-                # activeren
-                set_do_it_vlaggen(required_keys=combination, chapter_info=chapter_info)
-        else:
+                # als de breakdown een combination is dan moet we de onderliggende breakdowns
+                # allemaal activeren
+                chapter_info = set_do_it_vlaggen(required_keys=combination,
+                                                 chapter_info=chapter_info,
+                                                 recursive=True)
+        elif not recursive:
             properties["do_it"] = False
     return chapter_info
 
