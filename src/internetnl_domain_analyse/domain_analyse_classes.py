@@ -1,12 +1,10 @@
+import codecs
 import logging
 import os
 import pickle
-import codecs
 import re
 import sqlite3
 import sys
-import pickle
-from tqdm import tqdm
 from collections import Counter
 from pathlib import Path
 
@@ -14,12 +12,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import yaml
+
 from ict_analyser.analyser_tool.sample_statistics import SampleStatistics
 from ict_analyser.analyser_tool.utils import (prepare_df_for_statistics,
                                               get_records_select,
                                               rename_all_variables)
 from ict_analyser.analyser_tool.variable_properties import VariableProperties
-
 from internetnl_domain_analyse.domain_plots import (make_cdf_plot, make_bar_plot)
 from internetnl_domain_analyse.latex_output import make_latex_overview
 from internetnl_domain_analyse.utils import (read_tables_from_sqlite,
@@ -426,7 +424,7 @@ class DomainAnalyser:
                                                        var_filter=var_filter
                                                        )
             except KeyError:
-                _logger.warning(f"Failed to get selection of {column}. Skipping")
+                _logger.info(f"Failed to get selection of {column}. Skipping")
                 continue
 
             stats = SampleStatistics(group_keys=group_by,
@@ -658,7 +656,8 @@ class DomainAnalyser:
                                                        missing_groups)
 
                     if all_stats is None:
-                        _logger.info(f"Could not calculate statistics for breakdown {group_by}. Skip")
+                        _logger.info(
+                            f"Could not calculate statistics for breakdown {group_by}. Skip")
                         continue
 
                     # maak er een pandas data frame van
@@ -679,7 +678,8 @@ class DomainAnalyser:
                     try:
                         prev_stats = self.all_stats_per_format[file_com]
                     except KeyError:
-                        raise KeyError(f"Trying to add to combination {file_com}, but does not exists")
+                        raise KeyError(
+                            f"Trying to add to combination {file_com}, but does not exists")
                     else:
                         stats.append(prev_stats)
                 stat_df = pd.concat(stats, axis=0, sort=False)
