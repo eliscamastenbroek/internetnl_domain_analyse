@@ -645,7 +645,7 @@ class DomainAnalyser:
                 if cache_file.exists() and self.reset is None:
                     _logger.info(f"Reading stats from cache {cache_file}")
                     with open(str(cache_file), "rb") as stream:
-                        all_stats, all_hist = pickle.load(stream)
+                        stat_df, all_hist = pickle.load(stream)
                 elif self.dataframe is not None:
                     _logger.info("Calculating statistics from micro data")
                     all_stats, all_hist = self.calculate_statistics_one_breakdown(group_by=group_by)
