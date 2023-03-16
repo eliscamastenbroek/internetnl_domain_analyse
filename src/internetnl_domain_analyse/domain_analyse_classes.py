@@ -867,6 +867,7 @@ class DomainPlotter:
                  tex_horizontal_shift=None,
                  bovenschrift=True,
                  variables_to_plot=None,
+                 exclude_variables=None,
                  force_plots=False,
                  latex_files=False,
                  years_to_add_to_plot_legend=None,
@@ -897,7 +898,8 @@ class DomainPlotter:
             self.highcharts_directory = Path(".")
         else:
             self.highcharts_directory = Path(highcharts_directory)
-        self.variables_to_plot = variables_to_plot,
+        self.variables_to_plot = variables_to_plot
+        self.exclude_variables = exclude_variables
 
         self.image_type = image_type
         self.image_directory = image_directory
@@ -1087,11 +1089,17 @@ class DomainPlotter:
                         # te verwijderen. Als variable_to_plot niet gegeven is dan is deze waarde
                         # None, en slaan we het over. Als hij wel gegeven is dan zetten we de list
                         # van lists om in een platte list
-                        var_to_plot = self.variables_to_plot[0]
-                        if var_to_plot is not None:
-                            var_to_plot_clean = [vv[0] for vv in var_to_plot if vv is not None]
+                        if self.variables_to_plot is not None:
+                            var_to_plot_clean = [vv[0] for vv in self.variables_to_plot if vv is not None]
                             if original_name not in var_to_plot_clean:
-                                _logger.debug(f"{original_name} not in {self.variables_to_plot}. "
+                                _logger.debug(f"{original_name} not in variables to plot {self.variables_to_plot}. "
+                                              f"Skipping...")
+                                continue
+
+                        if self.exclude_variables is not None:
+                            exclude_vars_clean = [vv[0] for vv in self.exclude_variables if vv is not None]
+                            if original_name in exclude_vars_clean:
+                                _logger.debug(f"{original_name} in exclude variables {self.exclude_variables}. "
                                               f"Skipping...")
                                 continue
 

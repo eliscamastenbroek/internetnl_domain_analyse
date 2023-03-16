@@ -97,6 +97,8 @@ def parse_args():
     parser.add_argument("--variable_to_plot", action="append", nargs="*", default=None,
                         help="Maak alleen het plaatje van deze variabele. "
                              "Als niet gegeven dan worden alle variabelen geplot")
+    parser.add_argument("--exclude_variable", action="append", nargs="*", default=None,
+                        help="Sla deze variabele over in het geval alle variabelen geplot worden.")
     parser.add_argument("--statistics", action="append", nargs="*", default=None,
                         help="Bereken alleen de breakdowns die gegeven zijn en negeer de "
                              "settingsfile flags."
@@ -339,6 +341,7 @@ def main():
                 bovenschrift=args.bovenschrift,
                 image_type=args.image_type,
                 variables_to_plot=args.variable_to_plot,
+                exclude_variables=args.exclude_variable,
                 force_plots=args.force_plots,
                 latex_files=args.latex_files,
                 years_to_add_to_plot_legend=years_to_add_to_plot_legend,
