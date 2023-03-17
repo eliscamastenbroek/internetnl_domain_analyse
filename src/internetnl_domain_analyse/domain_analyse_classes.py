@@ -810,7 +810,6 @@ class DomainAnalyser:
             records[self.url_key] = all_clean_urls
             records.dropna(subset=[self.url_key], axis=0, inplace=True)
             records.reset_index(inplace=True)
-            tables[self.url_key] = [get_clean_url(url) for url in tables[self.url_key]]
 
             duplicated = tables[self.url_key].duplicated(keep='first')
             tables = tables[~duplicated]
