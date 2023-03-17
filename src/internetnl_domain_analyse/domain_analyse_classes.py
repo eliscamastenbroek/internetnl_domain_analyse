@@ -401,7 +401,11 @@ class DomainAnalyser:
             column = var_key
             column_list = list([var_key])
             var_module = var_prop["module"]
-            module = self.module_info[var_module]
+            try:
+                module = self.module_info[var_module]
+            except KeyError as err:
+                _logger.warning(err)
+                continue
             if not module.get("include", True):
                 continue
 
