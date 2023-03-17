@@ -1,14 +1,14 @@
-import sys
 import logging
 import sqlite3
 import ssl
+import sys
 from pathlib import Path
-from tqdm import tqdm
 
-import numpy as np
 import pandas as pd
 import requests
 import tldextract
+from tqdm import tqdm
+
 from ict_analyser.analyser_tool.utils import (reorganise_stat_df)
 
 _logger = logging.getLogger(__name__)
@@ -49,6 +49,7 @@ def read_tables_from_sqlite(filename: Path, table_names, index_name) -> pd.DataF
 
 def get_clean_url(url, cache_dir=None):
     clean_url = url
+    suffix = None
     if cache_dir is not None:
         extract = tldextract.TLDExtract(cache_dir=cache_dir)
     else:
@@ -70,11 +71,11 @@ def get_clean_url(url, cache_dir=None):
             if tld.subdomain == "" and tld.domain == "" and tld.suffix == "":
                 clean_url = None
             elif tld.subdomain == "" and tld.suffix == "":
-                clean_url = tld.domain
+                clean_url = None
             elif tld.subdomain == "" and tld.domain == "":
-                clean_url = tld.suffix
+                clean_url = None
             elif tld.domain == "" and tld.suffix == "":
-                clean_url = tld.subdomain
+                clean_url = None
             elif tld.subdomain == "":
                 clean_url = ".".join([tld.domain, tld.suffix])
             elif tld.suffix == "":
@@ -84,8 +85,15 @@ def get_clean_url(url, cache_dir=None):
             else:
                 clean_url = ".".join([tld.subdomain, tld.domain, tld.suffix])
             if clean_url is not None:
-                clean_url = clean_url.lower()
-    return clean_url
+                if " " in clean_url:
+                    _logger.debug(f"{clean_url} cannot be real url with space. skipping")
+                    clean_url = None
+                else:
+                    # We hebben een url gevonden. Maak hem met kleine letters en sla de suffix op
+                    clean_url = clean_url.lower()
+                    suffix = tld.suffix
+
+    return clean_url, suffix
 
 
 def fill_booleans(tables, translations, variables):
@@ -107,7 +115,7 @@ def fill_booleans(tables, translations, variables):
                     intersection = bool_keys.intersection(unique_values)
                     if intersection:
                         nan_val = set(unique_values).difference(bool_keys)
-                        #if nan_val:
+                        # if nan_val:
                         #    trans_prop[list(nan_val)[0]] = np.nan
                         for key, val in trans_prop.items():
                             mask = tables[col] == key
@@ -159,8 +167,8 @@ def get_option_mask(question_df, variables, question_type):
 
 
 def impose_variable_defaults(variables,
-                             module_info:dict =None,
-                             module_key:str =None):
+                             module_info: dict = None,
+                             module_key: str = None):
     """
     Impose default values to  the variables data frame
 
@@ -307,7 +315,6 @@ def add_missing_groups(all_stats, group_by, group_by_original, missing_groups):
 
 
 def get_all_clean_urls(urls, show_progress=False, cache_directory=None):
-
     if show_progress:
         progress_bar = tqdm(total=urls.size, file=sys.stdout, position=0,
                             ncols=100,
@@ -317,15 +324,17 @@ def get_all_clean_urls(urls, show_progress=False, cache_directory=None):
         progress_bar = None
 
     all_clean_urls = list()
+    all_suffix = list()
 
     for url in urls:
-        clean_url = get_clean_url(url, cache_dir=cache_directory)
+        clean_url, suffix = get_clean_url(url, cache_dir=cache_directory)
         _logger.debug(f"Converted {url} to {clean_url}")
         all_clean_urls.append(clean_url)
+        all_suffix.append(suffix)
         if progress_bar:
             if clean_url is not None:
                 progress_bar.set_description("{:5s} - {:30s}".format("URL", clean_url))
             else:
                 progress_bar.set_description("{:5s} - {:30s}".format("URL", "None"))
             progress_bar.update()
-    return all_clean_urls
+    return all_clean_urls, all_suffix

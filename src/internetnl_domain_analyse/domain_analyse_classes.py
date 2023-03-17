@@ -167,6 +167,7 @@ class DomainAnalyser:
                  module_info: dict = None,
                  weights=None,
                  url_key="website_url",
+                 suffix_key="website_suffix",
                  translations=None,
                  module_key="module",
                  variable_key="variable",
@@ -215,6 +216,7 @@ class DomainAnalyser:
         self.sheet_renames = sheet_renames
 
         self.url_key = url_key
+        self.suffix_key = suffix_key
         self.be_id = "be_id"
         self.mi_labels = ["sbi", "gk_sbs", self.be_id]
         self.translations = translations
@@ -786,7 +788,6 @@ class DomainAnalyser:
             records = pd.concat([records, records[self.url_key].rename(original_url)], axis=1)
             tables = pd.concat([tables, tables[self.url_key].rename(original_url)], axis=1)
 
-            all_clean_urls = list()
             _logger.info("Start cleaning urls...")
 
             if _logger.getEffectiveLevel() > logging.DEBUG:
@@ -797,17 +798,19 @@ class DomainAnalyser:
             if clean_url_cache.exists():
                 _logger.info(f"Reading clean urls from cache {clean_url_cache}")
                 with open(clean_url_cache, "rb") as stream:
-                    all_clean_urls = pickle.load(stream)
+                    all_clean_urls, all_suffix = pickle.load(stream)
             else:
-                all_clean_urls = get_all_clean_urls(urls=records[self.url_key],
-                                                    show_progress=show_progress,
-                                                    cache_directory=self.tld_extract_cache_directory
-                                                    )
+                all_clean_urls, all_suffix = \
+                    get_all_clean_urls(urls=records[self.url_key],
+                                       show_progress=show_progress,
+                                       cache_directory=self.tld_extract_cache_directory)
                 _logger.info(f"Writing clean urls to cache {clean_url_cache}")
                 with open(clean_url_cache, "wb") as stream:
-                    pickle.dump(all_clean_urls, stream)
+                    pickle.dump([all_clean_urls, all_suffix], stream)
             _logger.info("Done!")
             records[self.url_key] = all_clean_urls
+            suffix_df =pd.DataFrame(index=records.index, data=all_suffix, columns=[self.suffix_key])
+            records = pd.concat([records, suffix_df], axis=1)
             records.dropna(subset=[self.url_key], axis=0, inplace=True)
             records.reset_index(inplace=True)
 
@@ -1093,17 +1096,21 @@ class DomainPlotter:
                         # None, en slaan we het over. Als hij wel gegeven is dan zetten we de list
                         # van lists om in een platte list
                         if self.variables_to_plot is not None:
-                            var_to_plot_clean = [vv[0] for vv in self.variables_to_plot if vv is not None]
+                            var_to_plot_clean = [vv[0] for vv in self.variables_to_plot if
+                                                 vv is not None]
                             if original_name not in var_to_plot_clean:
-                                _logger.debug(f"{original_name} not in variables to plot {self.variables_to_plot}. "
-                                              f"Skipping...")
+                                _logger.debug(
+                                    f"{original_name} not in variables to plot {self.variables_to_plot}. "
+                                    f"Skipping...")
                                 continue
 
                         if self.exclude_variables is not None:
-                            exclude_vars_clean = [vv[0] for vv in self.exclude_variables if vv is not None]
+                            exclude_vars_clean = [vv[0] for vv in self.exclude_variables if
+                                                  vv is not None]
                             if original_name in exclude_vars_clean:
-                                _logger.debug(f"{original_name} in exclude variables {self.exclude_variables}. "
-                                              f"Skipping...")
+                                _logger.debug(
+                                    f"{original_name} in exclude variables {self.exclude_variables}. "
+                                    f"Skipping...")
                                 continue
 
                         plot_info = PlotInfo(variables_df=variables,
