@@ -18,7 +18,8 @@ from ict_analyser.analyser_tool.utils import (prepare_df_for_statistics,
                                               get_records_select,
                                               rename_all_variables)
 from ict_analyser.analyser_tool.variable_properties import VariableProperties
-from internetnl_domain_analyse.domain_plots import (make_cdf_plot, make_bar_plot)
+from internetnl_domain_analyse.domain_plots import (make_cdf_plot, make_bar_plot,
+                                                    make_bar_plot_stacked)
 from internetnl_domain_analyse.latex_output import make_latex_overview
 from internetnl_domain_analyse.utils import (read_tables_from_sqlite,
                                              get_clean_url, get_all_clean_urls,
@@ -26,7 +27,8 @@ from internetnl_domain_analyse.utils import (read_tables_from_sqlite,
                                              prepare_stat_data_for_write,
                                              get_option_mask,
                                              impose_variable_defaults,
-                                             add_missing_groups)
+                                             add_missing_groups,
+                                             clean_all_suffix)
 
 _logger = logging.getLogger(__name__)
 
@@ -167,7 +169,7 @@ class DomainAnalyser:
                  module_info: dict = None,
                  weights=None,
                  url_key="website_url",
-                 suffix_key="website_suffix",
+                 suffix_key="suffix",
                  translations=None,
                  module_key="module",
                  variable_key="variable",
@@ -809,8 +811,10 @@ class DomainAnalyser:
                     pickle.dump([all_clean_urls, all_suffix], stream)
             _logger.info("Done!")
             records[self.url_key] = all_clean_urls
-            suffix_df =pd.DataFrame(index=records.index, data=all_suffix, columns=[self.suffix_key])
-            records = pd.concat([records, suffix_df], axis=1)
+            suffix_df = pd.DataFrame(index=records.index, data=all_suffix,
+                                     columns=[self.suffix_key])
+            suffix_df_org = suffix_df.rename(columns={self.suffix_key: self.suffix_key + "_org"})
+            records = pd.concat([records, suffix_df, suffix_df_org], axis=1)
             records.dropna(subset=[self.url_key], axis=0, inplace=True)
             records.reset_index(inplace=True)
 
@@ -833,6 +837,9 @@ class DomainAnalyser:
             mask = self.dataframe[self.be_id].duplicated()
             self.dataframe = self.dataframe[~mask]
             self.dataframe.set_index(self.be_id, inplace=True, drop=True)
+            self.dataframe = clean_all_suffix(dataframe=self.dataframe,
+                                              suffix_key=self.suffix_key,
+                                              variables=self.variables)
             _logger.info(f"Writing {self.dataframe.index.size} records to "
                          f"cache {self.cache_file.absolute()}")
             with open(str(self.cache_file), "wb") as stream:
@@ -1087,6 +1094,7 @@ class DomainPlotter:
                             question_df.index.get_level_values(variable_name_key).values[0]
                         original_name = re.sub(r"_\d\.0$", "", plot_variable)
                         question_type = variables.loc[original_name, "type"]
+                        keep_options = variables.loc[original_name, "keep_options"]
                         section = variables.loc[original_name, "section"]
                         question_df_clean = question_df.droplevel(variable_name_key)
 
@@ -1166,11 +1174,25 @@ class DomainPlotter:
                         else:
                             y_spacing = y_spacing_bar_plot
 
-                        mask = get_option_mask(question_df=question_df_clean,
-                                               variables=variables,
-                                               question_type=question_type)
+                        if keep_options:
+                            # als keep options gegeven is dan houden we alle opties
+                            valide_opties = variables.loc[original_name, "options"].values()
+                            mask = get_option_mask(question_df=question_df_clean,
+                                                   variables=variables,
+                                                   question_type=question_type,
+                                                   valid_options=valide_opties)
+                            plot_df = module_df.loc[(module_name, question_name, mask)].copy()
 
-                        plot_df = question_df_clean.loc[(module_name, question_name, mask)].copy()
+                        else:
+                            # neem de default die we als true bestempelen
+                            valide_opties = None
+                            mask = get_option_mask(question_df=question_df_clean,
+                                                   variables=variables,
+                                                   question_type=question_type,
+                                                   valid_options=valide_opties)
+
+                            plot_df = question_df_clean.loc[
+                                (module_name, question_name, mask)].copy()
 
                         # dit is niet meer nodig omdat de kleuren toch gelijk blijven
                         # plot_df = add_missing_years(plot_df,
@@ -1211,46 +1233,78 @@ class DomainPlotter:
 
                         _logger.info(f"Plot nr {plot_count}")
                         if plot_bar:
-                            image_file = make_bar_plot(
-                                plot_df=plot_df,
-                                plot_key=plot_key,
-                                plot_variable=plot_variable,
-                                scan_data_key=scan_data_key,
-                                module_name=module_name,
-                                question_name=question_name,
-                                image_directory=self.image_directory,
-                                show_plots=self.show_plots,
-                                figsize=figsize,
-                                image_type=self.image_type,
-                                reference_lines=reference_lines,
-                                xoff=xoff, yoff=yoff,
-                                show_title=self.show_title,
-                                barh=self.barh,
-                                subplot_adjust=subplot_adjust,
-                                box_margin=box_margin,
-                                sort_values=sort_values,
-                                y_max_bar_plot=y_max,
-                                y_spacing_bar_plot=y_spacing,
-                                translations=self.translations,
-                                export_highcharts=export_highcharts,
-                                export_svg=export_svg_bar,
-                                highcharts_directory=highcharts_directory,
-                                title=title,
-                                legend_position=legend_pos,
-                                normalize_data=normalize_data,
-                                force_plot=self.force_plots
-                            )
+                            if keep_options:
+                                for year in scan_data_per_year.keys():
+                                    this_year_df = plot_df.loc[slice(None), slice(None), slice(None), slice(None), year]
+                                    image_file = make_bar_plot_stacked(
+                                        year=year,
+                                        plot_df=this_year_df,
+                                        plot_key=plot_key,
+                                        plot_variable=plot_variable,
+                                        scan_data_key=scan_data_key,
+                                        module_name=module_name,
+                                        question_name=question_name,
+                                        image_directory=self.image_directory,
+                                        show_plots=self.show_plots,
+                                        figsize=figsize,
+                                        image_type=self.image_type,
+                                        reference_lines=reference_lines,
+                                        xoff=xoff, yoff=yoff,
+                                        show_title=self.show_title,
+                                        barh=self.barh,
+                                        subplot_adjust=subplot_adjust,
+                                        box_margin=box_margin,
+                                        sort_values=sort_values,
+                                        y_max_bar_plot=y_max,
+                                        y_spacing_bar_plot=y_spacing,
+                                        translations=self.variables.loc[original_name, "options"],
+                                        export_highcharts=export_highcharts,
+                                        export_svg=export_svg_bar,
+                                        highcharts_directory=highcharts_directory,
+                                        title=title,
+                                        legend_position=legend_pos,
+                                        normalize_data=normalize_data,
+                                        force_plot=self.force_plots)
+                            else:
+                                image_file = make_bar_plot(
+                                    plot_df=plot_df,
+                                    plot_key=plot_key,
+                                    plot_variable=plot_variable,
+                                    scan_data_key=scan_data_key,
+                                    module_name=module_name,
+                                    question_name=question_name,
+                                    image_directory=self.image_directory,
+                                    show_plots=self.show_plots,
+                                    figsize=figsize,
+                                    image_type=self.image_type,
+                                    reference_lines=reference_lines,
+                                    xoff=xoff, yoff=yoff,
+                                    show_title=self.show_title,
+                                    barh=self.barh,
+                                    subplot_adjust=subplot_adjust,
+                                    box_margin=box_margin,
+                                    sort_values=sort_values,
+                                    y_max_bar_plot=y_max,
+                                    y_spacing_bar_plot=y_spacing,
+                                    translations=self.translations,
+                                    export_highcharts=export_highcharts,
+                                    export_svg=export_svg_bar,
+                                    highcharts_directory=highcharts_directory,
+                                    title=title,
+                                    legend_position=legend_pos,
+                                    normalize_data=normalize_data,
+                                    force_plot=self.force_plots)
 
-                            _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
-                            self.image_info.add_entry(
-                                plot_key=plot_key,
-                                plot_info=self.plot_info,
-                                image_key=original_name,
-                                section=section,
-                                file_name=image_file,
-                                sub_image_label=label,
-                                tex_right_shift=tex_horizontal_shift,
-                            )
+                                _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
+                                self.image_info.add_entry(
+                                    plot_key=plot_key,
+                                    plot_info=self.plot_info,
+                                    image_key=original_name,
+                                    section=section,
+                                    file_name=image_file,
+                                    sub_image_label=label,
+                                    tex_right_shift=tex_horizontal_shift,
+                                )
 
                         if plot_cdf:
                             for year in scan_data_per_year.keys():

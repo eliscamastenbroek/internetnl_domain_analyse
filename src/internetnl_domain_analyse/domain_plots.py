@@ -107,7 +107,6 @@ def make_cdf_plot(hist,
     if y_max is not None:
         axis.set_ylim((0, y_max))
 
-
     stats = dict()
     stats["mean"] = (pdf * bins[:-1]).sum()
     for ii, percentile in enumerate([0, 25, 50, 75, 100]):
@@ -172,7 +171,7 @@ def make_cdf_plot(hist,
 
     image_name_suffix = "_".join([fnc_str, image_file_base, str(year)])
     image_name = "_".join([scan_data_key, plot_key, image_name_suffix])
-    image_name_with_ext = ".".join([ image_name, image_type])
+    image_name_with_ext = ".".join([image_name, image_type])
     image_file = image_directory / Path(image_name_with_ext)
 
     fig.savefig(image_file)
@@ -217,14 +216,145 @@ def make_cdf_plot(hist,
     return image_name_with_ext
 
 
+def make_bar_plot_horizontal(plot_df, fig, axis, margin,
+                             plot_title, show_title, translations, reference_lines,
+                             line_iter,
+                             xoff, yoff, trans,
+                             y_spacing_bar_plot,
+                             y_max_bar_plot):
+    try:
+        plot_df.plot(kind="barh", ax=axis, rot=0, legend=None)
+    except IndexError as err:
+        _logger.warning(err)
+        _logger.warning(f"skip {plot_title}")
+        pass
+    else:
+
+        # put the high
+        axis.invert_yaxis()
+
+        xticks = axis.get_xticks()
+        min_x = xticks[0]
+        max_x = xticks[-1]
+        x_range = (max_x - min_x)
+        if y_max_bar_plot is not None:
+            axis.set_xlim((0, y_max_bar_plot))
+        else:
+            axis.set_xlim((min_x, max_x + 1))
+        start, end = axis.get_xlim()
+        if y_spacing_bar_plot is not None:
+            axis.xaxis.set_ticks(np.arange(start, end + 1, y_spacing_bar_plot))
+
+        if show_title:
+            axis.set_title(plot_title)
+        axis.set_ylabel("")
+        if re.search("score", plot_title, re.IGNORECASE):
+            x_label = "Score %"
+        else:
+            x_label = "% van bedrijven"
+
+        if translations is not None:
+            for key_in, label_out in translations.items():
+                if label_out is not None and key_in in x_label:
+                    _logger.debug(f"Replacing {key_in} -> {label_out}")
+                    x_label = x_label.replace(key_in, label_out)
+
+        axis.set_xlabel(x_label, rotation="horizontal", horizontalalignment="right")
+        axis.xaxis.set_label_coords(1.01, -0.12)
+        axis.yaxis.grid(False)
+        sns.despine(ax=axis, bottom=True)
+        axis.tick_params(which="both", left=False)
+
+        add_axis_label_background(fig=fig, axes=axis, loc="east", radius_corner_in_mm=1,
+                                  margin=margin)
+
+        number_of_columns = plot_df.columns.values.size
+        if legend_position is None:
+            legend_bbox_to_anchor = (0.02, 0.00)
+        else:
+            legend_bbox_to_anchor = legend_position
+        axis.legend(loc="lower left", frameon=False, ncol=number_of_columns,
+                    bbox_to_anchor=legend_bbox_to_anchor,
+                    bbox_transform=fig.transFigure)
+
+    if reference_lines is not None:
+        color = line_iter.get_next_color()
+        for ref_key, ref_line in reference_lines.items():
+            ref_label = ref_line["label"]
+            ref_plot_df = ref_line["plot_df"]
+            value = ref_plot_df.values[0][1]
+            color = line_iter.get_next_color()
+            axis.axhline(y=value, color=color, linestyle='-.')
+            axis.text(xoff, value + yoff * x_range, ref_label, color=color, transform=trans)
+
+
+def make_bar_plot_vertical(plot_df, axis, plot_title, show_title, translations, reference_lines,
+                           line_iter,
+                           xoff, yoff, trans):
+    try:
+        plot_df.plot(kind="bar", ax=axis, rot=0, legend=None)
+    except IndexError as err:
+        _logger.warning(err)
+        _logger.warning(f"skip {plot_title}")
+        pass
+    else:
+
+        yticks = axis.get_yticks()
+        min_y = yticks[0]
+        max_y = yticks[-1]
+        y_range = (max_y - min_y)
+        axis.set_ylim((min_y, max_y))
+
+        if show_title:
+            axis.set_title(plot_title)
+        axis.set_xlabel("")
+        if re.search("score", plot_title, re.IGNORECASE):
+            y_label = "Score %"
+        else:
+            y_label = "% van bedrijven"
+
+        if translations is not None:
+            for key_in, label_out in translations.items():
+                if label_out is not None and key_in in y_label:
+                    _logger.debug(f"Replacing {key_in} -> {label_out}")
+                    y_label = y_label.replace(key_in, label_out)
+
+        axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
+        axis.yaxis.set_label_coords(-0.04, 1.05)
+        axis.xaxis.grid(False)
+        sns.despine(ax=axis, left=True)
+        axis.tick_params(which="both", bottom=False)
+
+        if reference_lines is not None:
+            color = line_iter.get_next_color()
+            for ref_key, ref_line in reference_lines.items():
+                ref_label = ref_line["label"]
+                ref_plot_df = ref_line["plot_df"]
+                value = ref_plot_df.values[0][1]
+                color = line_iter.get_next_color()
+                axis.axhline(y=value, color=color, linestyle='-.')
+                axis.text(xoff, value + yoff * y_range, ref_label, color=color, transform=trans)
+
+
 def make_bar_plot(plot_df,
                   plot_key,
                   plot_variable,
                   scan_data_key,
-                  module_name, question_name, image_directory, show_plots=False,
-                  figsize=None, image_type="pdf", reference_lines=None, xoff=0.02, yoff=0.02,
-                  show_title=False, barh=False, subplot_adjust=None, sort_values=False,
-                  y_max_bar_plot=None, y_spacing_bar_plot=None, translations=None,
+                  module_name,
+                  question_name,
+                  image_directory,
+                  show_plots=False,
+                  figsize=None,
+                  image_type="pdf",
+                  reference_lines=None,
+                  xoff=0.02,
+                  yoff=0.02,
+                  show_title=False,
+                  barh=False,
+                  subplot_adjust=None,
+                  sort_values=False,
+                  y_max_bar_plot=None,
+                  y_spacing_bar_plot=None, translations=None,
                   legend_position=None,
                   box_margin=None,
                   export_svg=False,
@@ -285,117 +415,232 @@ def make_bar_plot(plot_df,
     y_lim = None
 
     if not barh:
-
-        try:
-            plot_df.plot(kind="bar", ax=axis, rot=0, legend=None)
-        except IndexError as err:
-            _logger.warning(err)
-            _logger.warning(f"skip {plot_title}")
-            pass
-        else:
-
-            yticks = axis.get_yticks()
-            min_y = yticks[0]
-            max_y = yticks[-1]
-            y_range = (max_y - min_y)
-            axis.set_ylim((min_y, max_y))
-
-            if show_title:
-                axis.set_title(plot_title)
-            axis.set_xlabel("")
-            if re.search("score", plot_title, re.IGNORECASE):
-                y_label = "Score %"
-            else:
-                y_label = "% van bedrijven"
-
-            if translations is not None:
-                for key_in, label_out in translations.items():
-                    if label_out is not None and key_in in y_label:
-                        _logger.debug(f"Replacing {key_in} -> {label_out}")
-                        y_label = y_label.replace(key_in, label_out)
-
-            axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
-            axis.yaxis.set_label_coords(-0.04, 1.05)
-            axis.xaxis.grid(False)
-            sns.despine(ax=axis, left=True)
-            axis.tick_params(which="both", bottom=False)
-
-
-            if reference_lines is not None:
-                color = line_iter.get_next_color()
-                for ref_key, ref_line in reference_lines.items():
-                    ref_label = ref_line["label"]
-                    ref_plot_df = ref_line["plot_df"]
-                    value = ref_plot_df.values[0][1]
-                    color = line_iter.get_next_color()
-                    axis.axhline(y=value, color=color, linestyle='-.')
-                    axis.text(xoff, value + yoff * y_range, ref_label, color=color, transform=trans)
+        make_bar_plot_vertical(
+            plot_df=plot_df,
+            axis=axis,
+            plot_title=plot_title,
+            show_title=show_title,
+            translations=translations,
+            reference_lines=reference_lines,
+            line_iter=line_iter,
+            xoff=xoff,
+            yoff=yoff,
+            trans=trans)
 
     else:
-        try:
-            plot_df.plot(kind="barh", ax=axis, rot=0, legend=None)
-        except IndexError as err:
-            _logger.warning(err)
-            _logger.warning(f"skip {plot_title}")
-            pass
+        make_bar_plot_horizontal(
+            plot_df=plot_df,
+            axis=axis,
+            plot_title=plot_title,
+            show_title=show_title,
+            translations=translations,
+            reference_lines=reference_lines,
+            line_iter=line_iter,
+            xoff=xoff,
+            yoff=yoff,
+            trans=trans,
+            y_spacing_bar_plot=y_spacing_bar_plot,
+            y_max_bar_plot=y_max_bar_plot)
+
+    _logger.info(f"Saving plot {image_file_name}")
+    fig.savefig(image_file)
+
+    if highcharts_directory is not None:
+        highcharts_directory.mkdir(exist_ok=True, parents=True)
+    if export_svg:
+        # met export highcharts gaan we ook een svg exporten
+        svg_image_file = highcharts_directory / Path("_".join([plot_key, image_name + ".svg"]))
+        _logger.info(f"Saving plot {svg_image_file}")
+        fig.savefig(svg_image_file)
+
+    if export_highcharts:
+        if y_max_bar_plot is not None:
+            y_lim = (0, y_max_bar_plot)
         else:
+            y_lim = None
 
-            # put the high
-            axis.invert_yaxis()
+        if title is not None:
+            plot_title = title
+        if barh:
+            hc_ylabel = x_label
+        else:
+            hc_ylabel = y_label
+        hc_file = "/".join([highcharts_directory.as_posix(), image_file.stem]) + ".json"
+        _logger.info(f"Saving highcharts plot to: {hc_file}")
+        CBSHighChart(
+            data=plot_df,
+            chart_type="bar",
+            output_directory=highcharts_directory.as_posix(),
+            output_file_name=image_file.stem,
+            ylabel=hc_ylabel,
+            y_lim=y_lim,
+            y_tick_interval=y_spacing_bar_plot,
+            title=plot_title,
+            enable_legend=False
+        )
 
-            xticks = axis.get_xticks()
-            min_x = xticks[0]
-            max_x = xticks[-1]
-            x_range = (max_x - min_x)
-            if y_max_bar_plot is not None:
-                axis.set_xlim((0, y_max_bar_plot))
-            else:
-                axis.set_xlim((min_x, max_x + 1))
-            start, end = axis.get_xlim()
-            if y_spacing_bar_plot is not None:
-                axis.xaxis.set_ticks(np.arange(start, end + 1, y_spacing_bar_plot))
+    if show_plots:
+        plt.show()
 
-            if show_title:
-                axis.set_title(plot_title)
-            axis.set_ylabel("")
-            if re.search("score", plot_title, re.IGNORECASE):
-                x_label = "Score %"
-            else:
-                x_label = "% van bedrijven"
+    plt.close()
 
-            if translations is not None:
-                for key_in, label_out in translations.items():
-                    if label_out is not None and key_in in x_label:
-                        _logger.debug(f"Replacing {key_in} -> {label_out}")
-                        x_label = x_label.replace(key_in, label_out)
+    return image_file_name
 
-            axis.set_xlabel(x_label, rotation="horizontal", horizontalalignment="right")
-            axis.xaxis.set_label_coords(1.01, -0.12)
-            axis.yaxis.grid(False)
-            sns.despine(ax=axis, bottom=True)
-            axis.tick_params(which="both", left=False)
 
-            add_axis_label_background(fig=fig, axes=axis, loc="east", radius_corner_in_mm=1,
-                                      margin=margin)
+def make_bar_plot_stacked(
+        year,
+        plot_df,
+                  plot_key,
+                  plot_variable,
+                  scan_data_key,
+                  module_name,
+                  question_name,
+                  image_directory,
+                  show_plots=False,
+                  figsize=None,
+                  image_type="pdf",
+                  reference_lines=None,
+                  xoff=0.02,
+                  yoff=0.02,
+                  show_title=False,
+                  barh=False,
+                  subplot_adjust=None,
+                  sort_values=False,
+                  y_max_bar_plot=None,
+                  y_spacing_bar_plot=None, translations=None,
+                  legend_position=None,
+                  box_margin=None,
+                  export_svg=False,
+                  export_highcharts=False,
+                  highcharts_directory=None,
+                  title=None,
+                  normalize_data=False,
+                  force_plot=False
+                  ):
+    image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
+    image_name_suffix = "_".join([image_name, str(year)])
+    image_name = "_".join([scan_data_key, plot_key, image_name_suffix])
+    image_name_with_ext = ".".join([image_name, image_type])
+    image_file = image_directory / Path(image_name_with_ext)
 
-            number_of_columns = plot_df.columns.values.size
-            if legend_position is None:
-                legend_bbox_to_anchor = (0.02, 0.00)
-            else:
-                legend_bbox_to_anchor = legend_position
-            axis.legend(loc="lower left", frameon=False, ncol=number_of_columns,
-                        bbox_to_anchor=legend_bbox_to_anchor,
-                        bbox_transform=fig.transFigure)
+    image_file_name = image_file.as_posix()
+    if image_file.exists() and not force_plot:
+        _logger.info(f"File {image_file_name} already exists. Skipping plot")
+        return image_file_name
+    """ create a bar plot from the question 'plot_df'"""
+    figure_properties = CBSPlotSettings()
 
-        if reference_lines is not None:
+    if figsize is None:
+        figsize = figure_properties.fig_size
+
+    _logger.debug(f"Figsize: {figsize}")
+
+    names = plot_df.index.names
+    plot_title = " - ".join([module_name, question_name])
+    plot_df = plot_df.droplevel(names[:3]).T
+
+    # inverteer de volgorde
+    #plot_df = plot_df[plot_df.columns[::-1]]
+    plot_df = plot_df.reindex(plot_df.index[::-1])
+
+    plot_df.dropna(how="all", axis=0, inplace=True)
+
+    if normalize_data:
+        _logger.info("Normalize data")
+        plot_df = 100 * plot_df / plot_df.sum(axis=0)
+
+    fig, axis = plt.subplots(figsize=figsize)
+    if subplot_adjust is None:
+        s_adjust = dict()
+    else:
+        s_adjust = subplot_adjust
+    bottom = s_adjust.get("bottom", 0.15)
+    left = s_adjust.get("left", 0.45)
+    top = s_adjust.get("top", 0.95)
+    right = s_adjust.get("right", 0.95)
+    fig.subplots_adjust(bottom=bottom, left=left, top=top, right=right)
+
+    if box_margin is None:
+        margin = 0.1
+    else:
+        margin = box_margin
+
+    line_iter = axis._get_lines
+    trans = trn.blended_transform_factory(axis.transAxes, axis.transData)
+
+    x_label = None
+    y_label = None
+    y_lim = None
+
+    renames = dict()
+    for nr, name in translations.items():
+        col = re.sub("_\d(\.\d){0,1}$", f"_{nr}.0", plot_variable)
+        renames[col] = name
+
+    _logger.debug(f"Translate with {renames}")
+
+    plot_df.rename(columns=renames, inplace=True)
+
+    try:
+        plot_df.plot(kind="barh", ax=axis, rot=0, legend=None, stacked=True)
+    except IndexError as err:
+        _logger.warning(err)
+        _logger.warning(f"skip {plot_title}")
+        pass
+    else:
+
+        # put the high
+        axis.invert_yaxis()
+
+        xticks = axis.get_xticks()
+        min_x = xticks[0]
+        max_x = xticks[-1]
+        x_range = (max_x - min_x)
+        if y_max_bar_plot is not None:
+            axis.set_xlim((0, y_max_bar_plot))
+        else:
+            axis.set_xlim((min_x, max_x + 1))
+        start, end = axis.get_xlim()
+        if y_spacing_bar_plot is not None:
+            axis.xaxis.set_ticks(np.arange(start, end + 1, y_spacing_bar_plot))
+
+        if show_title:
+            axis.set_title(plot_title)
+        axis.set_ylabel("")
+        if re.search("score", plot_title, re.IGNORECASE):
+            x_label = "Score %"
+        else:
+            x_label = "% van bedrijven"
+
+
+        axis.set_xlabel(x_label, rotation="horizontal", horizontalalignment="right")
+        axis.xaxis.set_label_coords(1.01, -0.12)
+        axis.yaxis.grid(False)
+        sns.despine(ax=axis, bottom=True)
+        axis.tick_params(which="both", left=False)
+
+        add_axis_label_background(fig=fig, axes=axis, loc="east", radius_corner_in_mm=1,
+                                  margin=margin)
+
+        number_of_columns = plot_df.columns.values.size
+        if legend_position is None:
+            legend_bbox_to_anchor = (0.02, 0.00)
+        else:
+            legend_bbox_to_anchor = legend_position
+        axis.legend(loc="lower left", frameon=False, ncol=number_of_columns,
+                    bbox_to_anchor=legend_bbox_to_anchor,
+                    bbox_transform=fig.transFigure)
+
+    if reference_lines is not None:
+        color = line_iter.get_next_color()
+        for ref_key, ref_line in reference_lines.items():
+            ref_label = ref_line["label"]
+            ref_plot_df = ref_line["plot_df"]
+            value = ref_plot_df.values[0][1]
             color = line_iter.get_next_color()
-            for ref_key, ref_line in reference_lines.items():
-                ref_label = ref_line["label"]
-                ref_plot_df = ref_line["plot_df"]
-                value = ref_plot_df.values[0][1]
-                color = line_iter.get_next_color()
-                axis.axhline(y=value, color=color, linestyle='-.')
-                axis.text(xoff, value + yoff * x_range, ref_label, color=color, transform=trans)
+            axis.axhline(y=value, color=color, linestyle='-.')
+            axis.text(xoff, value + yoff * x_range, ref_label, color=color, transform=trans)
+
 
     _logger.info(f"Saving plot {image_file_name}")
     fig.savefig(image_file)

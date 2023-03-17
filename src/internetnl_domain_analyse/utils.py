@@ -1,4 +1,5 @@
 import logging
+import yaml
 import sqlite3
 import ssl
 import sys
@@ -91,7 +92,7 @@ def get_clean_url(url, cache_dir=None):
                 else:
                     # We hebben een url gevonden. Maak hem met kleine letters en sla de suffix op
                     clean_url = clean_url.lower()
-                    suffix = tld.suffix
+                    suffix = tld.suffix.lower()
 
     return clean_url, suffix
 
@@ -132,6 +133,7 @@ def prepare_stat_data_for_write(all_stats, file_base, variables, module_key, var
 
     stat_df = reorganise_stat_df(records_stats=data,
                                  variables=variables,
+                                 use_original_names=True,
                                  module_key=module_key,
                                  variable_key=variable_key,
                                  n_digits=n_digits,
@@ -150,11 +152,15 @@ def prepare_stat_data_for_write(all_stats, file_base, variables, module_key, var
     return stat_df
 
 
-def get_option_mask(question_df, variables, question_type):
+def get_option_mask(question_df, variables, question_type, valid_options=None):
     """  get the mask to filter the positive options from a question """
     mask_total = None
+    if valid_options is None:
+        options = ("Passed", "Yes", "Good")
+    else:
+        options = valid_options
     if question_type == "dict":
-        for optie in ("Passed", "Yes", "Good"):
+        for optie in options:
             mask = question_df.index.get_level_values(2) == optie
             if mask_total is None:
                 mask_total = mask
@@ -203,6 +209,7 @@ def impose_variable_defaults(variables,
     variables["info_per_breakdown"] = None
 
     variables["gewicht"] = "units"
+    variables["keep_options"] = False
     # variables["filter"] = ""
 
     # als toevallig de eerste key: value in de options een dict is dan kan je geen from_dict
@@ -220,7 +227,8 @@ def impose_variable_defaults(variables,
         # such that we can access it more easily
         for name in (
                 "type", "fixed", "original_name", "question", "label", "check", "optional",
-                "gewicht", "no_impute", "info_per_breakdown", "report_number", "section"):
+                "gewicht", "no_impute", "info_per_breakdown", "report_number", "section",
+                "keep_options"):
             try:
                 variables.loc[var_key, name] = var_prop[name]
             except ValueError:
@@ -312,6 +320,45 @@ def add_missing_groups(all_stats, group_by, group_by_original, missing_groups):
             data_df = pd.concat([df_extra, data_df])
             new_stats[indicator] = data_df
     return new_stats
+
+
+def clean_all_suffix(dataframe, suffix_key, variables):
+    """
+    Hier gaan we de suffixen selecteren die we gedefinieerd hebben.
+
+    Args:
+        dataframe: dataframe met tabellen, waaronder een kolom met website extensies
+        suffix_key: de naam van de kollom met website extensies
+        variables: dataframe met variable informatie. Moet minimaal een variabele
+        gelijk aan de suffix_key hebben waarin de categorieen gedefinieerd zijn
+    Returns:
+        dataframe
+
+    """
+
+    if suffix_key in variables.index:
+        translateopts = variables.loc[suffix_key,  "translateopts"]
+        categories = dataframe[suffix_key].astype("category")
+        # we nemen aan dat de laatste category in de definitie 'rest' is
+        categorie_names = list(translateopts.keys())[:-1]
+        rest_category = list(translateopts.keys())[-1]
+        categories = categories.cat.set_categories(categorie_names)
+        categories = categories.cat.add_categories(rest_category)
+        categories.fillna(rest_category, inplace=True)
+
+        # dit is nodig om van de strings 'com', 'nl' etc getallen 1, 2, 3 etc te maken.
+        categories = categories.astype(str)
+        trans = yaml.load(str(translateopts), Loader=yaml.Loader)
+        categories = categories.map(trans)
+
+        # kopieer terug naar data frame als category type
+        dataframe[suffix_key] = categories.astype("category")
+
+    else:
+        _logger.info("Could not find suffix info to translate")
+
+    return dataframe
+
 
 
 def get_all_clean_urls(urls, show_progress=False, cache_directory=None):
