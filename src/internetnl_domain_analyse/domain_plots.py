@@ -221,7 +221,8 @@ def make_bar_plot_horizontal(plot_df, fig, axis, margin,
                              line_iter,
                              xoff, yoff, trans,
                              y_spacing_bar_plot,
-                             y_max_bar_plot):
+                             y_max_bar_plot,
+                             legend_position):
     try:
         plot_df.plot(kind="barh", ax=axis, rot=0, legend=None)
     except IndexError as err:
@@ -430,7 +431,9 @@ def make_bar_plot(plot_df,
     else:
         make_bar_plot_horizontal(
             plot_df=plot_df,
+            fig=fig,
             axis=axis,
+            margin=margin,
             plot_title=plot_title,
             show_title=show_title,
             translations=translations,
@@ -440,7 +443,8 @@ def make_bar_plot(plot_df,
             yoff=yoff,
             trans=trans,
             y_spacing_bar_plot=y_spacing_bar_plot,
-            y_max_bar_plot=y_max_bar_plot)
+            y_max_bar_plot=y_max_bar_plot,
+            legend_position=legend_position)
 
     _logger.info(f"Saving plot {image_file_name}")
     fig.savefig(image_file)
@@ -490,33 +494,33 @@ def make_bar_plot(plot_df,
 def make_bar_plot_stacked(
         year,
         plot_df,
-                  plot_key,
-                  plot_variable,
-                  scan_data_key,
-                  module_name,
-                  question_name,
-                  image_directory,
-                  show_plots=False,
-                  figsize=None,
-                  image_type="pdf",
-                  reference_lines=None,
-                  xoff=0.02,
-                  yoff=0.02,
-                  show_title=False,
-                  barh=False,
-                  subplot_adjust=None,
-                  sort_values=False,
-                  y_max_bar_plot=None,
-                  y_spacing_bar_plot=None, translations=None,
-                  legend_position=None,
-                  box_margin=None,
-                  export_svg=False,
-                  export_highcharts=False,
-                  highcharts_directory=None,
-                  title=None,
-                  normalize_data=False,
-                  force_plot=False
-                  ):
+        plot_key,
+        plot_variable,
+        scan_data_key,
+        module_name,
+        question_name,
+        image_directory,
+        show_plots=False,
+        figsize=None,
+        image_type="pdf",
+        reference_lines=None,
+        xoff=0.02,
+        yoff=0.02,
+        show_title=False,
+        barh=False,
+        subplot_adjust=None,
+        sort_values=False,
+        y_max_bar_plot=None,
+        y_spacing_bar_plot=None, translations=None,
+        legend_position=None,
+        box_margin=None,
+        export_svg=False,
+        export_highcharts=False,
+        highcharts_directory=None,
+        title=None,
+        normalize_data=False,
+        force_plot=False
+):
     image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
     image_name_suffix = "_".join([image_name, str(year)])
     image_name = "_".join([scan_data_key, plot_key, image_name_suffix])
@@ -540,7 +544,7 @@ def make_bar_plot_stacked(
     plot_df = plot_df.droplevel(names[:3]).T
 
     # inverteer de volgorde
-    #plot_df = plot_df[plot_df.columns[::-1]]
+    # plot_df = plot_df[plot_df.columns[::-1]]
     plot_df = plot_df.reindex(plot_df.index[::-1])
 
     plot_df.dropna(how="all", axis=0, inplace=True)
@@ -612,7 +616,6 @@ def make_bar_plot_stacked(
         else:
             x_label = "% van bedrijven"
 
-
         axis.set_xlabel(x_label, rotation="horizontal", horizontalalignment="right")
         axis.xaxis.set_label_coords(1.01, -0.12)
         axis.yaxis.grid(False)
@@ -640,7 +643,6 @@ def make_bar_plot_stacked(
             color = line_iter.get_next_color()
             axis.axhline(y=value, color=color, linestyle='-.')
             axis.text(xoff, value + yoff * x_range, ref_label, color=color, transform=trans)
-
 
     _logger.info(f"Saving plot {image_file_name}")
     fig.savefig(image_file)
