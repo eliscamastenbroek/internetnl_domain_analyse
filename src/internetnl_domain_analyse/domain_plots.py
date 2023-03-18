@@ -671,7 +671,7 @@ def make_bar_plot_stacked(
         _logger.info(f"Saving highcharts plot to: {hc_file}")
         CBSHighChart(
             data=plot_df,
-            chart_type="bar",
+            chart_type="bar_stacked",
             output_directory=highcharts_directory.as_posix(),
             output_file_name=image_file.stem,
             ylabel=hc_ylabel,
