@@ -328,9 +328,9 @@ def clean_all_suffix(dataframe, suffix_key, variables):
 
     Args:
         dataframe: dataframe met tabellen, waaronder een kolom met website extensies
-        suffix_key: de naam van de kollom met website extensies
+        suffix_key: de naam van de kolom met website extensies
         variables: dataframe met variable informatie. Moet minimaal een variabele
-        gelijk aan de suffix_key hebben waarin de categorieen gedefinieerd zijn
+        gelijk aan de suffix_key hebben waarin de categorieën gedefinieerd zijn
     Returns:
         dataframe
 
@@ -342,12 +342,21 @@ def clean_all_suffix(dataframe, suffix_key, variables):
         # we nemen aan dat de laatste category in de definitie 'rest' is
         categorie_names = list(translateopts.keys())[:-1]
         rest_category = list(translateopts.keys())[-1]
+        # we gaan hier categorieen toevoegen op basis van het lijst dat we
+        # in de settings file gegeven hebben (.nl, .com, .eu). De laatste beschouwen
+        # we als rest categorie waartoe we alle dat niet bij de hoofdcategorieen
+        # hoort gaan indelen.
         categories = categories.cat.set_categories(categorie_names)
+        # alle velden die nu nog geen categorie hebben worden nu aangeduid
+        # met de rest categorie
         categories = categories.cat.add_categories(rest_category)
+
+        # de rest categorieen worden nu op 'na' gezet
         categories.fillna(rest_category, inplace=True)
 
         # dit is nodig om van de strings 'com', 'nl' etc getallen 1, 2, 3 etc te maken.
         categories = categories.astype(str)
+        # vertaal de strings per categorie 'com', 'nl' etc naar de digits
         trans = yaml.load(str(translateopts), Loader=yaml.Loader)
         categories = categories.map(trans)
 
