@@ -210,7 +210,6 @@ def impose_variable_defaults(variables,
 
     variables["gewicht"] = "units"
     variables["keep_options"] = False
-    # variables["filter"] = ""
 
     # als toevallig de eerste key: value in de options een dict is dan kan je geen from_dict
     # gebruiken. Daarom voegen we nu een dummy string to, die halen we dadelijk weer weg
