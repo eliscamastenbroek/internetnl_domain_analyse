@@ -968,6 +968,7 @@ class DomainPlotter:
                 _logger.debug(f"Skipping plot {plot_key}")
                 continue
 
+            _logger.debug(f"Plotting plot {plot_key}")
             label = plot_prop.get("label", plot_key)
             figsize = plot_prop.get("figsize")
 
