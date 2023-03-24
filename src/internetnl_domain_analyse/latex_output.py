@@ -42,8 +42,12 @@ def make_latex_overview(
         bovenschrift=False,
         module_info=None):
     """
-    Maak latex ouput file met alle plaatjes
+    Maak latex output file met alle plaatjes
+
     Args:
+        module_info: class
+            Informatie van de modules
+        cache_directory:  obj:Path
         image_info: object: ImageInfo
         variables: dict met variabele eigenschappen
         image_directory: str
