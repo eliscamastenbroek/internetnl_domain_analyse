@@ -336,7 +336,7 @@ def clean_all_suffix(dataframe, suffix_key, variables):
     """
 
     if suffix_key in variables.index:
-        translateopts = variables.loc[suffix_key,  "translateopts"]
+        translateopts = variables.loc[suffix_key, "translateopts"]
         categories = dataframe[suffix_key].astype("category")
         # we nemen aan dat de laatste category in de definitie 'rest' is
         categorie_names = list(translateopts.keys())[:-1]
@@ -366,7 +366,6 @@ def clean_all_suffix(dataframe, suffix_key, variables):
         _logger.info("Could not find suffix info to translate")
 
     return dataframe
-
 
 
 def get_all_clean_urls(urls, show_progress=False, cache_directory=None):
