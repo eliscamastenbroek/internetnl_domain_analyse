@@ -363,7 +363,8 @@ def make_bar_plot(plot_df,
                   highcharts_directory=None,
                   title=None,
                   normalize_data=False,
-                  force_plot=False
+                  force_plot=False,
+                  enable_highcharts_legend=True
                   ):
     image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
     image_file = image_directory / Path(
@@ -480,7 +481,7 @@ def make_bar_plot(plot_df,
             y_lim=y_lim,
             y_tick_interval=y_spacing_bar_plot,
             title=plot_title,
-            enable_legend=False
+            enable_legend=enable_highcharts_legend
         )
 
     if show_plots:
@@ -519,7 +520,8 @@ def make_bar_plot_stacked(
         highcharts_directory=None,
         title=None,
         normalize_data=False,
-        force_plot=False
+        force_plot=False,
+        enable_highcharts_legend=True,
 ):
     image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
     image_name_suffix = "_".join([image_name, str(year)])
@@ -678,7 +680,7 @@ def make_bar_plot_stacked(
             y_lim=y_lim,
             y_tick_interval=y_spacing_bar_plot,
             title=plot_title,
-            enable_legend=False
+            enable_legend=enable_highcharts_legend
         )
 
     if show_plots:

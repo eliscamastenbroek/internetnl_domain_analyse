@@ -1265,7 +1265,9 @@ class DomainPlotter:
                                         title=title,
                                         legend_position=legend_pos,
                                         normalize_data=normalize_data,
-                                        force_plot=self.force_plots)
+                                        force_plot=self.force_plots,
+                                        enable_highcharts_legend=plot_info.enable_highcharts_legend
+                                    )
                             else:
                                 image_file = make_bar_plot(
                                     plot_df=plot_df,
@@ -1294,7 +1296,9 @@ class DomainPlotter:
                                     title=title,
                                     legend_position=legend_pos,
                                     normalize_data=normalize_data,
-                                    force_plot=self.force_plots)
+                                    force_plot=self.force_plots,
+                                    enable_highcharts_legend=plot_info.enable_highcharts_legend
+                                )
 
                                 _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
                                 self.image_info.add_entry(
@@ -1364,6 +1368,7 @@ class PlotInfo:
         self.y_max = None
         self.y_spacing = None
         self.legend_position = None
+        self.enable_highcharts_legend = True
 
         self.get_plot_info()
 
@@ -1391,6 +1396,7 @@ class PlotInfo:
                     self.y_max = info.get("y_max")
                     self.y_spacing = info.get("y_spacing")
                     self.legend_position = info.get("legend_position")
+                    self.enable_highcharts_legend = info.get("enable_highcharts_legend", True)
 
 
 def add_missing_years(plot_df, years_to_plot=None, jaar_level_name="Jaar", column=None):
