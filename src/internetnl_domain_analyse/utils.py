@@ -392,3 +392,14 @@ def get_all_clean_urls(urls, show_progress=False, cache_directory=None):
                 progress_bar.set_description("{:5s} - {:30s}".format("URL", "None"))
             progress_bar.update()
     return all_clean_urls, all_suffix
+
+
+def get_tex_horizontal_shift(horizontal_shift) -> str:
+    """ Pas de hspace verschuiving aan als hij onder windows gezet is """
+    if isinstance(horizontal_shift, dict):
+        if 'win' in sys.platform:
+            horizontal_shift = horizontal_shift["windows"]
+        else:
+            horizontal_shift = horizontal_shift["linux"]
+
+    return horizontal_shift
