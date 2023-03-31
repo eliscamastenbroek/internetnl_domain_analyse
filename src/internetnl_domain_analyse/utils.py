@@ -394,12 +394,14 @@ def get_all_clean_urls(urls, show_progress=False, cache_directory=None):
     return all_clean_urls, all_suffix
 
 
-def get_tex_horizontal_shift(horizontal_shift) -> str:
-    """ Pas de hspace verschuiving aan als hij onder windows gezet is """
-    if isinstance(horizontal_shift, dict):
+def get_windows_or_linux_value(value):
+    """ Pas de waarde aan als deze in een dict gegeven is met een windows en linux veld """
+    if isinstance(value, dict):
         if 'win' in sys.platform:
-            horizontal_shift = horizontal_shift["windows"]
+            new_value = value["windows"]
         else:
-            horizontal_shift = horizontal_shift["linux"]
+            new_value = value["linux"]
+    else:
+        new_value = value
 
-    return horizontal_shift
+    return new_value

@@ -14,7 +14,7 @@ from internetnl_domain_analyse.domain_analyse_classes import (DomainAnalyser, Do
 from internetnl_domain_analyse.domain_plots import (make_heatmap, make_conditional_score_plot,
                                                     make_conditional_pdf_plot,
                                                     make_verdeling_per_aantal_categorie)
-from internetnl_domain_analyse.utils import get_tex_horizontal_shift
+from internetnl_domain_analyse.utils import get_windows_or_linux_value
 
 logging.basicConfig(
     format='%(asctime)s %(filename)25s[%(lineno)4s] - %(levelname)-8s : %(message)s',
@@ -173,7 +173,7 @@ def main():
 
     image_directory = Path(general_settings.get("image_directory", "."))
     tex_prepend_path = Path(general_settings.get("tex_prepend_path", "."))
-    tex_horizontal_shift = get_tex_horizontal_shift(general_settings.get("tex_horizontal_shift", "-1.15cm"))
+    tex_horizontal_shift = get_windows_or_linux_value(general_settings.get("tex_horizontal_shift", "-1.15cm"))
 
     scan_data = general_settings["scan_data"]
     default_scan = general_settings["default_scan"]

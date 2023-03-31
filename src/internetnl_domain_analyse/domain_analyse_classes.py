@@ -29,7 +29,7 @@ from internetnl_domain_analyse.utils import (read_tables_from_sqlite,
                                              impose_variable_defaults,
                                              add_missing_groups,
                                              clean_all_suffix,
-                                             get_tex_horizontal_shift)
+                                             get_windows_or_linux_value)
 
 _logger = logging.getLogger(__name__)
 
@@ -1036,7 +1036,7 @@ class DomainPlotter:
                         highcharts_directory_bar = highcharts_directory_bar / Path(hc_sub_dir)
                     export_svg_bar = plot_bar.get("export_svg", False)
                     export_hc_bar = plot_bar.get("export_highcharts")
-                    tex_horizontal_shift = get_tex_horizontal_shift(plot_bar.get("tex_horizontal_shift"))
+                    tex_horizontal_shift = get_windows_or_linux_value(plot_bar.get("tex_horizontal_shift"))
                     plot_bar = plot_bar.get("apply", True)
                     if export_hc_bar is not None:
                         export_highcharts_cdf = export_hc_bar
@@ -1396,7 +1396,7 @@ class PlotInfo:
                     self.label = info.get("highcharts_label")
                     self.y_max = info.get("y_max")
                     self.y_spacing = info.get("y_spacing")
-                    self.legend_position = info.get("legend_position")
+                    self.legend_position = get_windows_or_linux_value(info.get("legend_position"))
                     self.enable_highcharts_legend = info.get("enable_highcharts_legend", True)
 
 
