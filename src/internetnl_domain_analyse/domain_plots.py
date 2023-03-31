@@ -13,6 +13,8 @@ from cbsplotlib.highcharts import CBSHighChart
 from cbsplotlib.settings import CBSPlotSettings
 from cbsplotlib.utils import add_axis_label_background
 
+from internetnl_domain_analyse.utils import get_windows_or_linux_value
+
 _logger = logging.getLogger(__name__)
 cbsplotlib_logger = logging.getLogger("cbsplotlib")
 cbsplotlib_logger.setLevel(_logger.getEffectiveLevel())
@@ -274,6 +276,8 @@ def make_bar_plot_horizontal(plot_df, fig, axis, margin,
             legend_bbox_to_anchor = (0.02, 0.00)
         else:
             legend_bbox_to_anchor = legend_position
+
+        legend_bbox_to_anchor = get_windows_or_linux_value(legend_bbox_to_anchor)
         axis.legend(loc="lower left", frameon=False, ncol=number_of_columns,
                     bbox_to_anchor=legend_bbox_to_anchor,
                     bbox_transform=fig.transFigure)
@@ -632,6 +636,7 @@ def make_bar_plot_stacked(
             legend_bbox_to_anchor = (0.02, 0.00)
         else:
             legend_bbox_to_anchor = legend_position
+        legend_bbox_to_anchor = get_windows_or_linux_value(legend_bbox_to_anchor)
         axis.legend(loc="lower left", frameon=False, ncol=number_of_columns,
                     bbox_to_anchor=legend_bbox_to_anchor,
                     bbox_transform=fig.transFigure)
