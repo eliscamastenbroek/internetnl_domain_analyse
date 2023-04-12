@@ -143,9 +143,9 @@ def make_cdf_plot(hist,
         fig.canvas.manager.set_window_title(windows_title)
 
     if cummulative:
-        y_label = "Cumulatief % van bedrijven"
+        y_label = "Cumulatief % van bedrijven met website"
     else:
-        y_label = "% van bedrijven"
+        y_label = "% van bedrijven met website"
 
     if translations is not None:
         for key_in, label_out in translations.items():
@@ -254,7 +254,7 @@ def make_bar_plot_horizontal(plot_df, fig, axis, margin,
         if re.search("score", plot_title, re.IGNORECASE):
             x_label = "Score %"
         else:
-            x_label = "% van bedrijven"
+            x_label = "% van bedrijven met website"
 
         if translations is not None:
             for key_in, label_out in translations.items():
@@ -316,7 +316,7 @@ def make_bar_plot_vertical(plot_df, axis, plot_title, show_title, translations, 
         if re.search("score", plot_title, re.IGNORECASE):
             y_label = "Score %"
         else:
-            y_label = "% van bedrijven"
+            y_label = "% van bedrijven met website"
 
         if translations is not None:
             for key_in, label_out in translations.items():
@@ -620,7 +620,7 @@ def make_bar_plot_stacked(
         if re.search("score", plot_title, re.IGNORECASE):
             x_label = "Score %"
         else:
-            x_label = "% van bedrijven"
+            x_label = "% van bedrijven met website"
 
         axis.set_xlabel(x_label, rotation="horizontal", horizontalalignment="right")
         axis.xaxis.set_label_coords(1.01, -0.12)
@@ -1081,7 +1081,7 @@ def make_conditional_pdf_plot(categories, image_directory,
     # this triggers the drawing, otherwise we can not retrieve the xtick labels
     fig.canvas.draw()
 
-    y_label = '% van bedrijven'
+    y_label = '% van bedrijven met website'
 
     axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
     axis.yaxis.set_label_coords(-0.04, 1.05)
