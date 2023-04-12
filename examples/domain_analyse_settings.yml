@@ -1,102 +1,416 @@
+# Settings voor de internet.nl-plaatjes. 
 general:
   working_directory:
+  highcharts_output_directory: highcharts
   scan_data:
     all_web:
-      do_it: true
-      data_file: data/internet_nl_web_all.sqlite
-    dtc_web:
-      do_it: true
-      data_file: data/internet_nl_web_dtc.sqlite
+      2020:
+        do_it: true
+        data_file: data/2020/internet_nl_web_all_20.sqlite
+      2021:
+        do_it: true
+        data_file: data/2021/internet_nl_web_all_21.sqlite
+      2022:
+        do_it: true
+        data_file: data/2022/internet_nl_web_all_22.sqlite
+      2023:
+        do_it: true
+        data_file: data/2023/internet_nl_web_all_2023.sqlite
+    all_mail:
+#      2020:
+#        # If data file is none, we don´t load the data, but we add the year as none to keep
+#        # the legend the same
+#        data_file:
+#      2021:
+#        do_it: true
+#        data_file: data/2021/internet_nl_mail_all_21.sqlite
+#      2022:
+#        do_it: true
+#        data_file: data/2022/internet_nl_mail_all_22.sqlite
+      2023:
+        do_it: true
+        data_file: data/2023/internet_nl_mail_all_23.sqlite
+    #dtc_web:
+    #  do_it: false
+    #  data_file: data/internet_nl_web_dtc.sqlite
   default_scan: all_web
   output: internet_nl_stats.sqlite
+  stat_directory: "\\\\cbsp.nl\\productie\\primair\\WTE\\Werk\\ICT-gebruik bedrijven\\Bedrijven\\wte\\Stat\\"
+  records_cache_data:
+    # Records cache directory verwijst naar de microdata van de statline ict enquete. Deze directory kan overruled worden
+    # met 1) de command line optie `--records_cache_dir' en 2) de environment variable RECORDS_CACHE_DIR_YY, waarbij
+    # YY the laatste 2 digits zijn van het jaartal (i.e. 20, 21, of 22)
+    2020:
+      records_cache_directory: "{{ stat_directory }}\\ALR20\\ALG_20\\06_PUBLICATIE\\StatLine\\StatLine_2020\\cache"
+      records_cache_file: records_cache_20.sqlite
+      records_table_names:
+        - records_df_20_2
+        - info_records_df_20
+    2021:
+      records_cache_directory: "{{ stat_directory }}\\ALR21\\ALG_21\\06_PUBLICATIE\\StatLine\\StatLine_2021\\cache"
+      records_cache_file: records_cache_21.sqlite
+      records_table_names:
+        - records_df_21_2
+        - info_records_df_21
+    2022:
+      records_cache_directory: "{{ stat_directory }}\\ALR22\\ALG_22\\06_PUBLICATIE\\StatLine\\StatLine_2022\\cache"
+      records_cache_file: records_cache_22.sqlite
+      records_table_names:
+        - records_df_22_2
+        - info_records_df_22
+    2023:
+      # voor 2023 gebruiken we 2022 cache omdat hier op de data gebaseerd is
+      records_cache_directory: "{{ stat_directory }}\\ALR22\\ALG_22\\06_PUBLICATIE\\StatLine\\StatLine_2022\\cache"
+      records_cache_file: records_cache_22.sqlite
+      records_table_names:
+        - records_df_22_2
+        - info_records_df_22
   image_directory: images
-  tex_prepend_path: figures/scan_results
+  tex_prepend_path: figures/internet_punt_nl
+  tex_horizontal_shift:
+    linux: -2.15cm
+    windows: -1.78cm
   image_type: .pdf
   cache_directory: cache
-  records_cache_file: records_cache_20.sqlite
-  records_table_names:
-    - records_df_20_2
-    - info_records_df_20
   n_digits: 1
   n_bins: 50
   barh: true
-  cummulative: false
+  cumulative: false
   show_title: false
   sheet_renames:
     statline:
       pattern: "statline_"
       replace: ""
+categories:
+  categories_output_file: internet_nl_categories.sqlite
+  plot_settings:
+    pdf_per_category:
+      y_max_pdf_plot: 4
+      y_spacing_pdf_plot: 1
+      highcharts_output_directory: hoofdstuk3/Fig_3_3_2
+      export_svg: true
+    verdeling_per_categorie:
+      highcharts_output_directory: hoofdstuk3/Fig_3_3_3
+      highcharts_label: "3.3.3 Relatieve verhouding geslaagde categorieën tegen aantal
+                         geslaagde categorieën."
+  index_categories:
+    HTTPS:
+      variable: categories_web_https_verdict
+      color: corporatelichtblauw
+    IPv6:
+      variable: categories_web_ipv6_verdict
+      color: grasgroen
+    DNSSEC:
+      variable: categories_web_dnssec_verdict
+      color: oranje
+    APPSEC:
+      variable: categories_web_appsecpriv_verdict
+      color: roze
+correlations:
+  plots:
+    correlation:
+      do_it: true
+      output_file: internet_nl_corr.sqlite
+      highcharts_output_directory: hoofdstuk3/Fig_3_5_1
+      export_svg: true
+    scores_per_number_correct:
+      do_it: true
+      output_file: internet_nl_scores.pkl  # zelfde input file als scores_per_interval!
+      x_label:
+        text: Aantal geslaagde categorieën
+        positie:
+          - 0.98
+          - -0.15
+      y_label:
+        text: Subgroepscore [%]
+        positie:
+          - -0.065
+          - 1.07
+      highcharts_output_directory: hoofdstuk3/Fig_3_4_2_a
+      highcharts_label: "3.4.2(a) Subgroepscore tegen het aantal geslaagde categorieën."
+    scores_per_interval:
+      do_it: true
+      output_file: internet_nl_scores.pkl
+      x_label:
+        text: Eindscoreniveau
+        positie:
+          - 0.98
+          - -0.15
+      y_label:
+        text: Subgroepscore [%]
+        positie:
+          - -0.065
+          - 1.07
+      highcharts_output_directory: hoofdstuk3/Fig_3_4_2_b
+      highcharts_label: "3.4.2(b) Subgroepscore groep tegen het eindscoreniveau."
+  score_intervallen:
+    L: 0
+    M: 40
+    H: 60
+    V: 80
+  index_labels:
+    L: Low
+    M: Medium
+    H: High
+    V: Very High
+  index_categories:
+    HTTPS_http:
+      color: corporatelichtblauw
+    HTTPS_cert:
+      color: donkerblauw
+    HTTPS_tls:
+      color: appelgroen
+    HTTPS_dane:
+      color: grasgroen
+    IPv6:
+      color: oranje
+    DNSSEC:
+      color: roze
+    APPSEC:
+      color: geel
+  index_correlations:
+    tests_web_https_http_available_verdict: HTTPS_http
+    tests_web_https_http_redirect_verdict: HTTPS_http
+    tests_web_https_http_compress_verdict: HTTPS_http
+    tests_web_https_http_hsts_verdict: HTTPS_http
+    tests_web_https_cert_chain_verdict: HTTPS_cert
+    tests_web_https_cert_pubkey_verdict: HTTPS_cert
+    tests_web_https_cert_sig_verdict: HTTPS_cert
+    tests_web_https_cert_domain_verdict: HTTPS_cert
+    tests_web_https_tls_version_verdict: HTTPS_tls
+    tests_web_https_tls_ciphers_verdict: HTTPS_tls
+    tests_web_https_tls_cipherorder_verdict: HTTPS_tls
+    tests_web_https_tls_keyexchange_verdict: HTTPS_tls
+    tests_web_https_tls_keyexchangehash_verdict: HTTPS_tls
+    tests_web_https_tls_compress_verdict: HTTPS_tls
+    tests_web_https_tls_secreneg_verdict: HTTPS_tls
+    tests_web_https_tls_clientreneg_verdict: HTTPS_tls
+    tests_web_https_tls_0rtt_verdict: HTTPS_tls
+    tests_web_https_tls_ocsp_verdict: HTTPS_tls
+    tests_web_https_dane_exist_verdict: HTTPS_dane
+    tests_web_https_dane_valid_verdict: HTTPS_dane
+    tests_web_ipv6_ws_similar_verdict: IPv6
+    tests_web_ipv6_ws_reach_verdict: IPv6
+    tests_web_ipv6_ws_address_verdict: IPv6
+    tests_web_ipv6_ns_address_verdict: IPv6
+    tests_web_ipv6_ns_reach_verdict: IPv6
+    tests_web_dnssec_exist_verdict: DNSSEC
+    tests_web_dnssec_valid_verdict: DNSSEC
+    tests_web_appsecpriv_csp_verdict: APPSEC
+    tests_web_appsecpriv_referrer_policy_verdict: APPSEC
+    tests_web_appsecpriv_x_content_type_options_verdict: APPSEC
+    tests_web_appsecpriv_x_frame_options_verdict: APPSEC
 statistics:
-  internet_gk_vanaf_2: # bedrijfsgrootte, per gk vanaf 2
+  internet_gk_vanaf_1_zzp: # bedrijfsgrootte, per gk vanaf 1
     do_it: true
     groupby:
-      gk: gk_vanaf_2
+      gk: gk_vanaf_1_zzp
+    groupby_if_not_exist:
+      gk: gk_vanaf_2  # gk_vanaf_2 wordt genomen, maar gezet als column gk_vanaf_1_zzp voor 2020
+    missing_groups:
+      - WP19079
   statline_gk_all: # bedrijfsgrootte,  2 en meer WP
     do_it: true
     groupby:
       gk: gk_all_wp
-  statline_gk3: # bedrijfsgrootte,  2 en meer WP
+  statline_gk3_zzp:
     do_it: true
     groupby:
+      gk: gk3_stat_wp_met_zzp
+    groupby_if_not_exist:
       gk: gk3_stat_wp
-  statline_gk_all_dtc: # bedrijfsgrootte,  2 en meer WP
-    do_it: true
+    missing_groups:
+      - WP19079
+  statline_gk_all_dtc: # Bedrijfsgrootte, 2 en meer WP
+    do_it: false
     scan_data: dtc_web
     groupby:
       gk: gk_all_wp
-  statline_sbi_digit1:
+  statline_sbi_digit1: # Per bedrijfstak, 2 of meer WP. Zzp worden niet meegenomen
     do_it: true
     groupby:
       sbi: sbi_digit1_statline
+    filters:
+      select_large_be: "gk_sbs > 10"
+  statline_sbi_ict:
+    do_it: false
+    groupby:
+      sbi: sbi_ict_statline
+    filters:
+      select_large_be: "gk_sbs > 10"
+  statline_gk3_zzp_tot:
+    do_it: true
+    groupby:
+      gk: gk_all   # dit is een dummy
+    combination:
+      - statline_gk3_zzp
+      - statline_gk_all
+  statline_sbi_digit1_ict:
+    do_it: true
+    groupby:
+      gk: sbi_all   # dit is een dummy
+    combination:
+      - statline_sbi_digit1
+      - statline_sbi_ict
 plots:
-  internet_gk_vanaf_2: # bedrijfsgrootte, per gk vanaf 2
+  internet_gk_vanaf_1_zzp: # bedrijfsgrootte, per gk vanaf 1
     do_it: false
     label: "Bedrijfsgrootteklasse"
     legend_title: "# Werknemers"
-    figsize:
-      - 6.5
-      - 3.4
+    tex_horizontal_shift: &tex_horizontal_shift_gk_van_1_zzp
+      linux: -1.08cm
+      windows: -1.78cm
     reference_lines:
       statline_gk_all:
         label: NL
         xoff: 0.01
-      statline_gk_all_dtc:
-        label: DTC
-        xoff: 0.02
-  statline_gk_all: # bedrijfsgrootte,  2 en meer WP
-    do_it: true
-    cdf_plot: true
-    bar_plot: false
+      #statline_gk_all_dtc:
+      #  label: DTC
+      #  xoff: 0.02
+  statline_gk_all: # bedrijfsgrootte, 2 en meer WP
+    do_it: false
+    cdf_plot:
+      apply: true
+      figsize: # set figure size in inches
+        - 5.43
+        - 3.0
+      variables:
+        all_web:
+          percentage:
+            highcharts_info_per_year:
+              2020:
+                highcharts_directory: hoofdstuk3/Fig_3_3_1_a
+                highcharts_label: "3.3.1(a) Verdeling van de websitescan Internet.nl-score voor bedrijven met 2 of meer werknemers 
+                voor  2020"
+              2021:
+                highcharts_directory: hoofdstuk3/Fig_3_3_1_b
+                highcharts_label: "3.3.1(b) Verdeling van de websitescan Internet.nl-score voor bedrijven met 2 of meer werknemers 
+                voor  2021"
+              2022:
+                highcharts_directory: hoofdstuk3/Fig_3_3_1_c
+                highcharts_label: "3.3.1(c) Verdeling van de websitescan Internet.nl-score voor bedrijven met 2 of meer werknemers 
+                voor  2022"
+              2023:
+                highcharts_directory: hoofdstuk3/Fig_3_3_1_d
+                highcharts_label: "3.3.1(d) Verdeling van de websitescan Internet.nl-score voor bedrijven met 2 of meer werknemers 
+                voor  2023"
+            export_svg: true
+            export_highcharts: false
+        all_mail:
+          percentage:
+            highcharts_info_per_year:
+#              2021:
+#                highcharts_directory: hoofdstuk4/Fig_4_3_1_a
+#                highcharts_label: "4.3.1(a) Verdeling van de email-scan Internet.nl-score voor bedrijven met 2 of meer werknemers
+#                voor  2021"
+#              2022:
+#                highcharts_directory: hoofdstuk4/Fig_4_3_1_b
+#                highcharts_label: "4.3.1(b) Verdeling van de email-scan Internet.nl-score voor bedrijven met 2 of meer werknemers
+#                voor  2022"
+              2023:
+                highcharts_directory: hoofdstuk4/Fig_4_3_1
+                highcharts_label: "4.3.1 Verdeling van de email-scan Internet.nl-score voor bedrijven met 2 of meer werknemers 
+                voor  2023"
+            export_svg: true
+            export_highcharts: false
+    bar_plot:
+      apply: false
+      tex_horizontal_shift: -1.08cm
+      export_highcharts: false
     y_max_pdf_plot: 8
     y_spacing_pdf_plot: 2
     label: "Bedrijfsgrootteklasse"
     legend_title: "# Werknemers"
-  statline_gk3: # bedrijfsgrootte,  klasse met gk3 indeling
+  statline_gk3_zzp_tot: # bedrijfsgrootte, klasse met gk3 indeling inclusief een breakdown met 2+
+    # de volgorde waarin je hier de plot voor gk en sbi geeft, wordt ook in de tex-output aangehouden
     do_it: true
-    cdf_plot: true
-    bar_plot: true
-    y_max_pdf_plot: 15
-    y_spacing_pdf_plot: 5
+    title: "Gemiddelde Internet.nl-score per bedrijfsgrootteklasse."
+    cdf_plot: false
+    bar_plot:
+      apply: true
+      tex_horizontal_shift: *tex_horizontal_shift_gk_van_1_zzp
+    y_max_pdf_plot: 8
+    y_spacing_pdf_plot: 2
+    horizontal_shift:
+    box_margin: 0.07
+    subplot_adjust:
+      left: 0.5
+      right: 0.98
     label: "Bedrijfsgrootteklasse"
     legend_title: "# Werknemers"
-    figsize:
-      - 6.5
-      - 3.4
+    legend_position: &legend_position_gk
+      linux:
+        - 0.06
+        - 0.00
+      windows:
+        - 0.105
+        - 0.00
+  statline_gk3_zzp: # bedrijfsgrootte, klasse met gk3 indeling
+    # de volgorde waarin je hier de plot voor gk en sbi geeft, wordt ook in de tex-output aangehouden
+    do_it: true
+    title: "Gemiddelde Internet.nl-score per bedrijfsgrootteklasse."
+    cdf_plot: false
+    bar_plot:
+      apply: true
+      tex_horizontal_shift: *tex_horizontal_shift_gk_van_1_zzp
+    y_max_pdf_plot: 8
+    y_spacing_pdf_plot: 2
+    horizontal_shift:
+    box_margin: 0.07
+    subplot_adjust:
+      left: 0.5
+      right: 0.98
+    label: "Bedrijfsgrootteklasse"
+    legend_title: "# Werknemers"
+    legend_position: *legend_position_gk
   statline_sbi_digit1:
     do_it: true
-    cdf_plot: true
-    bar_plot: true
+    title: "Gemiddelde Internet.nl-score per bedrijfstak."
+    cdf_plot: false
+    bar_plot:
+      apply: true
+      tex_horizontal_shift: *tex_horizontal_shift_gk_van_1_zzp
     use_breakdown_keys: false
-    y_max_bar_plot: 71
-    y_spacing_bar_plot: 10
-    sort_values: true
+    #y_max_bar_plot: 35
+    #y_spacing_bar_plot: 5
+    sort_values: false
+    box_margin: 0.1
+    figsize: # set figure size in inches (default = (5.43, 3.36)
+      - 5.43
+      - 6.0
     subplot_adjust:
-      left:  0.5
-    label: "Branche"
-    legend_title: Branche
-    figsize:
-      - 6.5
-      - 3.4
+      left: 0.5
+      right: 0.98
+    label: "Bedrijfstak"
+    legend_title: Bedrijfstak
+    legend_position: &legend_position_sbi
+      linux:
+        - 0.06
+        - 0.03
+      windows:
+        - 0.105
+        - 0.03
+  statline_sbi_digit1_ict:
+    do_it: true
+    title: "Gemiddelde Internet.nl-score per bedrijfstak."
+    cdf_plot: false
+    bar_plot:
+      apply: true
+      tex_horizontal_shift: *tex_horizontal_shift_gk_van_1_zzp
+    use_breakdown_keys: false
+    #y_max_bar_plot: 35
+    #y_spacing_bar_plot: 5
+    sort_values: false
+    box_margin: 0.1
+    figsize: # set figure size in inches (default = (5.43, 3.36)
+      - 5.43
+      - 6.0
+    subplot_adjust:
+      left: 0.5
+      right: 0.98
+    label: "Bedrijfstak"
+    legend_title: Bedrijfstak
+    legend_position: *legend_position_sbi
 index:
   be_id: be_id
 weight: ratio_units
@@ -110,281 +424,53 @@ translations:
   ok_info:
     ok: 1
     info: 0
-variables:
-  score:
-    percentage:
-      type: percentage
-      label: "Score"
-  categories:
-    categories_web_ipv6_verdict:
-      type: bool
-      label: "Web Ipv6"
-    categories_web_dnssec_verdict:
-      type: bool
-      label: "dnssec"
-    categories_web_https_verdict:
-      type: dict
-      label: Web Https
-      translate:
-        passed: 1
-        failed: 2
-        unreachable: 3
-      options:
-        1: Passed
-        2: Failed
-        3: Unreachable
-    categories_web_appsecpriv_verdict:
-      type: dict
-      label: Web App Sec Priv
-      translate:
-        passed: 1
-        warning: 2
-      options:
-        1: Passed
-        2: Warning
-  tests:
-    tests_web_ipv6_ns_address_verdict:
-      type: dict
-      label: Web Ipv6 ns address
-      translate: &translate_good_bad_other
-        good: 1
-        bad: 2
-        other: 3
-      options: &options_good_bad_other
-        1: Good
-        2: Bad
-        3: Other
-    tests_web_ipv6_ns_reach_verdict:
-      type: dict
-      label: Web Ipv6 ns Reach
-      translate: &translate_good_bad_nt
-        good: 1
-        bad: 2
-        "not-tested": 3
-      options: &options_good_bad_nt
-        1: Good
-        2: Bad
-        3: Not tested
-    tests_web_ipv6_ws_address_verdict:
-      type: bool
-    tests_web_ipv6_ws_reach_verdict:
-      type: dict
-      label: "Ipv6 Ws Reach"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    tests_web_ipv6_ws_similar_verdict:
-      type: dict
-      label: "Ipv6 Ws Similar"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    tests_web_dnssec_exist_verdict:
-      type: dict
-      label: Web dnssec exist
-      translate: &translate_good_bad_server_failed
-        good: 1
-        bad: 2
-        servfail: 3
-      options: &options_good_bad_server_failed
-        1: Good
-        2: Bad
-        3: Server Failed
-    tests_web_dnssec_valid_verdict:
-      type: dict
-      label: "Web dnssec valid"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    tests_web_https_http_available_verdict:
-      type: dict
-      label: Web Https Http Available
-      translate: *translate_good_bad_other
-      options: *options_good_bad_other
-    tests_web_https_http_redirect_verdict:
-      type: dict
-      label: Web Https Http redirect
-      translate: &translate_good_bad_not_tested_other
-        good: 1
-        bad: 2
-        "not-tested": 3
-        other: 4
-      options: &options_good_bad_not_tested_other
-        1: Good
-        2: Bad
-        3: Not tested
-        4: Other
-    tests_web_https_http_hsts_verdict:
-      type: dict
-      label: Web Https Http hsts
-      translate: *translate_good_bad_not_tested_other
-      options: *options_good_bad_not_tested_other
-    tests_web_https_http_compress_verdict:
-      type: dict
-      label: "Web Https Http compression"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    tests_web_https_tls_keyexchange_verdict:
-      type: dict
-      label: "Web Https Tls Key exchange"
-      translate: &translate_good_bad_phaseout_na_nt
-        good: 1
-        bad: 2
-        na: 3
-        "phase-out": 4
-        "not-tested": 5
-      options: &options_good_bad_phaseout_na_nt
-        1: Good
-        2: Bad
-        3: phase-out
-        4: na
-        5: Not tested
-    tests_web_https_tls_ciphers_verdict:
-      type: dict
-      label: "Web Https Tls Ciphers"
-      translate: *translate_good_bad_phaseout_na_nt
-      options: *options_good_bad_phaseout_na_nt
-    tests_web_https_tls_cipherorder_verdict:
-      type: dict
-      label: Web Https Cipher Order
-      translate: &translate_good_bad_warning_sec_na_nt
-        good: 1
-        bad: 2
-        warning: 3
-        seclevel-bad: 4
-        na: 5
-        not-tested: 6
-      options: &options_good_bad_warning_sec_na_nt
-        1: Good
-        2: Bad
-        3: Warning
-        4: Security level bad
-        5: Not available
-        6: Not tested
-    tests_web_https_tls_version_verdict:
-      type: dict
-      label: "Web Https Tls Version"
-      translate: *translate_good_bad_phaseout_na_nt
-      options: *options_good_bad_phaseout_na_nt
-    tests_web_https_tls_compress_verdict:
-      type: dict
-      label: "Web Https Tls Compression"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    tests_web_https_tls_secreneg_verdict:
-      type: dict
-      label: "Web Https Tls Secret neg"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    tests_web_https_tls_clientreneg_verdict:
-      type: dict
-      label: "Web Https Tls Client reneg"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    tests_web_https_cert_chain_verdict:
-      type: dict
-      label: "Web Https Cert Chain"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    tests_web_https_cert_pubkey_verdict:
-      type: dict
-      label: "Web Https Cert Pubkey"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    tests_web_https_cert_sig_verdict:
-      type: dict
-      label: "Web Https Cert Sig"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    tests_web_https_cert_domain_verdict:
-      type: dict
-      label: "Web Https Cert Domain"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    tests_web_https_dane_exist_verdict:
-      type: dict
-      label: "Web Https Dane Exist"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    tests_web_https_dane_valid_verdict:
-      type: dict
-      label: "Web Https Dane Valid"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    tests_web_https_tls_0rtt_verdict:
-      type: dict
-      label: "Web Https Tls 0rtt"
-      translate: &translate_good_bad_na_nt
-        good: 1
-        bad: 2
-        na: 3
-        "not-tested": 4
-      options: &options_good_bad_na_nt
-        1: Good
-        2: Bad
-        3: na
-        4: Not tested
-    tests_web_https_tls_ocsp_verdict:
-      type: dict
-      label: "Web Https Tls ocsp"
-      translate: &translate_good_ok_bad_nt
-        good: 1
-        ok: 2
-        bad: 3
-        "not-tested": 4
-      options: &options_good_ok_bad_nt
-        1: Good
-        2: Ok
-        3: Bad
-        4: Not tested
-    tests_web_https_tls_keyexchangehash_verdict:
-      type: dict
-      label: "Web Https Tls Key exchange hash"
-      translate: *translate_good_bad_phaseout_na_nt
-      options: *options_good_bad_phaseout_na_nt
-    tests_web_appsecpriv_x_frame_options_verdict:
-      type: dict
-      label: "Web Appsec Priv x frame options"
-      translate: *translate_good_bad_phaseout_na_nt
-      options: *options_good_bad_phaseout_na_nt
-    tests_web_appsecpriv_referrer_policy_verdict:
-      type: dict
-      label: "Web app sec priv referred policy"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    tests_web_appsecpriv_csp_verdict:
-      type: dict
-      label: "Web app sec priv csp"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    tests_web_appsecpriv_x_content_type_options_verdict:
-      type: dict
-      label: "Web app sec priv x content type opt"
-      translate: *translate_good_bad_nt
-      options: *options_good_bad_nt
-    custom_tls_1_3_support:
-      type: dict
-      label: "Custom Tls 1.3 support"
-      translate:
-        "yes": 1
-        "no": 2
-        undetermined: 3
-      options:
-        1: "Yes"
-        2: "No"
-        3: Undetermined
 module_info:
+  domeinnamen:
+    include: true
+    label: Verdeling
+    description: Informatie over de URL's
+  counts:
+    include: true
+    label: Totaal aantal
+    description: Totale aantal gescande domeinnamen
   score:
     include: true
     label: Totaal score
     description: Totale score van alle resultaten
   categories:
-    include: false
+    include: true
     label: Categories
-    description: Micro variabeles scan result
+    description: Micro variables scan result
   tests:
-    include: false
+    # hier worden de kopjes van de secties in de appendix gegeven van
+    # de testen per catergorie
+    include: true
     label: Test
-    description: Micro variabeles scan result
+    description: Micro variables scan result
+    sections:
+      web_ipv6:
+        title: Website-testuitslagen voor categorie `IPv6'
+      web_dnssec:
+        title: Website-testuitslagen voor categorie `Domeinnaamhandtekening'  (DNSSEC)
+      web_https:
+        title: Website-testuitslagen voor categorie `HTTPS'
+      web_beveiligingsopties:
+        title: Website-testuitslagen voor categorie `Beveiligingsopties'
+      web_rpki:
+        title: Website-testuitslagen voor categorie `RPKI'
+      mail_ipv6:
+        title: E-mailtestuitslagen voor categorie `IPv6'
+      mail_dnssec:
+        title: E-mailtestuitslagen voor categorie `Domeinnaamhandtekening' (DNSSEC)
+      mail_start_tls:
+        title: E-mailtestuitslagen voor categorie `StartTLS'
+      mail_auth:
+        title: E-mailtestuitslagen voor categorie `Authenticatie'
+      mail_rpki:
+        title: E-mailtestuitslagen voor categorie `RPKI'
 breakdown_labels:
-  internet_gk_vanaf_2:
+  internet_gk_vanaf_1_zpp:
+    WP19079: 1       # 10  1 wp
     WP19082: 2        # 21  # 2 wp
     WP19083: 3-4      # 22  # 3 tot 5 wp
     WP19085: 5-9      # 5 tot 10 wp
@@ -396,7 +482,15 @@ breakdown_labels:
     WP19109: 500-     # 500 of meer
   statline_gk_all:
     WP19115: Totaal NL  # bedrijfsgrootte, 2 en meer WP
-  statline_gk3: # bedrijfsgrootte,  2 en meer WP
+  statline_gk3_zzp: # bedrijfsgrootte, 2 en meer WP
+    WP19079: ZZP`ers
+    WP19080: 2 tot 10 werkzame personen
+    WP19090: 10 tot 50 werkzame personen
+    WP19097: 50 tot 250 werkzame personen
+    WP19107: 250 of meer werkzame personen
+  statline_gk3_zzp_tot: # bedrijfsgrootte, 2 en meer WP
+    WP19079: ZZP`ers
+    WP19115: 2 of meer werkzame personen
     WP19080: 2 tot 10 werkzame personen
     WP19090: 10 tot 50 werkzame personen
     WP19097: 50 tot 250 werkzame personen
@@ -410,7 +504,1938 @@ breakdown_labels:
     "I": "Horeca"
     "J": "Informatie/Communicatie"
     "K": "Financiële dienstverlening"
-    "L": "Verhuur/handel ontr.goed"
+    "L": "Verhuur/handel onr.goed"
     "M": "Special. zakelijke dienstver."
     "N": "Verhuur/overige zakelijke dnst."
     "Q": "Gezondheid en welzijnszorg"
+  statline_sbi_digit1_ict:
+    "C": "Industrie"
+    "D-E": "Energie/water/afval"
+    "F": "Bouwnijverheid"
+    "G": "Handel"
+    "H": "Vervoer/Opslag"
+    "I": "Horeca"
+    "J": "Informatie/Communicatie"
+    "K": "Financiële dienstverlening"
+    "L": "Verhuur/handel onr.goed"
+    "M": "Special. zakelijke dienstver."
+    "N": "Verhuur/overige zakelijke dnst."
+    "Q": "Gezondheid en welzijnszorg"
+    "ICT": "ICT-Sector"
+variables:
+  all_web:
+    domeinnamen:
+      suffix:
+        type: dict
+        keep_options: true
+        translate:
+          nl: 1
+          com: 2
+          eu: 3
+          rest: 4
+        options:
+          1: .nl
+          2: .com
+          3: .eu
+          4: overig
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: hoofdstuk2/Fig_2_2_1_a
+            highcharts_label: "2.2.1(a) Verdeling van de domeinextensies over de 
+            	             bedrijfsgrootteklassen."
+            y_max: 100
+            y_spacing: 20
+            legend_position: *legend_position_gk
+          statline_sbi_digit1_ict:
+            highcharts_directory: hoofdstuk2/Fig_2_2_1_b
+            highcharts_label: "2.2.1(b) Verdeling van de domeinextensies over de 
+            	             bedrijfstakken."
+            y_max: 100
+            y_spacing: 20
+            legend_position: *legend_position_sbi
+    counts:
+      units:
+        type: int
+        report_number: true
+        label: "Verdeling van de gescande domeinnamen over de bedrijfsgrootteklassen (a) en
+              bedrijfstakken (b)."
+        info_per_breakdown:
+          statline_gk3_zzp:
+            highcharts_directory: hoofdstuk2/Fig_2_1_3_a
+            highcharts_label: "2.1.3(a) Verdeling van de gescande domeinnamen over de 
+            	             bedrijfsgrootteklassen."
+            y_max: 40
+            y_spacing: 5
+            legend_position: *legend_position_gk
+          statline_sbi_digit1_ict:
+            highcharts_directory: hoofdstuk2/Fig_2_1_3_b
+            highcharts_label: "2.1.3(b) Verdeling van de gescande domeinnamen over de 
+            	             bedrijfstakken."
+            y_max: 40
+            y_spacing: 5
+            legend_position: *legend_position_sbi
+    score:
+      percentage:
+        type: percentage
+        label: "Gemiddelde totaal score Internet.nl  per bedrijfsgrootteklasse (a) en bedrijfstak 
+      met 2 of meer werknemers (b)."
+        filter: website
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: hoofdstuk3/Fig_3_2_1_a
+            highcharts_label: "3.2.1(a) Gemiddelde totaal score Internet.nl  per  
+                             bedrijfsgrootteklasse."
+            y_max: 80
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: hoofdstuk3/Fig_3_2_1_b
+            highcharts_label: "3.2.1(b) Gemiddelde totaal score Internet.nl  per bedrijfstak met 2 of meer werknemers."
+            y_max: 80
+            y_spacing: 20
+    categories:
+      categories_web_ipv6_verdict:
+        type: bool
+        label: "Percentage van bedrijven met website met geslaagde categorie `IPv6' per bedrijfsgrootteklasse (a) en 
+              bedrijfstak (b)."
+        filter: website
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: hoofdstuk3/Fig_3_2_2_a
+            highcharts_label: "3.2.2(a) Percentage van bedrijven met website met geslaagde categorie `IPv6' per   
+                             bedrijfsgrootteklasse."
+            y_max: 60
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: hoofdstuk3/Fig_3_2_2_b
+            highcharts_label: "3.2.2(b) Percentage van bedrijven met website met geslaagde categorie `IPv6' per 
+                             bedrijfstak."
+            y_max: 60
+            y_spacing: 10
+      categories_web_dnssec_verdict:
+        type: bool
+        label: "Percentage van bedrijven met website met geslaagde categorie `DNSSEC' per bedrijfsgrootteklasse (a) en 
+              bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: hoofdstuk3/Fig_3_2_3_a
+            highcharts_label: "3.2.3(a) Percentage van bedrijven met website met geslaagde categorie `DNSSEC' per 
+                             bedrijfsgrootteklasse."
+            y_max: 60
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: hoofdstuk3/Fig_3_2_3_b
+            highcharts_label: "3.2.3(b) Percentage van bedrijven met website met geslaagde categorie `DNSSEC' per 
+                             bedrijfstak."
+            y_max: 60
+            y_spacing: 10
+      categories_web_https_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde categorie `HTTPS' per bedrijfsgrootteklasse (a) en  
+              bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: hoofdstuk3/Fig_3_2_4_a
+            highcharts_label: "3.2.4(a) Percentage van bedrijven met website met geslaagde categorie `HTTPS' per 
+                             bedrijfsgrootteklasse."
+            y_max: 30
+            y_spacing: 5
+          statline_sbi_digit1_ict:
+            highcharts_directory: hoofdstuk3/Fig_3_2_4_b
+            highcharts_label: "3.2.4(b) Percentage van bedrijven met website met geslaagde categorie `HTTPS' per 
+                             bedrijfstak."
+            y_max: 20
+            y_spacing: 5
+        translate: &translate_passed_failed_unreach_nan
+          passed: 1
+          failed: 2
+          unreachable: 3
+          nan: 4
+        options: &options_passed_failed_unreach_nan
+          1: Passed
+          2: Failed
+          3: Unreachable
+          4: NaN
+      categories_web_appsecpriv_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde categorie `Beveiligingsopties' per 
+              bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: hoofdstuk3/Fig_3_2_5_a
+            highcharts_label: "3.2.5(a) Percentage van bedrijven met website met geslaagde categorie 
+                             `Beveiligingsopties' per bedrijfsgrootteklasse."
+            y_max: 12
+            y_spacing: 2
+          statline_sbi_digit1_ict:
+            highcharts_directory: hoofdstuk3/Fig_3_2_5_b
+            highcharts_label: "3.2.5(b) Percentage van bedrijven met website met geslaagde categorie 
+                             `Beveiligingsopties' per bedrijfstak."
+            y_max: 12
+            y_spacing: 2
+        translate: &translate_passed_warning
+          passed: 1
+          warning: 2
+          nan: 3
+        options: &options_passed_warning
+          1: Passed
+          2: Warning
+          3: Nan
+      categories_web_rpki_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde categorie `Autorisatie voor routering (RPKI)' 
+        voor de Website-test per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: hoofdstuk3/Fig_3_2_6_a
+            highcharts_label: "3.2.6(a) Percentage van bedrijven met website met geslaagde categorie `Autorisatie 
+            voor routering (RPKI)' voor de Website-test per bedrijfsgrootteklasse."
+            y_max: 80
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: hoofdstuk3/Fig_3_2_6_b
+            highcharts_label: "3.2.6(b) Percentage van bedrijven met website met geslaagde categorie `Autorisatie 
+            voor routering (RPKI)' voor de Website-test per bedrijfstak."
+            y_max: 80
+            y_spacing: 20
+        translate: &translate_passed_warning_info
+          passed: 1
+          info: 2
+          warning: 3
+          failed: 4
+          nan: 5
+        options: &options_passed_warning_info
+          1: Passed
+          2: Info
+          3: Warning
+          4: Failed
+          5: Nan
+    tests:
+      tests_web_ipv6_ns_address_verdict:
+        type: dict
+        section: web_ipv6
+        label: "Percentage van bedrijven met website met geslaagde website-test `IPv6-adressen voor 
+              nameservers' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_1_01_a
+            highcharts_label: "B.1.1(a) Percentage van bedrijven met website met geslaagde website-test 
+                               `IPv6-adressen voor nameservers' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_1_01_b
+            highcharts_label: "B.1.1(b) Percentage van bedrijven met website met geslaagde website-test 
+                            `IPv6-adressen voor nameservers' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: &translate_good_bad_other
+          good: 1
+          bad: 2
+          other: 3
+          nan: 4
+        options: &options_good_bad_other
+          1: Good
+          2: Bad
+          3: Other
+          4: Nan
+      tests_web_ipv6_ns_reach_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test `IPv6-bereikbaarheid van 
+              nameservers' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_1_02_a
+            highcharts_label: "B.1.2(a) Percentage van bedrijven met website met geslaagde website-test 
+                            `IPv6-bereikbaarheid van nameservers' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_1_02_b
+            highcharts_label: "B.1.2(b) Percentage van bedrijven met website met geslaagde website-test 
+                            `IPv6-bereikbaarheid van nameservers' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: &translate_good_bad_nt
+          good: 1
+          bad: 2
+          not-tested: 3
+          could-not-test: 4
+          nan: 5
+        options: &options_good_bad_nt
+          1: Good
+          2: Bad
+          3: Not tested
+          4: Could not test
+          5: Nan
+      tests_web_ipv6_ws_address_verdict:
+        type: bool
+        label: "Percentage van bedrijven met website met geslaagde website-test `IPv6-adressen voor
+        webserver' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_1_03_a
+            highcharts_label: "B.1.3(a) Percentage van bedrijven met website met geslaagde website-test 
+                            `IPv6-adressen voor webservers' per bedrijfsgrootteklasse."
+            y_max: 80
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_1_03_b
+            highcharts_label: "B.1.3(b) Percentage van bedrijven met website met geslaagde website-test 
+                            `IPv6-adressen voor webservers' per bedrijfstak."
+            y_max: 80
+            y_spacing: 20
+        translate: *translate_good_bad_other
+        options: *options_good_bad_other
+      tests_web_ipv6_ws_reach_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test `IPv6-bereikbaarheid van 
+              webservers' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_1_04_a
+            highcharts_label: "B.1.4(a) Percentage van bedrijven met website met geslaagde website-test 
+                            `IPv6-bereikbaarheid van webservers' per bedrijfsgrootteklasse."
+            y_max: 70
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_1_04_b
+            highcharts_label: "B.1.4(b) Percentage van bedrijven met website met geslaagde website-test 
+                            `IPv6-bereikbaarheid van webservers' per bedrijfstak."
+            y_max: 70
+            y_spacing: 10
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_ipv6_ws_similar_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test `Gelijke website op IPv6 en 
+              IPv4' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_1_05_a
+            highcharts_label: "B.1.5(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `Gelijke website op IPv6 en IPv4' per bedrijfsgrootteklasse."
+            y_max: 60
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_1_05_b
+            highcharts_label: "B.1.5(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `Gelijke website op IPv6 en IPv4' per bedrijfstak."
+            y_max: 60
+            y_spacing: 10
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_dnssec_exist_verdict:
+        type: dict
+        section: web_dnssec
+        label: "Percentage van bedrijven met website met geslaagde website-test `Domeinnaamhandtekening aanwezig' \
+         per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_2_01_a
+            highcharts_label: "B.2.1(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `Domeinnaamhandtekening aanwezig' per bedrijfsgrootteklasse."
+            y_max: 60
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_2_01_b
+            highcharts_label: "B.2.1(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `Domeinnaamhandtekening aanwezig' per bedrijfstak."
+            y_max: 60
+            y_spacing: 10
+        translate: &translate_good_bad_server_failed
+          good: 1
+          bad: 2
+          servfail: 3
+          nan: 4
+        options: &options_good_bad_server_failed
+          1: Good
+          2: Bad
+          3: Server Failed
+          4: Nan
+      tests_web_dnssec_valid_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test `Domeinnaamhandtekening geldigheid' per 
+              bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_2_02_a
+            highcharts_label: "B.2.2(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `Domeinnaamhandtekening geldigheid' per bedrijfsgrootteklasse."
+            y_max: 60
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_2_02_b
+            highcharts_label: "B.2.2(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `Domeinnaamhandtekening geldigheid' per bedrijfstak."
+            y_max: 60
+            y_spacing: 10
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_https_http_available_verdict:
+        type: dict
+        section: web_https
+        label: "Percentage van bedrijven met website met geslaagde website-test `HTTPS beschikbaar' per 
+              bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_01_a
+            highcharts_label: "B.3.1(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `HTTPS beschikbaar' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_01_b
+            highcharts_label: "B.3.1(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `HTTPS beschikbaar' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_other
+        options: *options_good_bad_other
+      tests_web_https_http_redirect_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test `HTTPS-doorverwijzing' 
+         per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_02_a
+            highcharts_label: "B.3.2(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `HTTPS-doorverwijzing' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_02_b
+            highcharts_label: "B.3.2(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `HTTPS-doorverwijzing' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: &translate_good_bad_not_tested_other
+          good: 1
+          bad: 2
+          "not-tested": 3
+          other: 4
+          nan: 5
+        options: &options_good_bad_not_tested_other
+          1: Good
+          2: Bad
+          3: Not tested
+          4: Other
+          5: Nan
+      tests_web_https_http_compress_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test `HTTPS compressie niet 
+              ondersteund' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_03_a
+            highcharts_label: "B.3.3(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `HTTPS compressie niet ondersteund' per bedrijfsgrootteklasse."
+            y_max: 70
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_03_b
+            highcharts_label: "B.3.3(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `HTTPS compressie niet ondersteund' per bedrijfstak."
+            y_max: 70
+            y_spacing: 10
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_https_http_hsts_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test `HSTS policy aangeboden' 
+               per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_04_a
+            highcharts_label: "B.3.4(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `HSTS policy aangeboden' per bedrijfsgrootteklasse."
+            y_max: 40
+            y_spacing: 5
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_04_b
+            highcharts_label: "B.3.4(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `HSTS policy aangeboden' per bedrijfstak."
+            y_max: 40
+            y_spacing: 5
+        translate: *translate_good_bad_not_tested_other
+        options: *options_good_bad_not_tested_other
+      tests_web_https_tls_version_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test `TLS versie' 
+               per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_05_a
+            highcharts_label: "B.3.5(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS versie' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_05_b
+            highcharts_label: "B.3.5(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS versie' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: &translate_good_bad_phaseout_na_nt_other
+          good: 1
+          bad: 2
+          phase-out: 3
+          not-tested: 4
+          other: 5
+          nan: 6
+          na: 7
+        options: &options_good_bad_phaseout_na_nt_other
+          1: Good
+          2: Bad
+          3: phase-out
+          4: Not tested
+          5: Other
+          6: Nan
+          7: na
+      tests_web_https_tls_ciphers_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test `TLS ciphers' 
+               per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_06_a
+            highcharts_label: "B.3.6(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS ciphers' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_06_b
+            highcharts_label: "B.3.6(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS ciphers' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_phaseout_na_nt_other
+        options: *options_good_bad_phaseout_na_nt_other
+      tests_web_https_tls_cipherorder_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test `TLS-ciphervolgorde' 
+               per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_07_a
+            highcharts_label: "B.3.7(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS-ciphervolgorde' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_07_b
+            highcharts_label: "B.3.7(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS-ciphervolgorde' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: &translate_good_bad_warning_sec_na_nt
+          good: 1
+          bad: 2
+          warning: 3
+          seclevel-bad: 4
+          na: 5
+          not-tested: 6
+          nan: 7
+        options: &options_good_bad_warning_sec_na_nt
+          1: Good
+          2: Bad
+          3: Warning
+          4: Security level bad
+          5: Not available
+          6: Not tested
+          7: Nan
+      tests_web_https_tls_keyexchange_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `TLS sleuteluitwisselingsparameters' per bedrijfsgrootteklasse (a) en bedrijfstak(b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3.08_a
+            highcharts_label: "B.3.08(a) Percentage van bedrijven met website met geslaagde website-test 
+                              `TLS sleuteluitwisselingsparameters' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_08_b
+            highcharts_label: "B.3.08(b) Percentage van bedrijven met website met geslaagde website-test 
+                              `TLS sleuteluitwisselingsparameters' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_phaseout_na_nt_other
+        options: *options_good_bad_phaseout_na_nt_other
+      tests_web_https_tls_keyexchangehash_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `Hashfunctie voor sleuteluitwisseling' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_09_a
+            highcharts_label: "B.3.09(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `Hashfunctie voor sleuteluitwisseling' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_09_b
+            highcharts_label: "B.3.09(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `Hashfunctie voor sleuteluitwisseling' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_phaseout_na_nt_other
+        options: *options_good_bad_phaseout_na_nt_other
+      tests_web_https_tls_compress_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `TLS-compressie niet ondersteund' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_10_a
+            highcharts_label: "B.3.10(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS-compressie niet ondersteund' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_10_b
+            highcharts_label: "B.3.10(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS-compressie niet ondersteund' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_https_tls_secreneg_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `TLS secure renegotiation' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_11_a
+            highcharts_label: "B.3.11(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS secure renegotiation' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_11_b
+            highcharts_label: "B.3.11(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS secure renegotiation' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_https_tls_clientreneg_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `TLS client-initiated renegotiation' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_12_a
+            highcharts_label: "B.3.12(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS client-initiated renegotiation' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_12_b
+            highcharts_label: "B.3.12(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS client-initiated renegotiation' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_https_tls_0rtt_verdict:
+        type: dict
+        #label: TLS 0-RTT
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `TLS 0-RTT' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_13_a
+            highcharts_label: "B.3.13(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS 0-RTT' per bedrijfsgrootteklasse."
+            y_max: 80
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_13_b
+            highcharts_label: "B.3.13(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS 0-RTT' per bedrijfstak."
+            y_max: 80
+            y_spacing: 20
+        translate: &translate_good_na_nt
+          good: 1
+          bad: 2
+          not-tested: 3
+          na: 4
+          nan: 5
+        options: &options_good_na_nt
+          1: Good
+          2: Bad
+          3: Not tested
+          4: Not Available
+          5: Nan
+      tests_web_https_tls_ocsp_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `TLS OCSP-stapeling' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_14_a
+            highcharts_label: "B.3.14(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS OCSP-stapeling' per bedrijfsgrootteklasse."
+            y_max: 40
+            y_spacing: 5
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_14_b
+            highcharts_label: "B.3.14(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `TLS OCSP-stapeling' per bedrijfstak."
+            y_max: 40
+            y_spacing: 5
+        translate: &translate_good_ok_bad_nt
+          good: 1
+          ok: 2
+          bad: 3
+          not-tested: 4
+          nan: 5
+        options: &options_good_ok_bad_nt
+          1: Good
+          2: Ok
+          3: Bad
+          4: Not tested
+          5: nan
+      tests_web_https_cert_chain_verdict:
+        type: dict
+        #label: Vertrouwensketen van certificaat
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `Vertrouwensketen van certificaat' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_15_a
+            highcharts_label: "B.3.15(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `Vertrouwensketen van certificaat' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_15_b
+            highcharts_label: "B.3.15(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `Vertrouwensketen van certificaat' per bedrijfstak"
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_https_cert_pubkey_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `Publieke sleutel van certificaat' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_16_a
+            highcharts_label: "B.3.16(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `Publieke sleutel van certificaat' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_16_b
+            highcharts_label: "B.3.16(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `Publieke sleutel van certificaat' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_https_cert_sig_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `Handtekening van certificaat' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_17_a
+            highcharts_label: "B.3.17(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `Handtekening van certificaat' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_17_b
+            highcharts_label: "B.3.17(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `Handtekening van certificaat' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_https_cert_domain_verdict:
+        type: dict
+        #label: Domeinnaam op certificaat
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `Domeinnaam op certificaat' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_18_a
+            highcharts_label: "B.3.18(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `Domeinnaam op certificaat' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_18_b
+            highcharts_label: "B.3.18(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `Domeinnaam op certificaat' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_https_dane_exist_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `DANE aanwezig' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_19_a
+            highcharts_label: "B.3.19(a) Percentage van bedrijven met website met geslaagde website-test 
+                            `DANE aanwezig' per bedrijfsgrootteklasse."
+            y_max: 15
+            y_spacing: 5
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_19_b
+            highcharts_label: "B.3.19(b) Percentage van bedrijven met website met geslaagde website-test 
+                            `DANE aanwezig' per bedrijfstak."
+            y_max: 15
+            y_spacing: 5
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_https_dane_valid_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `DANE geldigheid' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_3_20_a
+            highcharts_label: "B.3.20(a) Percentage van bedrijven met website met geslaagde website-test 
+                            `DANE geldigheid' per bedrijfsgrootteklasse."
+            y_max: 15
+            y_spacing: 5
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_3_20_b
+            highcharts_label: "B.3.20(b) Percentage van bedrijven met website met geslaagde website-test 
+                            `DANE geldigheid' per bedrijfstak."
+            y_max: 15
+            y_spacing: 5
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_appsecpriv_x_frame_options_verdict:
+        type: dict
+        section: web_beveiligingsopties
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `X-Frame options' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_4_01_a
+            highcharts_label: "B.4.1(a) Percentage van bedrijven met website met 
+                             geslaagde website-test `X-Frame options' per bedrijfsgrootteklasse."
+            y_max: 50
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_4_01_b
+            highcharts_label: "B.4.1(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `X-Frame options' per bedrijfstak."
+            y_max: 50
+            y_spacing: 10
+        translate: *translate_good_bad_phaseout_na_nt_other
+        options: *options_good_bad_phaseout_na_nt_other
+      tests_web_appsecpriv_x_content_type_options_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `X-Content-Type options' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_4_02_a
+            highcharts_label: "B.4.2(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `X-Content-Type options' per bedrijfsgrootteklasse."
+            y_max: 50
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_4_02_b
+            highcharts_label: "B.4.2(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `X-Content-Type options' per bedrijfstak."
+            y_max: 50
+            y_spacing: 10
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_appsecpriv_csp_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `Content-security policy' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_4_03_a
+            highcharts_label: "B.4.3(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `Content-security policy' per bedrijfsgrootteklasse."
+            y_max: 20
+            y_spacing: 5
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_4_03_b
+            highcharts_label: "B.4.3(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `Content-security  policy' per bedrijfstak."
+            y_max: 20
+            y_spacing: 5
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_appsecpriv_referrer_policy_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `Referred Policy aanwezig' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_4_04_a
+            highcharts_label: "B.1.31(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `Referred Policy aanwezig' per bedrijfsgrootteklasse."
+            y_max: 25
+            y_spacing: 5
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_4_04_b
+            highcharts_label: "B.4.4(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `Referred  Policy aanwezig' per bedrijfstak."
+            y_max: 25
+            y_spacing: 5
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_web_rpki_exists_verdict:
+        type: dict
+        section: web_rpki
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `RPKI Route Oorsprong Autorisatie bestaat' 
+              per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_5_01_a
+            highcharts_label: "B.5.1(a) Percentage van bedrijven met website met geslaagde website-test 
+              `RPKI Route Oorsprong Autorisatie bestaat' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_5_01_b
+            highcharts_label: "B.5.1(b) Percentage van bedrijven met website met geslaagde website-test 
+              `RPKI Route Oorsprong Autorisatie bestaat' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: &translate_good_bad_nt_no_address
+          good: 1
+          bad: 2
+          not-tested: 3
+          no-addresses: 4
+          nan: 5
+        options: &options_good_bad_nt_no_address
+          1: Good
+          2: Bad
+          3: Not tested
+          4: No addresses
+          5: Nan
+      tests_web_rpki_valid_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `RPKI Route Oorsprong Autorisatie is geldig' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_5_02_a
+            highcharts_label: "B.5.2(a) Percentage van bedrijven met website met geslaagde website-test 
+              `RPKI Route Oorsprong Autorisatie is geldig' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_5_02_b
+            highcharts_label: "B.5.2(b) Percentage van bedrijven met website met geslaagde website-test 
+              `RPKI Route Oorsprong Autorisatie is geldig' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: &translate_good_bad_nt_not_routed
+          good: 1
+          bad: 2
+          not-tested: 3
+          not-routed: 4
+          nan: 5
+        options: &options_good_bad_nt_not_routed
+          1: Good
+          2: Bad
+          3: Not tested
+          4: Not routed
+          5: Nan
+      tests_web_ns_rpki_exists_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `RPKI voor nameserver bestaat' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_5_03_a
+            highcharts_label: "B.5.3(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `RPKI voor nameserver bestaat' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_5_03_b
+            highcharts_label: "B.5.3(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `RPKI voor nameserver bestaat' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt_no_address
+        options: *options_good_bad_nt_no_address
+      tests_web_ns_rpki_valid_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde website-test 
+              `Geldigheid van RPKI voor nameserver' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixB/Fig_B_5_04_a
+            highcharts_label: "B.5.4(a) Percentage van bedrijven met website met geslaagde website-test 
+                             `Geldigheid van RPKI voor nameservers' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixB/Fig_B_5_04_b
+            highcharts_label: "B.5.4(b) Percentage van bedrijven met website met geslaagde website-test 
+                             `Geldigheid van RPKI voor nameservers' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: &translate_good_bad_nt_invalid
+          good: 1
+          bad: 2
+          not-tested: 3
+          invalid: 4
+          nan: 4
+        options: &options_good_bad_nt_invalid
+          1: Good
+          2: Bad
+          3: Not tested
+          4: Invalid
+          5: Nan
+  all_mail:
+    counts:
+      units:
+        type: int
+        report_number: true
+        label: "Verdeling van de gescande mail servers over de bedrijfsgrootteklassen (a) en
+              bedrijfstakken (b)."
+        info_per_breakdown:
+          statline_gk3_zzp:
+            export_highcharts: false
+          statline_sbi_digit1_ict:
+            export_highcharts: false
+    score:
+      percentage:
+        type: percentage
+        label: "Gemiddelde totaal score Internet.nl voor de e-mailtest per bedrijfsgrootteklasse (a) en bedrijfstak 
+      met 2 of meer werknemers (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: hoofdstuk4/Fig_4_2_1_a
+            highcharts_label: "4.2.1(a) Gemiddelde totaal score Internet.nl voor de e-mailtest per  
+                             bedrijfsgrootteklasse."
+            y_max: 70
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: hoofdstuk4/Fig_4_2_1_b
+            highcharts_label: "4.2.1(b) Gemiddelde totaal score Internet.nl voor de e-mailtest per bedrijfstak."
+            y_max: 70
+            y_spacing: 10
+    categories:
+      categories_mail_ipv6_verdict:
+        type: bool
+        label: "Percentage van bedrijven met website met geslaagde categorie `Modern adres (IPv6)' voor de e-mailtest per 
+                bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: hoofdstuk4/Fig_4_2_2_a
+            highcharts_label: "4.2.2(a) Percentage van bedrijven met website met geslaagde categorie 
+            `Modern adres (IPv6)' voor de e-mailtest per bedrijfsgrootteklasse."
+            y_max: 80
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: hoofdstuk4/Fig_4_2_2_b
+            highcharts_label: "4.2.2(b) Percentage van bedrijven met website met geslaagde categorie 
+            `Modern adres (IPv6)' voor de e-mailtest per bedrijfstak."
+            y_max: 80
+            y_spacing: 20
+      categories_mail_dnssec_verdict:
+        type: bool
+        label: "Percentage van bedrijven met website met geslaagde categorie `Domeinnaamhandtekening (DNSSEC)' 
+        voor de e-mailtest per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: hoofdstuk4/Fig_4_2_3_a
+            highcharts_label: "4.2.3(a) Percentage van bedrijven met website met geslaagde categorie 
+            `Domeinnaamhandtekening (DNSSEC)' voor de e-mailtest per bedrijfsgrootteklasse."
+            y_max: 50
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: hoofdstuk4/Fig_4_2_3_b
+            highcharts_label: "4.2.3(b) Percentage van bedrijven met website met geslaagde categorie 
+            `Domeinnaamhandtekening (DNSSEC)' voor de e-mailtest per bedrijfstak."
+            y_max: 50
+            y_spacing: 10
+      categories_mail_auth_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde categorie `Authenticatie' 
+        (DMARC, DKIM, SPF) voor de e-mailtest per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: hoofdstuk4/Fig_4_2_4_a
+            highcharts_label: "4.2.4(a) Percentage van bedrijven met website met geslaagde categorie 
+            `Authenticatie' (DMARC, DKIM, SPF) voor de e-mailtest per bedrijfsgrootteklasse."
+            y_max: 40
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: hoofdstuk4/Fig_4_2_4_b
+            highcharts_label: "4.2.4(b) Percentage van bedrijven met website met geslaagde categorie 
+            `Authenticatie' (DMARC, DKIM, SPF) voor de e-mailtest per bedrijfstak."
+            y_max: 40
+            y_spacing: 10
+        translate:
+          passed: 1
+          warning: 2
+          failed: 3
+          nan: 4
+        options:
+          1: Passed
+          2: Warning
+          3: Failed
+          4: Nan
+      categories_mail_starttls_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde categorie `Beveiligde e-mailtransport 
+        (STARTTLS en DANE)' voor de e-mailtest per bedrijfsgrootteklasse (a) en  bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: hoofdstuk4/Fig_4_2_5_a
+            highcharts_label: "4.2.5(a) Percentage van bedrijven met website met geslaagde categorie 
+            `Beveiligde e-mailtransport (STARTTLS en DANE)' voor de e-mailtest per bedrijfsgrootteklasse"
+            y_max: 40
+            y_spacing: 5
+          statline_sbi_digit1_ict:
+            highcharts_directory: hoofdstuk4/Fig_4_2_5_b
+            highcharts_label: "4.2.5(b) Percentage van bedrijven met website met geslaagde categorie 
+            `Beveiligde e-mailtransport (STARTTLS en DANE)' voor de e-mailtest per bedrijfstak"
+            y_max: 40
+            y_spacing: 5
+        translate:
+          passed: 1
+          failed: 2
+          unreachable: 3
+          no-null-mx: 4
+          null-mx: 5
+          untestable: 6
+          no-mx: 7
+          nan: 8
+        options:
+          1: Passed
+          2: Failed
+          3: Unreachable
+          4: No null mx
+          5: Null mx
+          6: Untestable
+          7: No-mx
+          8: Nan
+      categories_mail_rpki_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde categorie `Autorisatie voor routering (RPKI)' 
+        voor de e-mailtest per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: hoofdstuk4/Fig_4_2_6_a
+            highcharts_label: "4.2.6(a) Percentage van bedrijven met website met geslaagde categorie `Autorisatie 
+            voor routering (RPKI)' voor de e-mailtest per bedrijfsgrootteklasse."
+            y_max: 80
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: hoofdstuk4/Fig_4_2_6_b
+            highcharts_label: "4.2.6(b) Percentage van bedrijven met website met geslaagde categorie `Autorisatie 
+            voor routering (RPKI)' voor de e-mailtest per bedrijfstak."
+            y_max: 80
+            y_spacing: 20
+        translate: *translate_passed_warning_info
+        options: *options_passed_warning_info
+    tests:
+      tests_mail_ipv6_ns_address_verdict:
+        type: dict
+        section: mail_ipv6
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest `IPv6-adressen voor  
+              nameservers' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_1_01_a
+            highcharts_label: "C.1.1(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `IPv6-adressen voor nameservers' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_1_01_b
+            highcharts_label: "C.1.1(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `IPv6-adressen voor nameservers' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_other
+        options: *options_good_bad_other
+      tests_mail_ipv6_ns_reach_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest `IPv6-bereikbaarheid van 
+              nameservers' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_1_02_a
+            highcharts_label: "C.1.2(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `IPv6-bereikbaarheid van nameservers' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_1_02_b
+            highcharts_label: "C.1.2(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `IPv6-bereikbaarheid van nameservers' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_mail_ipv6_mx_address_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest `IPv6-adres voor mailservers' 
+        per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_1_03_a
+            highcharts_label: "C.1.3(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `IPv6-adres voor mailservers' per bedrijfsgrootteklasse."
+            y_max: 60
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_1_03_b
+            highcharts_label: "C.1.3(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `IPv6-adres voor mailservers' per bedrijfstak."
+            y_max: 60
+            y_spacing: 10
+        translate: &translate_good_bad_no_null_no_mail_other
+          good: 1
+          bad: 2
+          no-null-mx: 3
+          null-mx: 4
+          no-mailservers: 5
+          servfail: 6
+          other: 7
+          nan: 8
+        options: &options_good_bad_no_null_no_mail_other
+          1: Good
+          2: Bad
+          3: No Null Mx
+          4: Null Mx
+          5: No mailservers
+          6: Server failure
+          7: Other
+          8: Nan
+      tests_mail_ipv6_mx_reach_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+        `IPv6-adres mailservers bereikbaarheid' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_1_04_a
+            highcharts_label: "C.1.4(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `IPv6-adres mailservers bereikbaarheid' per bedrijfsgrootteklasse."
+            y_max: 60
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_1_04_b
+            highcharts_label: "C.1.4(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `IPv6-adres mailservers bereikbaarheid' per bedrijfstak."
+            y_max: 60
+            y_spacing: 10
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_mail_dnssec_mailto_exist_verdict:
+        type: dict
+        section: mail_dnssec
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest `E-maildomein heeft DNSSEC handtekening' 
+        per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_2_01_a
+            highcharts_label: "C.2.1(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+            `E-maildomein heeft DNSSEC handtekening' per bedrijfsgrootteklasse."
+            y_max: 60
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_2_01_b
+            highcharts_label: "C.2.1(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+            `E-maildomein heeft DNSSEC handtekening' per bedrijfstak."
+            y_max: 60
+            y_spacing: 10
+        translate: &translate_good_bad_servfail
+          good: 1
+          bad: 2
+          null-mx: 3
+          no-mailservers: 4
+          servfail: 5
+          nan: 6
+        options: &options_good_bad_servfail
+          1: Good
+          2: Bad
+          3: Null-Mx
+          4: No mailservers
+          5: Server Failure
+          6: Nan
+      tests_mail_dnssec_mailto_valid_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+        `E-maildomein met geldige DNSSEC handtekening'  
+        per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_2_02_a
+            highcharts_label: "C.2.2(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+            `E-maildomein met geldige DNSSEC handtekening' per bedrijfsgrootteklasse."
+            y_max: 60
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_2_02_b
+            highcharts_label: "C.2.2(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+            `E-maildomein met geldige DNSSEC handtekening' per bedrijfstak."
+            y_max: 60
+            y_spacing: 10
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_mail_dnssec_mx_exist_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+        `Ontvangende mailserver heeft DNSSEC handtekening' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_2_03_a
+            highcharts_label: "C.2.3(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `Ontvangende mailserver met geldige DNSSEC handtekening' per bedrijfsgrootteklasse."
+            y_max: 60
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_2_03_b
+            highcharts_label: "C.2.3(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `Ontvangende mailserver met geldige DNSSEC handtekening' per bedrijfstak."
+            y_max: 60
+            y_spacing: 10
+        translate: *translate_good_bad_no_null_no_mail_other
+        options: *options_good_bad_no_null_no_mail_other
+      tests_mail_dnssec_mx_valid_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+            `Ontvangende mailserver met geldige DNSSEC handtekening' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_2_04_a
+            highcharts_label: "C.2.4(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+            `Ontvangende mailserver met geldige DNSSEC handtekening' per bedrijfsgrootteklasse."
+            y_max: 60
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_2_04_b
+            highcharts_label: "C.2.4(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+            `Ontvangende mailserver met geldige DNSSEC handtekening' per bedrijfstak."
+            y_max: 60
+            y_spacing: 10
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_mail_auth_dmarc_exist_verdict:
+        type: dict
+        section: mail_auth
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest `DMARC bestaat' 
+        per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_3_01_a
+            highcharts_label: "C.3.1(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `DMARC bestaat' per bedrijfsgrootteklasse."
+            y_max: 80
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_1_02_b
+            highcharts_label: "C.1.2(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `DMARC bestaat' per bedrijfstak."
+            y_max: 80
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_mail_auth_dmarc_policy_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest `DMARC heeft voldoende strict beleid' 
+        per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_3_02_a
+            highcharts_label: "C.3.2(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `DMARC heeft voldoende strict beleid' per bedrijfsgrootteklasse."
+            y_max: 40
+            y_spacing: 5
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_3_02_b
+            highcharts_label: "C.3.2(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `DMARC heeft voldoende strict beleid' per bedrijfstak."
+            y_max: 40
+            y_spacing: 5
+        translate: &translate_good_bad_policy_external_nt
+          good: 1
+          bad: 2
+          policy: 3
+          external: 4
+          not-tested: 5
+          nan: 6
+        options: &options_good_bad_policy_external_nt
+          1: Good
+          2: Bad
+          3: Policy
+          4: External
+          5: Not-Tested
+          6: Nan
+      tests_mail_auth_dkim_exist_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest `DKIM bestaat' 
+        per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_3_03_a
+            highcharts_label: "C.3.3(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `DKIM bestaat' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_3_03_b
+            highcharts_label: "C.3.3(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `DKIM bestaat' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: &translate_good_bad_no_email
+          good: 1
+          bad: 2
+          no-email: 3
+          nan: 4
+        options: &options_good_bad_no_email
+          1: Good
+          2: Bad
+          3: No Email
+          4: Nan
+      tests_mail_auth_spf_exist_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest `SPF bestaat' 
+        per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_3_04_a
+            highcharts_label: "C.3.4(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `SPF bestaat' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_3_04_b
+            highcharts_label: "C.3.4(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `SPF bestaat' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_mail_auth_spf_policy_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest `SPF beleid' 
+        per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_3_05_a
+            highcharts_label: "C.3.5(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `SPF beleid' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_3_05_b
+            highcharts_label: "C.3.5(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `SPF beleid' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: &translate_good_bad_nt_include_max_look
+          good: 1
+          bad: 2
+          not-tested: 3
+          include: 4
+          max-lookups: 5
+          all: 6
+          nan: 7
+        options: &options_good_bad_nt_include_max_look
+          1: Good
+          2: Bad
+          3: Not tested
+          4: Include
+          5: Max lookups
+          6: All
+          7: Nan
+      tests_mail_starttls_tls_available_verdict:
+        type: dict
+        section: mail_start_tls
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest `STARTTLS beschikbaar voor ontvangende mailserver' 
+        per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_01_a
+            highcharts_label: "C.4.1(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `STARTTLS beschikbaar voor ontvangende mailserver' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_01_b
+            highcharts_label: "C.4.1(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `STARTTLS beschikbaar voor ontvangende mailserver' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: &translate_good_bad_no_null_other_other2
+          good: 1
+          bad: 2
+          no-null-mx: 3
+          null-mx: 4
+          could-not-test: 5
+          other: 6
+          other-2: 7
+          nan: 8
+        options: &options_good_bad_no_null_other_other2
+          1: Good
+          2: Bad
+          3: No Null Max
+          4: Null Max
+          5: Could not test
+          6: Other
+          7: Other 2
+          8: Nan
+      tests_mail_starttls_tls_keyexchange_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest `STARTTLS 
+        sleuteluitwisselingsparameters' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_02_a
+            highcharts_label: "C.4.2(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `TLS sleuteluitwisselingsparameters' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_02_b
+            highcharts_label: "C.4.2(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                            `TLS sleuteluitwisselingsparameters' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_phaseout_na_nt_other
+        options: *options_good_bad_phaseout_na_nt_other
+      tests_mail_starttls_tls_ciphers_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+        `Ontvangende mailserver ondersteunt alleen veilige algoritmeselecties' 
+        per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_03_a
+            highcharts_label: "C.4.3(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+        `Ontvangende mailserver ondersteunt alleen veilige algoritmeselecties' per bedrijfsgrootteklasse."
+            y_max: 60
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_03_b
+            highcharts_label: "C.4.3(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+        `Ontvangende mailserver ondersteunt alleen veilige algoritmeselecties' per bedrijfsgrootteklasse per bedrijfstak."
+            y_max: 60
+            y_spacing: 10
+        translate: *translate_good_bad_phaseout_na_nt_other
+        options: *options_good_bad_phaseout_na_nt_other
+      tests_mail_starttls_tls_cipherorder_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+        `Volgorde Algoritmeselectie afgedwongen' 
+        per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_04_a
+            highcharts_label: "C.4.4(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+        `Volgorde Algoritmeselectie afgedwongen' bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_04_b
+            highcharts_label: "C.4.4(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+        `Volgorde Algoritmeselectie afgedwongen' bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: &translate_good_bad_nt_na
+          good: 1
+          bad: 2
+          not-tested: 3
+          na: 4
+          nan: 5
+        options: &options_good_bad_nt_na
+          1: Good
+          2: Bad
+          3: Not tested
+          4: Na
+          5: NaN
+      tests_mail_starttls_tls_version_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+        `Ontvangende mailserver ondersteunt alleen veilige TLS versies' 
+        per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_05_a
+            highcharts_label: "C.4.5(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+        `Ontvangende mailserver ondersteunt alleen veilige TLS versies' per bedrijfsgrootteklasse."
+            y_max: 80
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_05_b
+            highcharts_label: "C.4.5(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+        `Ontvangende mailserver ondersteunt alleen veilige TLS versies' per bedrijfstak."
+            y_max: 80
+            y_spacing: 20
+        translate: *translate_good_bad_phaseout_na_nt_other
+        options: *options_good_bad_phaseout_na_nt_other
+      tests_mail_starttls_tls_compress_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `Ontvangende mailserver ondersteunt geen TLS-compressie' 
+              per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_06_a
+            highcharts_label: "C.4.6(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+              `Ontvangende mailserver ondersteunt geen TLS-compressie' 
+              per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_06_b
+            highcharts_label: "C.4.6(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+              `Ontvangende mailserver ondersteunt geen TLS-compressie' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_mail_starttls_tls_secreneg_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `Ontvangende mailserver ondersteunt secure renegotiation' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_07_a
+            highcharts_label: "C.4.07(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `Secure renegotiation' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_07_b
+            highcharts_label: "C.4.07(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `Secure renegotiation' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_mail_starttls_tls_clientreneg_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `TLS client-initiated renegotiation' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_08_a
+            highcharts_label: "C.4.8(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `TLS client-initiated renegotiation' per bedrijfsgrootteklasse."
+            y_max: 80
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_08_b
+            highcharts_label: "C.4.8(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `TLS client-initiated renegotiation' per bedrijfstak."
+            y_max: 80
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_mail_starttls_cert_chain_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `Vertrouwensketen van certificaat' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_09_a
+            highcharts_label: "C.4.9(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `Vertrouwensketen van certificaat' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_09_b
+            highcharts_label: "C.4.9(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `Vertrouwensketen van certificaat' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: &translate_good_bad_nt_could_not_test
+          good: 1
+          bad: 2
+          not-tested: 3
+          could-not-test: 4
+          nan: 5
+        options: &options_good_bad_nt_could_not_test
+          1: Good
+          2: Bad
+          3: Not tested
+          4: Could not test
+          5: NaN
+      tests_mail_starttls_cert_pubkey_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `Publieke sleutel van certificaat' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_10_a
+            highcharts_label: "C.4.10(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `Publieke sleutel van certificaat' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_10_b
+            highcharts_label: "C.4.10(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `Publieke sleutel van certificaat' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_mail_starttls_cert_sig_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `Handtekening van certificaat' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_11_a
+            highcharts_label: "C.4.11(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `Handtekening van certificaat' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_11_b
+            highcharts_label: "C.4.11(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `Handtekening van certificaat' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_mail_starttls_cert_domain_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `Domein op certificaat' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_12_a
+            highcharts_label: "C.4.12(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `Domein op certificaat' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_12_b
+            highcharts_label: "C.4.12(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `Domein op certificaat' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_mail_starttls_dane_exist_verdict:
+        type: dict
+        label: "Categorie StartTLS: percentage van bedrijven met geslaagde e-mailtest 
+              `DANE bestaat' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_13_a
+            highcharts_label: "C.4.13(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `DANE bestaat' per bedrijfsgrootteklasse."
+            y_max: 40
+            y_spacing: 5
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_13_b
+            highcharts_label: "C.4.13(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `DANE bestaat' per bedrijfstak."
+            y_max: 40
+            y_spacing: 5
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_mail_starttls_dane_valid_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `DANE geldigheid' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_14_a
+            highcharts_label: "C.4.14(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `DANE geldigheid' per bedrijfsgrootteklasse."
+            y_max: 40
+            y_spacing: 5
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_14_b
+            highcharts_label: "C.4.14(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `DANE geldigheid' per bedrijfstak."
+            y_max: 40
+            y_spacing: 5
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_mail_starttls_dane_rollover_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `DANE Rollover-schema' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_15_a
+            highcharts_label: "C.4.15(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `DANE Rollover-schema' per bedrijfsgrootteklasse."
+            y_max: 20
+            y_spacing: 5
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_15_b
+            highcharts_label: "C.4.15(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `DANE Rollover-schema' per bedrijfstak."
+            y_max: 20
+            y_spacing: 5
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
+      tests_mail_starttls_tls_0rtt_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `TLS 0-RTT' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_16_a
+            highcharts_label: "C.4.16(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `TLS 0-RTT' per bedrijfsgrootteklasse."
+            y_max: 60
+            y_spacing: 10
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_16_b
+            highcharts_label: "C.4.16(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `TLS 0-RTT' per bedrijfstak."
+            y_max: 60
+            y_spacing: 10
+        translate: *translate_good_na_nt
+        options: *options_good_na_nt
+      tests_mail_starttls_tls_keyexchangehash_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `TLS Hashfunctie voor sleuteluitwisseling' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_4_17_a
+            highcharts_label: "C.4.17(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `TLS Hashfunctie voor sleuteluitwisseling' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_4_17_b
+            highcharts_label: "C.4.17(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `TLS Hashfunctie voor sleuteluitwisseling' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_phaseout_na_nt_other
+        options: *options_good_bad_phaseout_na_nt_other
+      tests_mail_rpki_exists_verdict:
+        type: dict
+        section: mail_rpki
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `RPKI Route Oorsprong Autorisatie bestaat' 
+              per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_5_01_a
+            highcharts_label: "C.5.1(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+              `RPKI Route Oorsprong Autorisatie bestaat' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_5_01_b
+            highcharts_label: "C.5.1(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+              `RPKI Route Oorsprong Autorisatie bestaat' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt_no_address
+        options: *options_good_bad_nt_no_address
+      tests_mail_rpki_valid_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `RPKI Route Oorsprong Autorisatie is geldig' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_5_02_a
+            highcharts_label: "C.5.2(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+              `RPKI Route Oorsprong Autorisatie is geldig' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_5_02_b
+            highcharts_label: "C.5.2(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+              `RPKI Route Oorsprong Autorisatie is geldig' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt_not_routed
+        options: *options_good_bad_nt_not_routed
+      tests_mail_ns_rpki_exists_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `RPKI voor nameserver bestaat' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_5_03_a
+            highcharts_label: "C.5.3(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `RPKI voor nameserver bestaat' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_5_03_b
+            highcharts_label: "C.5.3(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `RPKI voor nameserver bestaat' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt_no_address
+        options: *options_good_bad_nt_no_address
+      tests_mail_ns_rpki_valid_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `Geldigheid van RPKI voor nameserver' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_5_04_a
+            highcharts_label: "C.5.4(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `Geldigheid van RPKI voor nameservers' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_5_04_b
+            highcharts_label: "C.5.4(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `Geldigheid van RPKI voor nameservers' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt_invalid
+        options: *options_good_bad_nt_invalid
+      tests_mail_mx_ns_rpki_exists_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `RPKI bestaat voor mailservers' per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_5_05_a
+            highcharts_label: "C.5.5(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `RPKI bestaat voor mailservers' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_5_05_b
+            highcharts_label: "C.5.5(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+                             `RPKI bestaat voor mailservers' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt_no_address
+        options: *options_good_bad_nt_no_address
+      tests_mail_mx_ns_rpki_valid_verdict:
+        type: dict
+        label: "Percentage van bedrijven met website met geslaagde e-mailtest 
+              `Geldigheid van RPKI voor mailservers' 
+              per bedrijfsgrootteklasse (a) en bedrijfstak (b)."
+        info_per_breakdown:
+          statline_gk3_zzp_tot:
+            highcharts_directory: appendixC/Fig_C_5_6_a
+            highcharts_label: "C.5.6(a) Percentage van bedrijven met website met geslaagde e-mailtest 
+              `Geldigheid van RPKI voor mailservers' per bedrijfsgrootteklasse."
+            y_max: 100
+            y_spacing: 20
+          statline_sbi_digit1_ict:
+            highcharts_directory: appendixC/Fig_C_5_6_b
+            highcharts_label: "C.5.6(b) Percentage van bedrijven met website met geslaagde e-mailtest 
+              `Geldigheid van RPKI voor mailservers' per bedrijfstak."
+            y_max: 100
+            y_spacing: 20
+        translate: *translate_good_bad_nt
+        options: *options_good_bad_nt
