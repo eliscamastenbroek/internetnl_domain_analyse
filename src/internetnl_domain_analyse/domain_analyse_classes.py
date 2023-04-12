@@ -972,7 +972,7 @@ class DomainPlotter:
             _logger.debug(f"Plotting plot {plot_key}")
             label = plot_prop.get("label", plot_key)
             figsize = plot_prop.get("figsize")
-            highcharts_figheight = plot_prop.get("highcharts_figheight")
+            highcharts_height = plot_prop.get("highcharts_height")
 
             stat_prop = self.statistics[plot_key]
             scan_data_key = stat_prop.get("scan_data", self.scan_data_key)
@@ -1281,7 +1281,7 @@ class DomainPlotter:
                                     image_directory=self.image_directory,
                                     show_plots=self.show_plots,
                                     figsize=figsize,
-                                    highcharts_figheight=highcharts_figheight,
+                                    highcharts_height=highcharts_height,
                                     image_type=self.image_type,
                                     reference_lines=reference_lines,
                                     xoff=xoff,
