@@ -350,6 +350,7 @@ def make_bar_plot(plot_df,
                   image_directory,
                   show_plots=False,
                   figsize=None,
+                  highcharts_figheight=None,
                   image_type="pdf",
                   reference_lines=None,
                   xoff=0.02,
@@ -485,7 +486,8 @@ def make_bar_plot(plot_df,
             y_lim=y_lim,
             y_tick_interval=y_spacing_bar_plot,
             title=plot_title,
-            enable_legend=enable_highcharts_legend
+            enable_legend=enable_highcharts_legend,
+            chart_height=highcharts_figheight
         )
 
     if show_plots:
