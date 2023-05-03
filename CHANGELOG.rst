@@ -2,10 +2,11 @@
 Changelog
 =========
 
-Version 1.8.2
+Version 1.8.3
 ===========
 - Nu kan je breakdowns ook als combinaties geven. Nodig voor publicatie 2023
 - legend default aan plaatjes toegevoegd nu we meerdere jaren hebben
+- eval statement kan gebruikt worden om afgeleide kol8mmen te maken
 
 Version 1.7.2
 ===========
