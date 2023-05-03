@@ -22,7 +22,8 @@ from internetnl_domain_analyse.domain_plots import (make_cdf_plot, make_bar_plot
                                                     make_bar_plot_stacked)
 from internetnl_domain_analyse.latex_output import make_latex_overview
 from internetnl_domain_analyse.utils import (read_tables_from_sqlite,
-                                             get_clean_url, get_all_clean_urls,
+                                             get_all_clean_urls,
+                                             add_derived_variables,
                                              fill_booleans,
                                              prepare_stat_data_for_write,
                                              get_option_mask,
@@ -823,6 +824,9 @@ class DomainAnalyser:
             tables = tables[~duplicated]
             tables.dropna(subset=[self.url_key], axis=0, inplace=True)
             tables.dropna(how='all', axis=1, inplace=True)
+
+            # hier voegen we nog afgeleide kolommen to
+            tables = add_derived_variables(tables, self.variables)
 
             # Doe een left join omdat meerdere be's dezelfde url kunnen hebben. Dit is sowieso
             # het geval voor holdings. Dan moeten we de score van hodlings ook meerdere keren

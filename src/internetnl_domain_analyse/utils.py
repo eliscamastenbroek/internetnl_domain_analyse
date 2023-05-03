@@ -97,6 +97,39 @@ def get_clean_url(url, cache_dir=None):
     return clean_url, suffix
 
 
+def add_derived_variables(tables, variables):
+    """
+    Add the variables we defined in the settings files which do not exist yet, but are defined with an eval statement
+
+    Args:
+        tables: pd.DataFrame
+            original table of variables
+        variables: pd.DataFrame
+            properties of variables
+
+    Returns:
+        pd.DataFame
+
+    """
+    undefined_variables = variables.index.difference(tables.columns)
+
+    for variable_name in undefined_variables:
+        _logger.debug(f"deriving properties for {variable_name}")
+
+        var_props = variables.loc[variable_name, :]
+        eval_statement = var_props.get("eval")
+        if eval_statement is None:
+            _logger.debug(f"Column {variable_name} does not exist but settings do not provide an eval statement.\n"
+                          f"Is ok, not all years have all properties defined. Only if an eval statement"
+                          f"is defined, we are going to add a new columns")
+            continue
+
+        _logger.info(f"creating new column {variable_name} as {eval_statement}")
+        tables[variable_name] = tables.eval(eval_statement)
+
+    return tables
+
+
 def fill_booleans(tables, translations, variables):
     for col in tables.columns:
         convert_to_bool = True
@@ -210,6 +243,7 @@ def impose_variable_defaults(variables,
 
     variables["gewicht"] = "units"
     variables["keep_options"] = False
+    variables["eval"] = None
 
     # als toevallig de eerste key: value in de options een dict is dan kan je geen from_dict
     # gebruiken. Daarom voegen we nu een dummy string to, die halen we dadelijk weer weg
@@ -227,7 +261,7 @@ def impose_variable_defaults(variables,
         for name in (
                 "type", "fixed", "original_name", "question", "label", "check", "optional",
                 "gewicht", "no_impute", "info_per_breakdown", "report_number", "section",
-                "keep_options"):
+                "keep_options", "eval"):
             try:
                 variables.loc[var_key, name] = var_prop[name]
             except ValueError:
