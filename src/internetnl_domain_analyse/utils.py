@@ -244,6 +244,7 @@ def impose_variable_defaults(variables,
     variables["gewicht"] = "units"
     variables["keep_options"] = False
     variables["eval"] = None
+    variables["unit"] = None
 
     # als toevallig de eerste key: value in de options een dict is dan kan je geen from_dict
     # gebruiken. Daarom voegen we nu een dummy string to, die halen we dadelijk weer weg
@@ -261,7 +262,7 @@ def impose_variable_defaults(variables,
         for name in (
                 "type", "fixed", "original_name", "question", "label", "check", "optional",
                 "gewicht", "no_impute", "info_per_breakdown", "report_number", "section",
-                "keep_options", "eval"):
+                "keep_options", "eval", "unit"):
             try:
                 variables.loc[var_key, name] = var_prop[name]
             except ValueError:

@@ -224,7 +224,8 @@ def make_bar_plot_horizontal(plot_df, fig, axis, margin,
                              xoff, yoff, trans,
                              y_spacing_bar_plot,
                              y_max_bar_plot,
-                             legend_position):
+                            legend_position,
+                             unit=None):
     try:
         plot_df.plot(kind="barh", ax=axis, rot=0, legend=None)
     except IndexError as err:
@@ -251,10 +252,10 @@ def make_bar_plot_horizontal(plot_df, fig, axis, margin,
         if show_title:
             axis.set_title(plot_title)
         axis.set_ylabel("")
-        if re.search("score", plot_title, re.IGNORECASE):
-            x_label = "Score %"
-        else:
+        if unit is None:
             x_label = "% van bedrijven met website"
+        else:
+            x_label = unit
 
         if translations is not None:
             for key_in, label_out in translations.items():
@@ -295,7 +296,8 @@ def make_bar_plot_horizontal(plot_df, fig, axis, margin,
 
 def make_bar_plot_vertical(plot_df, axis, plot_title, show_title, translations, reference_lines,
                            line_iter,
-                           xoff, yoff, trans):
+                           xoff, yoff, trans,
+                           unit=None):
     try:
         plot_df.plot(kind="bar", ax=axis, rot=0, legend=None)
     except IndexError as err:
@@ -313,10 +315,10 @@ def make_bar_plot_vertical(plot_df, axis, plot_title, show_title, translations, 
         if show_title:
             axis.set_title(plot_title)
         axis.set_xlabel("")
-        if re.search("score", plot_title, re.IGNORECASE):
-            y_label = "Score %"
+        if unit is None:
+            x_label = "% van bedrijven met website"
         else:
-            y_label = "% van bedrijven met website"
+            x_label = unit
 
         if translations is not None:
             for key_in, label_out in translations.items():
@@ -369,7 +371,8 @@ def make_bar_plot(plot_df,
                   title=None,
                   normalize_data=False,
                   force_plot=False,
-                  enable_highcharts_legend=True
+                  enable_highcharts_legend=True,
+                  question_unit=None
                   ):
     image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
     image_file = image_directory / Path(
@@ -432,7 +435,8 @@ def make_bar_plot(plot_df,
             line_iter=line_iter,
             xoff=xoff,
             yoff=yoff,
-            trans=trans)
+            trans=trans,
+            unit=question_unit)
 
     else:
         make_bar_plot_horizontal(
@@ -450,7 +454,8 @@ def make_bar_plot(plot_df,
             trans=trans,
             y_spacing_bar_plot=y_spacing_bar_plot,
             y_max_bar_plot=y_max_bar_plot,
-            legend_position=legend_position)
+            legend_position=legend_position,
+            unit=question_unit)
 
     _logger.info(f"Saving plot {image_file_name}")
     fig.savefig(image_file)
@@ -528,6 +533,7 @@ def make_bar_plot_stacked(
         normalize_data=False,
         force_plot=False,
         enable_highcharts_legend=True,
+        unit=None
 ):
     image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
     image_name_suffix = "_".join([image_name, str(year)])
@@ -619,10 +625,10 @@ def make_bar_plot_stacked(
         if show_title:
             axis.set_title(plot_title)
         axis.set_ylabel("")
-        if re.search("score", plot_title, re.IGNORECASE):
-            x_label = "Score %"
-        else:
+        if unit is None:
             x_label = "% van bedrijven met website"
+        else:
+            x_label = unit
 
         axis.set_xlabel(x_label, rotation="horizontal", horizontalalignment="right")
         axis.xaxis.set_label_coords(1.01, -0.12)

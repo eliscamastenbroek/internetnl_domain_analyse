@@ -1101,6 +1101,7 @@ class DomainPlotter:
                             question_df.index.get_level_values(variable_name_key).values[0]
                         original_name = re.sub(r"_\d\.0$", "", plot_variable)
                         question_type = variables.loc[original_name, "type"]
+                        question_unit = variables.loc[original_name, "unit"]
                         keep_options = variables.loc[original_name, "keep_options"]
                         section = variables.loc[original_name, "section"]
                         question_df_clean = question_df.droplevel(variable_name_key)
@@ -1272,7 +1273,8 @@ class DomainPlotter:
                                         legend_position=legend_pos,
                                         normalize_data=normalize_data,
                                         force_plot=self.force_plots,
-                                        enable_highcharts_legend=plot_info.enable_highcharts_legend
+                                        enable_highcharts_legend=plot_info.enable_highcharts_legend,
+                                        question_unit=question_unit
                                     )
                             else:
                                 image_file = make_bar_plot(
@@ -1305,7 +1307,8 @@ class DomainPlotter:
                                     legend_position=legend_pos,
                                     normalize_data=normalize_data,
                                     force_plot=self.force_plots,
-                                    enable_highcharts_legend=plot_info.enable_highcharts_legend
+                                    enable_highcharts_legend=plot_info.enable_highcharts_legend,
+                                    question_unit=question_unit
                                 )
 
                                 _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
