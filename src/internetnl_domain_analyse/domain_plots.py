@@ -372,7 +372,7 @@ def make_bar_plot(plot_df,
                   normalize_data=False,
                   force_plot=False,
                   enable_highcharts_legend=True,
-                  question_unit=None
+                  unit=None
                   ):
     image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
     image_file = image_directory / Path(
@@ -436,7 +436,7 @@ def make_bar_plot(plot_df,
             xoff=xoff,
             yoff=yoff,
             trans=trans,
-            unit=question_unit)
+            unit=unit)
 
     else:
         make_bar_plot_horizontal(
@@ -455,7 +455,7 @@ def make_bar_plot(plot_df,
             y_spacing_bar_plot=y_spacing_bar_plot,
             y_max_bar_plot=y_max_bar_plot,
             legend_position=legend_position,
-            unit=question_unit)
+            unit=unit)
 
     _logger.info(f"Saving plot {image_file_name}")
     fig.savefig(image_file)
