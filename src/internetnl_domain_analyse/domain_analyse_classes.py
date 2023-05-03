@@ -303,7 +303,7 @@ class DomainAnalyser:
 
         if mode in ("all", "statistics"):
             self.calculate_statistics()
-            if statistics_to_xls or reset is not None:
+            if statistics_to_xls or reset is not None or not have_cache:
                 self.write_statistics()
         if mode in ("all", "correlations") and self.dataframe is not None:
             self.calculate_correlations_and_scores()
