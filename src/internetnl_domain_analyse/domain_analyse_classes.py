@@ -1274,7 +1274,7 @@ class DomainPlotter:
                                         normalize_data=normalize_data,
                                         force_plot=self.force_plots,
                                         enable_highcharts_legend=plot_info.enable_highcharts_legend,
-                                        question_unit=question_unit
+                                        unit=question_unit
                                     )
                             else:
                                 image_file = make_bar_plot(
@@ -1308,7 +1308,7 @@ class DomainPlotter:
                                     normalize_data=normalize_data,
                                     force_plot=self.force_plots,
                                     enable_highcharts_legend=plot_info.enable_highcharts_legend,
-                                    question_unit=question_unit
+                                    unit=question_unit
                                 )
 
                                 _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
