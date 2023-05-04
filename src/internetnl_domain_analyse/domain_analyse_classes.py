@@ -183,6 +183,7 @@ class DomainAnalyser:
                  mode=None,
                  correlations=None,
                  categories=None,
+                 dump_cache_as_sqlite=False
                  ):
 
         _logger.info(f"Running here {os.getcwd()}")
@@ -202,6 +203,7 @@ class DomainAnalyser:
         outfile_year = Path(
             "_".join([outfile_base, scan_data_key, self.records_cache_info.year_digits]))
         self.output_file = outfile_year.with_suffix(".".join(outfile_suff))
+        self.dump_cache_as_sqlite = dump_cache_as_sqlite
 
         self.scan_data_key = scan_data_key
         self.breakdown_labels = breakdown_labels
@@ -856,6 +858,12 @@ class DomainAnalyser:
                 self.dataframe = pd.read_pickle(stream)
             _logger.info(f"Read {self.dataframe.index.size} records from "
                          f"cache {self.cache_file.absolute()}")
+
+        if self.dump_cache_as_sqlite:
+            sqlite_cache = self.cache_file.with_suffix(".sqlite")
+            _logger.info(f"Writing cache as sqlite {sqlite_cache}")
+            with sqlite3.connect(sqlite_cache) as connection:
+                self.dataframe.to_sql(name="table", con=connection, if_exists="replace")
 
 
 class DomainPlotter:

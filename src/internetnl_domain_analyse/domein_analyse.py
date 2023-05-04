@@ -112,6 +112,8 @@ def parse_args():
     parser.add_argument("--tld_extract_cache_directory", help="Naam van de directory als je het"
                                                               "script naar cache wilt laten lezen"
                                                               "en schrijven")
+    parser.add_argument("--dump_cache_as_sqlite", help="Dump de cache files als sqlite zodat je ze in kan zien",
+                        action="store_true")
     parsed_arguments = parser.parse_args()
 
     return parsed_arguments
@@ -284,6 +286,7 @@ def main():
                 mode=args.mode,
                 correlations=correlations,
                 categories=categories,
+                dump_cache_as_sqlite=args.dump_cache_as_sqlite,
             )
             scan_prop["analyses"] = domain_analyses
 
