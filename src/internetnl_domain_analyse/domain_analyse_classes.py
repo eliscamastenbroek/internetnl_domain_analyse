@@ -861,9 +861,14 @@ class DomainAnalyser:
 
         if self.dump_cache_as_sqlite:
             sqlite_cache = self.cache_file.with_suffix(".sqlite")
+            is_duplicated_column = self.dataframe.columns.duplicated()
+            duplicated_columns = self.dataframe[is_duplicated_column]
+            _logger.debug(f"Dropping duplicated columns {duplicated_columns}")
+            clean_df = self.dataframe.drop(columns=duplicated_columns)
+
             _logger.info(f"Writing cache as sqlite {sqlite_cache}")
             with sqlite3.connect(sqlite_cache) as connection:
-                self.dataframe.to_sql(name="table", con=connection, if_exists="replace")
+                clean_df.to_sql(name="table", con=connection, if_exists="replace")
 
 
 class DomainPlotter:
