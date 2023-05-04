@@ -440,3 +440,18 @@ def get_windows_or_linux_value(value):
         new_value = value
 
     return new_value
+
+
+def dump_data_frame_as_sqlite(dataframe, file_name):
+    """ Dump data als sqlite, maar zorg dat je duplicates eruit haalt """
+
+    # maak lower van de columnnamen want sqlite is case insensitive
+    is_duplicated_column = dataframe.columns.str.lower().duplicated()
+    duplicated_columns = dataframe.columns[is_duplicated_column]
+    _logger.debug(f"Dropping duplicated columns {duplicated_columns}")
+    clean_df = dataframe.drop(columns=duplicated_columns)
+
+    _logger.info(f"Writing cache as sqlite {file_name}")
+    with sqlite3.connect(file_name) as connection:
+        clean_df.to_sql(name="table", con=connection, if_exists="replace")
+

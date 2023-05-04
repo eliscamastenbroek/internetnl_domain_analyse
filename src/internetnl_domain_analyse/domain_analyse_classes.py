@@ -23,6 +23,7 @@ from internetnl_domain_analyse.domain_plots import (make_cdf_plot, make_bar_plot
 from internetnl_domain_analyse.latex_output import make_latex_overview
 from internetnl_domain_analyse.utils import (read_tables_from_sqlite,
                                              get_all_clean_urls,
+                                             dump_data_frame_as_sqlite,
                                              add_derived_variables,
                                              fill_booleans,
                                              prepare_stat_data_for_write,
@@ -861,14 +862,7 @@ class DomainAnalyser:
 
         if self.dump_cache_as_sqlite:
             sqlite_cache = self.cache_file.with_suffix(".sqlite")
-            is_duplicated_column = self.dataframe.columns.duplicated()
-            duplicated_columns = self.dataframe[is_duplicated_column]
-            _logger.debug(f"Dropping duplicated columns {duplicated_columns}")
-            clean_df = self.dataframe.drop(columns=duplicated_columns)
-
-            _logger.info(f"Writing cache as sqlite {sqlite_cache}")
-            with sqlite3.connect(sqlite_cache) as connection:
-                clean_df.to_sql(name="table", con=connection, if_exists="replace")
+            dump_data_frame_as_sqlite(dataframe=self.dataframe, file_name=sqlite_cache)
 
 
 class DomainPlotter:
