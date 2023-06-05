@@ -2,12 +2,13 @@
 Changelog
 =========
 
-Version 1.8.6
+Version 1.8.7
 =============
 - Nu kan je breakdowns ook als combinaties geven. Nodig voor publicatie 2023
 - legend default aan plaatjes toegevoegd nu we meerdere jaren hebben
 - eval statement kan gebruikt worden om afgeleide kolommen te maken
 - dump cache as sqlite optie. Duplicated kolommen worden verwijderd
+- bug fix of cache filenaam
 
 Version 1.7.2
 =============
