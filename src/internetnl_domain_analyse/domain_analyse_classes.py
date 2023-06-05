@@ -930,7 +930,7 @@ class DomainPlotter:
         self.image_directory = image_directory
         self.breakdown_labels = breakdown_labels
 
-        self.image_info = ImageFileInfo(scan_data_key=scan_data_key)
+        self.image_info = ImageFileInfo(scan_data_key=scan_data_key, cache_directory=self.cache_directory)
         self.image_info.read_cache()
 
         self.make_plots()
