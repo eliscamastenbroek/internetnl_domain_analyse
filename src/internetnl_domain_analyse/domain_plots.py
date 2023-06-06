@@ -143,9 +143,12 @@ def make_cdf_plot(hist,
         fig.canvas.manager.set_window_title(windows_title)
 
     if cummulative:
-        y_label = "Cumulatief % van bedrijven met website"
+#        y_label = "Cumulatief % van bedrijven met website"
+        y_label = "Cumulative % of companies with met website"
+
     else:
-        y_label = "% van bedrijven met website"
+#        y_label = "% van bedrijven met website"
+        y_label = "% of companies with website"
 
     if translations is not None:
         for key_in, label_out in translations.items():
@@ -253,7 +256,8 @@ def make_bar_plot_horizontal(plot_df, fig, axis, margin,
             axis.set_title(plot_title)
         axis.set_ylabel("")
         if unit is None:
-            x_label = "% van bedrijven met website"
+#            x_label = "% van bedrijven met website"
+            x_label = "% of companies with website"
         else:
             x_label = unit
 
@@ -316,7 +320,8 @@ def make_bar_plot_vertical(plot_df, axis, plot_title, show_title, translations, 
             axis.set_title(plot_title)
         axis.set_xlabel("")
         if unit is None:
-            x_label = "% van bedrijven met website"
+#            x_label = "% van bedrijven met website"
+            x_label = "% of companies with website"
         else:
             x_label = unit
 
@@ -626,7 +631,8 @@ def make_bar_plot_stacked(
             axis.set_title(plot_title)
         axis.set_ylabel("")
         if unit is None:
-            x_label = "% van bedrijven met website"
+#            x_label = "% van bedrijven met website"
+            x_label = "% of companies with website"
         else:
             x_label = unit
 
@@ -1089,7 +1095,8 @@ def make_conditional_pdf_plot(categories, image_directory,
     # this triggers the drawing, otherwise we can not retrieve the xtick labels
     fig.canvas.draw()
 
-    y_label = '% van bedrijven met website'
+#    y_label = '% van bedrijven met website'
+    y_label = '% of companies with website'
 
     axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
     axis.yaxis.set_label_coords(-0.04, 1.05)
