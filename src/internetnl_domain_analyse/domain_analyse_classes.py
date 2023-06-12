@@ -897,8 +897,10 @@ class DomainPlotter:
                  latex_files=False,
                  years_to_add_to_plot_legend=None,
                  module_info=None,
+                 english=False,
                  ):
 
+        self.english = english
         self.scan_data = scan_data
         self.scan_data_key = scan_data_key
         self.default_scan = default_scan
@@ -1013,7 +1015,10 @@ class DomainPlotter:
                     last_year = year
                     df_index_names = list(df.index.names)
 
-            jaar_level_name = "Jaar"
+            if not self.english:
+                jaar_level_name = "Jaar"
+            else:
+                jaar_level_name = "Year"
             index_names = [jaar_level_name] + df_index_names
             new_index_names = df_index_names + [jaar_level_name]
             module_level_name = new_index_names[0]
@@ -1281,7 +1286,8 @@ class DomainPlotter:
                                         normalize_data=normalize_data,
                                         force_plot=self.force_plots,
                                         enable_highcharts_legend=plot_info.enable_highcharts_legend,
-                                        unit=unit
+                                        unit=unit,
+                                        english=self.english,
                                     )
                             else:
                                 image_file = make_bar_plot(
@@ -1315,7 +1321,8 @@ class DomainPlotter:
                                     normalize_data=normalize_data,
                                     force_plot=self.force_plots,
                                     enable_highcharts_legend=plot_info.enable_highcharts_legend,
-                                    unit=unit
+                                    unit=unit,
+                                    english=self.english,
                                 )
 
                                 _logger.debug(f"Store [{original_name}][{label}] : {image_file}")
@@ -1398,7 +1405,7 @@ class PlotInfo:
         try:
             var_prop = self.variables_df.loc[self.var_name]
         except KeyError:
-            _logger.debug(f"could not find variable {self.var_name} in variables datafrrame")
+            _logger.debug(f"could not find variable {self.var_name} in variables dataframe")
         else:
             info_per_breakdown = var_prop["info_per_breakdown"]
             if info_per_breakdown is not None:
