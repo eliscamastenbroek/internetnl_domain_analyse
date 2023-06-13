@@ -147,13 +147,13 @@ def make_cdf_plot(hist,
         if not english:
             y_label = "Cumulatief % van bedrijven met website"
         else:
-            y_label = "Cumulative % of companies with met website"
+            y_label = "Cumulative % of enterprises with met website"
 
     else:
         if not english:
             y_label = "% van bedrijven met website"
         else:
-            y_label = "% of companies with website"
+            y_label = "% of enterprises with website"
 
     if translations is not None:
         for key_in, label_out in translations.items():
@@ -266,7 +266,7 @@ def make_bar_plot_horizontal(plot_df, fig, axis, margin,
             if not english:
                 x_label = "% van bedrijven met website"
             else:
-                x_label = "% of companies with website"
+                x_label = "% of enterprises with website"
         else:
             x_label = unit
 
@@ -334,7 +334,7 @@ def make_bar_plot_vertical(plot_df, axis, plot_title, show_title, translations, 
             if not english:
                 x_label = "% van bedrijven met website"
             else:
-                x_label = "% of companies with website"
+                x_label = "% of enterprises with website"
         else:
             x_label = unit
 
@@ -651,7 +651,7 @@ def make_bar_plot_stacked(
             if not english:
                 x_label = "% van bedrijven met website"
             else:
-                x_label = "% of companies with website"
+                x_label = "% of enterprises with website"
         else:
             x_label = unit
 
@@ -1123,7 +1123,7 @@ def make_conditional_pdf_plot(categories, image_directory,
     fig.canvas.draw()
 
     #    y_label = '% van bedrijven met website'
-    y_label = '% of companies with website'
+    y_label = '% of enterprises with website'
 
     axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
     axis.yaxis.set_label_coords(-0.04, 1.05)
