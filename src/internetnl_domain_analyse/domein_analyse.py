@@ -114,6 +114,7 @@ def parse_args():
                                                               "en schrijven")
     parser.add_argument("--dump_cache_as_sqlite", help="Dump de cache files als sqlite zodat je ze in kan zien",
                         action="store_true")
+    parser.add_argument("--english", help="Gebruik Engelse vertaling voor labels van plaatjes", action="store_true")
     parsed_arguments = parser.parse_args()
 
     return parsed_arguments
@@ -346,6 +347,7 @@ def main():
                 latex_files=args.latex_files,
                 years_to_add_to_plot_legend=years_to_add_to_plot_legend,
                 module_info=module_info,
+                english=args.english
             )
 
 

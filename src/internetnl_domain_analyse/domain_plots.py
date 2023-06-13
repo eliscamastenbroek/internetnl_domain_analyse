@@ -67,7 +67,8 @@ def make_cdf_plot(hist,
                   export_svg=False,
                   highcharts_info: dict = None,
                   title: str = None,
-                  year: int = None
+                  year: int = None,
+                  english=False,
                   ):
     figure_properties = CBSPlotSettings()
 
@@ -143,12 +144,16 @@ def make_cdf_plot(hist,
         fig.canvas.manager.set_window_title(windows_title)
 
     if cummulative:
-#        y_label = "Cumulatief % van bedrijven met website"
-        y_label = "Cumulative % of enterprises with website"
+        if not english:
+            y_label = "Cumulatief % van bedrijven met website"
+        else:
+            y_label = "Cumulative % of companies with met website"
 
     else:
-#        y_label = "% van bedrijven met website"
-        y_label = "% of enterprises with website"
+        if not english:
+            y_label = "% van bedrijven met website"
+        else:
+            y_label = "% of companies with website"
 
     if translations is not None:
         for key_in, label_out in translations.items():
@@ -227,8 +232,10 @@ def make_bar_plot_horizontal(plot_df, fig, axis, margin,
                              xoff, yoff, trans,
                              y_spacing_bar_plot,
                              y_max_bar_plot,
-                            legend_position,
-                             unit=None):
+                             legend_position,
+                             unit=None,
+                             english=False,
+                             ):
     try:
         plot_df.plot(kind="barh", ax=axis, rot=0, legend=None)
     except IndexError as err:
@@ -256,8 +263,10 @@ def make_bar_plot_horizontal(plot_df, fig, axis, margin,
             axis.set_title(plot_title)
         axis.set_ylabel("")
         if unit is None:
-#            x_label = "% van bedrijven met website"
-            x_label = "% of enterprises with website"
+            if not english:
+                x_label = "% van bedrijven met website"
+            else:
+                x_label = "% of companies with website"
         else:
             x_label = unit
 
@@ -301,7 +310,9 @@ def make_bar_plot_horizontal(plot_df, fig, axis, margin,
 def make_bar_plot_vertical(plot_df, axis, plot_title, show_title, translations, reference_lines,
                            line_iter,
                            xoff, yoff, trans,
-                           unit=None):
+                           unit=None,
+                           english=False,
+                           ):
     try:
         plot_df.plot(kind="bar", ax=axis, rot=0, legend=None)
     except IndexError as err:
@@ -320,8 +331,10 @@ def make_bar_plot_vertical(plot_df, axis, plot_title, show_title, translations, 
             axis.set_title(plot_title)
         axis.set_xlabel("")
         if unit is None:
-#            x_label = "% van bedrijven met website"
-            x_label = "% of enterprises with website"
+            if not english:
+                x_label = "% van bedrijven met website"
+            else:
+                x_label = "% of companies with website"
         else:
             x_label = unit
 
@@ -377,7 +390,8 @@ def make_bar_plot(plot_df,
                   normalize_data=False,
                   force_plot=False,
                   enable_highcharts_legend=True,
-                  unit=None
+                  unit=None,
+                  english=False,
                   ):
     image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
     image_file = image_directory / Path(
@@ -441,7 +455,8 @@ def make_bar_plot(plot_df,
             xoff=xoff,
             yoff=yoff,
             trans=trans,
-            unit=unit)
+            unit=unit,
+            english=english)
 
     else:
         make_bar_plot_horizontal(
@@ -460,7 +475,8 @@ def make_bar_plot(plot_df,
             y_spacing_bar_plot=y_spacing_bar_plot,
             y_max_bar_plot=y_max_bar_plot,
             legend_position=legend_position,
-            unit=unit)
+            unit=unit,
+            english=english)
 
     _logger.info(f"Saving plot {image_file_name}")
     fig.savefig(image_file)
@@ -538,7 +554,8 @@ def make_bar_plot_stacked(
         normalize_data=False,
         force_plot=False,
         enable_highcharts_legend=True,
-        unit=None
+        unit=None,
+        english=False,
 ):
     image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
     image_name_suffix = "_".join([image_name, str(year)])
@@ -631,8 +648,10 @@ def make_bar_plot_stacked(
             axis.set_title(plot_title)
         axis.set_ylabel("")
         if unit is None:
-#            x_label = "% van bedrijven met website"
-            x_label = "% of enterprises with website"
+            if not english:
+                x_label = "% van bedrijven met website"
+            else:
+                x_label = "% of companies with website"
         else:
             x_label = unit
 
@@ -718,7 +737,8 @@ def make_conditional_score_plot(correlations,
                                 export_highcharts=False,
                                 highcharts_directory=None,
                                 title=None,
-                                cache_directory=None
+                                cache_directory=None,
+                                english=False,
                                 ):
     plot_info = correlations["plots"]
 
@@ -771,7 +791,8 @@ def make_conditional_score_plot(correlations,
                                     show_plots=show_plots,
                                     plot_title=label,
                                     x_label=x_label,
-                                    y_label=y_label
+                                    y_label=y_label,
+                                    english=english
                                     )
         elif plot_key == "scores_per_number_correct":
             x_label = AxisLabel(plot_prop.get("x_label"),
@@ -789,12 +810,15 @@ def make_conditional_score_plot(correlations,
                                  show_plots=show_plots,
                                  plot_title=label,
                                  x_label=x_label,
-                                 y_label=y_label
+                                 y_label=y_label,
+                                 english=english
                                  )
 
 
 def plot_score_per_count(scores, categories, highcharts_directory, im_file, show_plots, plot_title,
-                         x_label, y_label):
+                         x_label, y_label,
+                         english=False,
+                         ):
     _logger.info("Plot score per count")
     # add a new columns with the interval label belonging to the gk code bin. Note that we
     # merge all the grootte klass below 40 to a group smaller than 10
@@ -863,7 +887,7 @@ def plot_score_per_count(scores, categories, highcharts_directory, im_file, show
 
 def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
                             highcharts_directory, im_file, show_plots, plot_title,
-                            x_label, y_label
+                            x_label, y_label, english=False,
                             ):
     score_labels = list(score_intervallen.keys())
     score_bins = list([s / 100 for s in score_intervallen.values()]) + [1.01]
@@ -950,7 +974,9 @@ def make_heatmap(correlations, image_directory,
                  export_highcharts=False,
                  highcharts_directory=None,
                  title=None,
-                 cache_directory=None
+                 cache_directory=None,
+                 english=False
+
                  ):
     plot_properties = correlations["plots"]["correlation"]
     outfile = Path(plot_properties["output_file"])
@@ -1033,7 +1059,8 @@ def make_conditional_pdf_plot(categories, image_directory,
                               show_plots=False,
                               export_highcharts=False,
                               highcharts_directory=None,
-                              cache_directory=None
+                              cache_directory=None,
+                              english=False,
                               ):
     outfile = Path(categories["categories_output_file"])
     if cache_directory is not None:
@@ -1095,8 +1122,8 @@ def make_conditional_pdf_plot(categories, image_directory,
     # this triggers the drawing, otherwise we can not retrieve the xtick labels
     fig.canvas.draw()
 
-#    y_label = '% van bedrijven met website'
-    y_label = '% of enterprises with website'
+    #    y_label = '% van bedrijven met website'
+    y_label = '% of companies with website'
 
     axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
     axis.yaxis.set_label_coords(-0.04, 1.05)
@@ -1110,8 +1137,15 @@ def make_conditional_pdf_plot(categories, image_directory,
 
     add_axis_label_background(fig=fig, axes=axis, loc="south", margin=0.10)
 
+    if not english:
+        plot_title = "Aantal geslaagde categorieën"
+        hc_plot_title = "Verdeling scores per categorie"
+    else:
+        plot_title = "Number of succeeded categories "
+        hc_plot_title = "Distribution of scores per category"
+
     legend = axis.legend(loc="lower left",
-                         title="Aantal geslaagde categorieën",
+                         title=plot_title,
                          prop={"size": 10},
                          bbox_to_anchor=(0.2, 0.02), frameon=False,
                          bbox_transform=fig.transFigure, ncol=5)
@@ -1137,7 +1171,7 @@ def make_conditional_pdf_plot(categories, image_directory,
             output_directory=hc_dir.as_posix(),
             output_file_name=im_file.stem,
             ylabel=y_label,
-            title="Verdeling scores per categorie",
+            title=hc_plot_title,
             enable_legend=False,
         )
 
@@ -1153,7 +1187,8 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
                                         show_plots=False,
                                         export_highcharts=False,
                                         highcharts_directory=None,
-                                        cache_directory=None
+                                        cache_directory=None,
+                                        english=False,
                                         ):
     outfile = Path(categories["categories_output_file"])
     if cache_directory is not None:
@@ -1189,7 +1224,16 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
     if hc_title := plot_settings.get("highcharts_label"):
         title = hc_title
     else:
-        title = "Verdeling scores per categorie",
+        if not english:
+            x_label = "Aantal geslaagde categorieën"
+            y_label = "Aandeel per categorie [%]"
+            l_label = "Categorie"
+            hc_plot_title = "Verdeling scores per categorie"
+        else:
+            x_label = "Number of succeeded categories"
+            y_label = "Part per category [%]"
+            l_label = "Category"
+            hc_plot_title = "Distribution of scores per category"
 
     if highcharts_directory is None:
         hc_dir = Path(".")
@@ -1213,9 +1257,6 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
 
     axis.set_ylim((0, 101))
 
-    x_label = "Aantal geslaagde categorieën"
-    y_label = "Aandeel per categorie [%]"
-
     axis.set_xlabel(x_label, horizontalalignment="right")
 
     axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
@@ -1227,7 +1268,7 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
     sns.despine(ax=axis, left=True)
 
     legend = axis.legend(loc="lower left",
-                         title="Categorie",
+                         title=l_label,
                          bbox_to_anchor=(0.2, 0.03), frameon=False,
                          bbox_transform=fig.transFigure, ncol=5)
 
@@ -1254,7 +1295,7 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
             output_directory=hc_dir.as_posix(),
             output_file_name=im_file.stem,
             y_lim=(0, 100),
-            title=title,
+            title=hc_plot_title,
             xlabel=x_label,
             ylabel=y_label,
             enable_legend=True,
