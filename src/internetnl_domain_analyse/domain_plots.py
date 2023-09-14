@@ -18,7 +18,7 @@ from internetnl_domain_analyse.utils import get_windows_or_linux_value
 _logger = logging.getLogger(__name__)
 cbsplotlib_logger = logging.getLogger("cbsplotlib")
 cbsplotlib_logger.setLevel(_logger.getEffectiveLevel())
-sns.set_style('whitegrid')
+sns.set_style("whitegrid")
 
 
 class AxisLabel:
@@ -34,9 +34,13 @@ class AxisLabel:
 
         self.set_properties()
         if self.text is None:
-            raise ValueError("Geen text gezet. Geef label eigenschappen of default waarden mee")
+            raise ValueError(
+                "Geen text gezet. Geef label eigenschappen of default waarden mee"
+            )
         if self.positie is None:
-            raise ValueError("Geen positie gezet. Geef label eigenschappen of default waarden mee")
+            raise ValueError(
+                "Geen positie gezet. Geef label eigenschappen of default waarden mee"
+            )
 
     def set_properties(self):
         if self.label_properties is not None:
@@ -45,31 +49,32 @@ class AxisLabel:
                 self.positie = position
 
 
-def make_cdf_plot(hist,
-                  grp_key,
-                  plot_key,
-                  scan_data_key,
-                  module_name=None,
-                  question_name=None,
-                  image_directory=None,
-                  show_plots=False,
-                  figsize=None,
-                  image_type=None,
-                  image_file_base=None,
-                  cummulative=False,
-                  reference_lines=None,
-                  xoff=None,
-                  yoff=None,
-                  y_max=None,
-                  y_spacing=None,
-                  translations=None,
-                  export_highcharts=None,
-                  export_svg=False,
-                  highcharts_info: dict = None,
-                  title: str = None,
-                  year: int = None,
-                  english=False,
-                  ):
+def make_cdf_plot(
+    hist,
+    grp_key,
+    plot_key,
+    scan_data_key,
+    module_name=None,
+    question_name=None,
+    image_directory=None,
+    show_plots=False,
+    figsize=None,
+    image_type=None,
+    image_file_base=None,
+    cummulative=False,
+    reference_lines=None,
+    xoff=None,
+    yoff=None,
+    y_max=None,
+    y_spacing=None,
+    translations=None,
+    export_highcharts=None,
+    export_svg=False,
+    highcharts_info: dict = None,
+    title: str = None,
+    year: int = None,
+    english=False,
+):
     figure_properties = CBSPlotSettings()
 
     if figsize is None:
@@ -130,8 +135,7 @@ def make_cdf_plot(hist,
         _logger.info(f"Adding line {percentile}: {value} {pval}")
         if 0 < percentile < 100:
             axis.vlines(value, 0, pval, color="cbs:appelgroen")
-            axis.text(value, 1.02 * pval, f"Q{ii}", color="cbs:appelgroen",
-                      ha="center")
+            axis.text(value, 1.02 * pval, f"Q{ii}", color="cbs:appelgroen", ha="center")
     stats_df = pd.DataFrame.from_dict(stats, orient="index", columns=["value"])
     stats_df.index.rename("Stat", inplace=True)
 
@@ -173,7 +177,7 @@ def make_cdf_plot(hist,
 
     labels = [_.get_text() for _ in axis.get_xticklabels()]
     axis.xaxis.set_ticks(axis.get_xticks())
-    axis.set_xticklabels(labels, ha='center')
+    axis.set_xticklabels(labels, ha="center")
 
     add_axis_label_background(fig=fig, axes=axis, loc="south")
 
@@ -195,7 +199,9 @@ def make_cdf_plot(hist,
     highcharts_label = highcharts_info.get("highcharts_label")
 
     if export_svg:
-        svg_image_file = highcharts_directory / Path("_".join([plot_key, image_name + ".svg"]))
+        svg_image_file = highcharts_directory / Path(
+            "_".join([plot_key, image_name + ".svg"])
+        )
         _logger.info(f"Saving plot to {svg_image_file}")
         fig.savefig(svg_image_file)
 
@@ -226,16 +232,25 @@ def make_cdf_plot(hist,
     return image_name_with_ext
 
 
-def make_bar_plot_horizontal(plot_df, fig, axis, margin,
-                             plot_title, show_title, translations, reference_lines,
-                             line_iter,
-                             xoff, yoff, trans,
-                             y_spacing_bar_plot,
-                             y_max_bar_plot,
-                             legend_position,
-                             unit=None,
-                             english=False,
-                             ):
+def make_bar_plot_horizontal(
+    plot_df,
+    fig,
+    axis,
+    margin,
+    plot_title,
+    show_title,
+    translations,
+    reference_lines,
+    line_iter,
+    xoff,
+    yoff,
+    trans,
+    y_spacing_bar_plot,
+    y_max_bar_plot,
+    legend_position,
+    unit=None,
+    english=False,
+):
     try:
         plot_df.plot(kind="barh", ax=axis, rot=0, legend=None)
     except IndexError as err:
@@ -250,7 +265,7 @@ def make_bar_plot_horizontal(plot_df, fig, axis, margin,
         xticks = axis.get_xticks()
         min_x = xticks[0]
         max_x = xticks[-1]
-        x_range = (max_x - min_x)
+        x_range = max_x - min_x
         if y_max_bar_plot is not None:
             axis.set_xlim((0, y_max_bar_plot))
         else:
@@ -282,8 +297,9 @@ def make_bar_plot_horizontal(plot_df, fig, axis, margin,
         sns.despine(ax=axis, bottom=True)
         axis.tick_params(which="both", left=False)
 
-        add_axis_label_background(fig=fig, axes=axis, loc="east", radius_corner_in_mm=1,
-                                  margin=margin)
+        add_axis_label_background(
+            fig=fig, axes=axis, loc="east", radius_corner_in_mm=1, margin=margin
+        )
 
         number_of_columns = plot_df.columns.values.size
         if legend_position is None:
@@ -292,9 +308,13 @@ def make_bar_plot_horizontal(plot_df, fig, axis, margin,
             legend_bbox_to_anchor = legend_position
 
         legend_bbox_to_anchor = get_windows_or_linux_value(legend_bbox_to_anchor)
-        axis.legend(loc="lower left", frameon=False, ncol=number_of_columns,
-                    bbox_to_anchor=legend_bbox_to_anchor,
-                    bbox_transform=fig.transFigure)
+        axis.legend(
+            loc="lower left",
+            frameon=False,
+            ncol=number_of_columns,
+            bbox_to_anchor=legend_bbox_to_anchor,
+            bbox_transform=fig.transFigure,
+        )
 
     if reference_lines is not None:
         color = line_iter.get_next_color()
@@ -303,16 +323,26 @@ def make_bar_plot_horizontal(plot_df, fig, axis, margin,
             ref_plot_df = ref_line["plot_df"]
             value = ref_plot_df.values[0][1]
             color = line_iter.get_next_color()
-            axis.axhline(y=value, color=color, linestyle='-.')
-            axis.text(xoff, value + yoff * x_range, ref_label, color=color, transform=trans)
+            axis.axhline(y=value, color=color, linestyle="-.")
+            axis.text(
+                xoff, value + yoff * x_range, ref_label, color=color, transform=trans
+            )
 
 
-def make_bar_plot_vertical(plot_df, axis, plot_title, show_title, translations, reference_lines,
-                           line_iter,
-                           xoff, yoff, trans,
-                           unit=None,
-                           english=False,
-                           ):
+def make_bar_plot_vertical(
+    plot_df,
+    axis,
+    plot_title,
+    show_title,
+    translations,
+    reference_lines,
+    line_iter,
+    xoff,
+    yoff,
+    trans,
+    unit=None,
+    english=False,
+):
     try:
         plot_df.plot(kind="bar", ax=axis, rot=0, legend=None)
     except IndexError as err:
@@ -324,7 +354,7 @@ def make_bar_plot_vertical(plot_df, axis, plot_title, show_title, translations, 
         yticks = axis.get_yticks()
         min_y = yticks[0]
         max_y = yticks[-1]
-        y_range = (max_y - min_y)
+        y_range = max_y - min_y
         axis.set_ylim((min_y, max_y))
 
         if show_title:
@@ -357,45 +387,54 @@ def make_bar_plot_vertical(plot_df, axis, plot_title, show_title, translations, 
                 ref_plot_df = ref_line["plot_df"]
                 value = ref_plot_df.values[0][1]
                 color = line_iter.get_next_color()
-                axis.axhline(y=value, color=color, linestyle='-.')
-                axis.text(xoff, value + yoff * y_range, ref_label, color=color, transform=trans)
+                axis.axhline(y=value, color=color, linestyle="-.")
+                axis.text(
+                    xoff,
+                    value + yoff * y_range,
+                    ref_label,
+                    color=color,
+                    transform=trans,
+                )
 
 
-def make_bar_plot(plot_df,
-                  plot_key,
-                  plot_variable,
-                  scan_data_key,
-                  module_name,
-                  question_name,
-                  image_directory,
-                  show_plots=False,
-                  figsize=None,
-                  highcharts_height=None,
-                  image_type="pdf",
-                  reference_lines=None,
-                  xoff=0.02,
-                  yoff=0.02,
-                  show_title=False,
-                  barh=False,
-                  subplot_adjust=None,
-                  sort_values=False,
-                  y_max_bar_plot=None,
-                  y_spacing_bar_plot=None, translations=None,
-                  legend_position=None,
-                  box_margin=None,
-                  export_svg=False,
-                  export_highcharts=False,
-                  highcharts_directory=None,
-                  title=None,
-                  normalize_data=False,
-                  force_plot=False,
-                  enable_highcharts_legend=True,
-                  unit=None,
-                  english=False,
-                  ):
+def make_bar_plot(
+    plot_df,
+    plot_key,
+    plot_variable,
+    scan_data_key,
+    module_name,
+    question_name,
+    image_directory,
+    show_plots=False,
+    figsize=None,
+    highcharts_height=None,
+    image_type="pdf",
+    reference_lines=None,
+    xoff=0.02,
+    yoff=0.02,
+    show_title=False,
+    barh=False,
+    subplot_adjust=None,
+    sort_values=False,
+    y_max_bar_plot=None,
+    y_spacing_bar_plot=None,
+    translations=None,
+    legend_position=None,
+    box_margin=None,
+    export_svg=False,
+    export_highcharts=False,
+    highcharts_directory=None,
+    title=None,
+    normalize_data=False,
+    force_plot=False,
+    enable_highcharts_legend=True,
+    unit=None,
+    english=False,
+):
     image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
     image_file = image_directory / Path(
-        "_".join([scan_data_key, plot_key, ".".join([image_name, image_type])]))
+        "_".join([scan_data_key, plot_key, ".".join([image_name, image_type])])
+    )
     image_file_name = image_file.as_posix()
     if image_file.exists() and not force_plot:
         _logger.info(f"File {image_file_name} already exists. Skipping plot")
@@ -456,7 +495,8 @@ def make_bar_plot(plot_df,
             yoff=yoff,
             trans=trans,
             unit=unit,
-            english=english)
+            english=english,
+        )
 
     else:
         make_bar_plot_horizontal(
@@ -476,7 +516,8 @@ def make_bar_plot(plot_df,
             y_max_bar_plot=y_max_bar_plot,
             legend_position=legend_position,
             unit=unit,
-            english=english)
+            english=english,
+        )
 
     _logger.info(f"Saving plot {image_file_name}")
     fig.savefig(image_file)
@@ -485,7 +526,9 @@ def make_bar_plot(plot_df,
         highcharts_directory.mkdir(exist_ok=True, parents=True)
     if export_svg:
         # met export highcharts gaan we ook een svg exporten
-        svg_image_file = highcharts_directory / Path("_".join([plot_key, image_name + ".svg"]))
+        svg_image_file = highcharts_directory / Path(
+            "_".join([plot_key, image_name + ".svg"])
+        )
         _logger.info(f"Saving plot {svg_image_file}")
         fig.savefig(svg_image_file)
 
@@ -513,7 +556,7 @@ def make_bar_plot(plot_df,
             y_tick_interval=y_spacing_bar_plot,
             title=plot_title,
             enable_legend=enable_highcharts_legend,
-            chart_height=highcharts_height
+            chart_height=highcharts_height,
         )
 
     if show_plots:
@@ -525,37 +568,38 @@ def make_bar_plot(plot_df,
 
 
 def make_bar_plot_stacked(
-        year,
-        plot_df,
-        plot_key,
-        plot_variable,
-        scan_data_key,
-        module_name,
-        question_name,
-        image_directory,
-        show_plots=False,
-        figsize=None,
-        image_type="pdf",
-        reference_lines=None,
-        xoff=0.02,
-        yoff=0.02,
-        show_title=False,
-        barh=False,
-        subplot_adjust=None,
-        sort_values=False,
-        y_max_bar_plot=None,
-        y_spacing_bar_plot=None, translations=None,
-        legend_position=None,
-        box_margin=None,
-        export_svg=False,
-        export_highcharts=False,
-        highcharts_directory=None,
-        title=None,
-        normalize_data=False,
-        force_plot=False,
-        enable_highcharts_legend=True,
-        unit=None,
-        english=False,
+    year,
+    plot_df,
+    plot_key,
+    plot_variable,
+    scan_data_key,
+    module_name,
+    question_name,
+    image_directory,
+    show_plots=False,
+    figsize=None,
+    image_type="pdf",
+    reference_lines=None,
+    xoff=0.02,
+    yoff=0.02,
+    show_title=False,
+    barh=False,
+    subplot_adjust=None,
+    sort_values=False,
+    y_max_bar_plot=None,
+    y_spacing_bar_plot=None,
+    translations=None,
+    legend_position=None,
+    box_margin=None,
+    export_svg=False,
+    export_highcharts=False,
+    highcharts_directory=None,
+    title=None,
+    normalize_data=False,
+    force_plot=False,
+    enable_highcharts_legend=True,
+    unit=None,
+    english=False,
 ):
     image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
     image_name_suffix = "_".join([image_name, str(year)])
@@ -635,7 +679,7 @@ def make_bar_plot_stacked(
         xticks = axis.get_xticks()
         min_x = xticks[0]
         max_x = xticks[-1]
-        x_range = (max_x - min_x)
+        x_range = max_x - min_x
         if y_max_bar_plot is not None:
             axis.set_xlim((0, y_max_bar_plot))
         else:
@@ -661,8 +705,9 @@ def make_bar_plot_stacked(
         sns.despine(ax=axis, bottom=True)
         axis.tick_params(which="both", left=False)
 
-        add_axis_label_background(fig=fig, axes=axis, loc="east", radius_corner_in_mm=1,
-                                  margin=margin)
+        add_axis_label_background(
+            fig=fig, axes=axis, loc="east", radius_corner_in_mm=1, margin=margin
+        )
 
         number_of_columns = plot_df.columns.values.size
         if legend_position is None:
@@ -670,9 +715,13 @@ def make_bar_plot_stacked(
         else:
             legend_bbox_to_anchor = legend_position
         legend_bbox_to_anchor = get_windows_or_linux_value(legend_bbox_to_anchor)
-        axis.legend(loc="lower left", frameon=False, ncol=number_of_columns,
-                    bbox_to_anchor=legend_bbox_to_anchor,
-                    bbox_transform=fig.transFigure)
+        axis.legend(
+            loc="lower left",
+            frameon=False,
+            ncol=number_of_columns,
+            bbox_to_anchor=legend_bbox_to_anchor,
+            bbox_transform=fig.transFigure,
+        )
 
     if reference_lines is not None:
         color = line_iter.get_next_color()
@@ -681,8 +730,10 @@ def make_bar_plot_stacked(
             ref_plot_df = ref_line["plot_df"]
             value = ref_plot_df.values[0][1]
             color = line_iter.get_next_color()
-            axis.axhline(y=value, color=color, linestyle='-.')
-            axis.text(xoff, value + yoff * x_range, ref_label, color=color, transform=trans)
+            axis.axhline(y=value, color=color, linestyle="-.")
+            axis.text(
+                xoff, value + yoff * x_range, ref_label, color=color, transform=trans
+            )
 
     _logger.info(f"Saving plot {image_file_name}")
     fig.savefig(image_file)
@@ -691,7 +742,9 @@ def make_bar_plot_stacked(
         highcharts_directory.mkdir(exist_ok=True, parents=True)
     if export_svg:
         # met export highcharts gaan we ook een svg exporten
-        svg_image_file = highcharts_directory / Path("_".join([plot_key, image_name + ".svg"]))
+        svg_image_file = highcharts_directory / Path(
+            "_".join([plot_key, image_name + ".svg"])
+        )
         _logger.info(f"Saving plot {svg_image_file}")
         fig.savefig(svg_image_file)
 
@@ -718,7 +771,7 @@ def make_bar_plot_stacked(
             y_lim=y_lim,
             y_tick_interval=y_spacing_bar_plot,
             title=plot_title,
-            enable_legend=enable_highcharts_legend
+            enable_legend=enable_highcharts_legend,
         )
 
     if show_plots:
@@ -729,17 +782,19 @@ def make_bar_plot_stacked(
     return image_file_name
 
 
-def make_conditional_score_plot(correlations,
-                                image_directory,
-                                show_plots=False,
-                                figsize=None, image_type=".pdf",
-                                export_svg=False,
-                                export_highcharts=False,
-                                highcharts_directory=None,
-                                title=None,
-                                cache_directory=None,
-                                english=False,
-                                ):
+def make_conditional_score_plot(
+    correlations,
+    image_directory,
+    show_plots=False,
+    figsize=None,
+    image_type=".pdf",
+    export_svg=False,
+    export_highcharts=False,
+    highcharts_directory=None,
+    title=None,
+    cache_directory=None,
+    english=False,
+):
     plot_info = correlations["plots"]
 
     index_labels = correlations["index_labels"]
@@ -749,8 +804,10 @@ def make_conditional_score_plot(correlations,
     for plot_key, plot_prop in plot_info.items():
 
         # we maken hier alleen de score plots
-        if plot_key not in ("scores_per_interval", "scores_per_number_correct") or \
-                not plot_prop.get("do_it", True):
+        if plot_key not in (
+            "scores_per_interval",
+            "scores_per_number_correct",
+        ) or not plot_prop.get("do_it", True):
             continue
 
         outfile = Path(plot_prop["output_file"])
@@ -775,50 +832,70 @@ def make_conditional_score_plot(correlations,
         scores = pd.read_pickle(in_file.with_suffix(".pkl"))
 
         if plot_key == "scores_per_interval":
-            x_label = AxisLabel(plot_prop.get("x_label"), text_default="Eindscoreniveau",
-                                positie_default=(0.98, -0.15))
-            y_label = AxisLabel(plot_prop.get("y_label"), text_default="Subgroepscore [%]",
-                                positie_default=(-0.065, 1.07))
+            x_label = AxisLabel(
+                plot_prop.get("x_label"),
+                text_default="Eindscoreniveau",
+                positie_default=(0.98, -0.15),
+            )
+            y_label = AxisLabel(
+                plot_prop.get("y_label"),
+                text_default="Subgroepscore [%]",
+                positie_default=(-0.065, 1.07),
+            )
 
             im_file_base = "_".join([outfile.stem, "per_score_interval"])
             im_file = image_directory / Path(im_file_base).with_suffix(".pdf")
-            plot_score_per_interval(scores=scores,
-                                    score_intervallen=score_intervallen,
-                                    index_labels=index_labels,
-                                    categories=categories,
-                                    highcharts_directory=hc_dir,
-                                    im_file=im_file,
-                                    show_plots=show_plots,
-                                    plot_title=label,
-                                    x_label=x_label,
-                                    y_label=y_label,
-                                    english=english
-                                    )
+            plot_score_per_interval(
+                scores=scores,
+                score_intervallen=score_intervallen,
+                index_labels=index_labels,
+                categories=categories,
+                highcharts_directory=hc_dir,
+                im_file=im_file,
+                show_plots=show_plots,
+                plot_title=label,
+                x_label=x_label,
+                y_label=y_label,
+                english=english,
+            )
         elif plot_key == "scores_per_number_correct":
-            x_label = AxisLabel(plot_prop.get("x_label"),
-                                text_default="Aantal geslaagde categorieën",
-                                positie_default=(0.98, -0.15))
-            y_label = AxisLabel(plot_prop.get("y_label"), text_default="Subgroepscore [%]",
-                                positie_default=(-0.065, 1.07))
+            x_label = AxisLabel(
+                plot_prop.get("x_label"),
+                text_default="Aantal geslaagde categorieën",
+                positie_default=(0.98, -0.15),
+            )
+            y_label = AxisLabel(
+                plot_prop.get("y_label"),
+                text_default="Subgroepscore [%]",
+                positie_default=(-0.065, 1.07),
+            )
 
             im_file_base = "_".join([outfile.stem, "per_count_interval"])
             im_file = image_directory / Path(im_file_base).with_suffix(".pdf")
-            plot_score_per_count(scores=scores,
-                                 categories=categories,
-                                 highcharts_directory=hc_dir,
-                                 im_file=im_file,
-                                 show_plots=show_plots,
-                                 plot_title=label,
-                                 x_label=x_label,
-                                 y_label=y_label,
-                                 english=english
-                                 )
+            plot_score_per_count(
+                scores=scores,
+                categories=categories,
+                highcharts_directory=hc_dir,
+                im_file=im_file,
+                show_plots=show_plots,
+                plot_title=label,
+                x_label=x_label,
+                y_label=y_label,
+                english=english,
+            )
 
 
-def plot_score_per_count(scores, categories, highcharts_directory, im_file, show_plots, plot_title,
-                         x_label, y_label,
-                         english=False,
-                         ):
+def plot_score_per_count(
+    scores,
+    categories,
+    highcharts_directory,
+    im_file,
+    show_plots,
+    plot_title,
+    x_label,
+    y_label,
+    english=False,
+):
     _logger.info("Plot score per count")
     # add a new columns with the interval label belonging to the gk code bin. Note that we
     # merge all the grootte klass below 40 to a group smaller than 10
@@ -835,7 +912,9 @@ def plot_score_per_count(scores, categories, highcharts_directory, im_file, show
     settings = CBSPlotSettings(color_palette="koelextended")
     fig, axis = plt.subplots()
     fig.subplots_adjust(bottom=0.3, top=0.90)
-    score_per_category_df.plot.bar(ax=axis, rot=0, stacked=False, edgecolor="white", linewidth=1.5)
+    score_per_category_df.plot.bar(
+        ax=axis, rot=0, stacked=False, edgecolor="white", linewidth=1.5
+    )
     yticks = axis.get_yticks()
     # axis.set_ylim((yticks[0], yticks[-1]))
     axis.set_ylim((0, 100))
@@ -859,9 +938,13 @@ def plot_score_per_count(scores, categories, highcharts_directory, im_file, show
 
     ncol = (score_per_category_df.columns.size - 1) // 2 + 1
 
-    legend = axis.legend(loc="lower left",
-                         bbox_to_anchor=(0.105, -0.00), frameon=False,
-                         bbox_transform=fig.transFigure, ncol=ncol)
+    legend = axis.legend(
+        loc="lower left",
+        bbox_to_anchor=(0.105, -0.00),
+        frameon=False,
+        bbox_transform=fig.transFigure,
+        ncol=ncol,
+    )
 
     _logger.info(f"Writing score plot to {im_file}")
     fig.savefig(im_file.as_posix())
@@ -885,19 +968,30 @@ def plot_score_per_count(scores, categories, highcharts_directory, im_file, show
     _logger.debug("Klaar")
 
 
-def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
-                            highcharts_directory, im_file, show_plots, plot_title,
-                            x_label, y_label, english=False,
-                            ):
+def plot_score_per_interval(
+    scores,
+    score_intervallen,
+    index_labels,
+    categories,
+    highcharts_directory,
+    im_file,
+    show_plots,
+    plot_title,
+    x_label,
+    y_label,
+    english=False,
+):
     score_labels = list(score_intervallen.keys())
     score_bins = list([s / 100 for s in score_intervallen.values()]) + [1.01]
     # add a new columns with the interval label belonging to the gk code bin. Note that we
     # merge all the grootte klass below 40 to a group smaller than 10
-    scores["score_category"] = pd.cut(scores["score"],
-                                      bins=score_bins,
-                                      labels=score_labels,
-                                      right=True,
-                                      include_lowest=True)
+    scores["score_category"] = pd.cut(
+        scores["score"],
+        bins=score_bins,
+        labels=score_labels,
+        right=True,
+        include_lowest=True,
+    )
 
     score_per_category = dict()
     for categorie_key, category_df in scores.groupby("score_category"):
@@ -912,7 +1006,9 @@ def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
     settings = CBSPlotSettings(color_palette="koelextended")
     fig, axis = plt.subplots()
     fig.subplots_adjust(bottom=0.3, top=0.90)
-    score_per_category_df.plot.bar(ax=axis, rot=0, stacked=False, edgecolor="white", linewidth=1.5)
+    score_per_category_df.plot.bar(
+        ax=axis, rot=0, stacked=False, edgecolor="white", linewidth=1.5
+    )
     yticks = axis.get_yticks()
     # axis.set_ylim((yticks[0], yticks[-1]))
     axis.set_ylim((0, 100))
@@ -936,9 +1032,13 @@ def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
 
     ncol = (score_per_category_df.columns.size - 1) // 2 + 1
 
-    legend = axis.legend(loc="lower left",
-                         bbox_to_anchor=(0.105, -0.00), frameon=False,
-                         bbox_transform=fig.transFigure, ncol=ncol)
+    legend = axis.legend(
+        loc="lower left",
+        bbox_to_anchor=(0.105, -0.00),
+        frameon=False,
+        bbox_transform=fig.transFigure,
+        ncol=ncol,
+    )
 
     _logger.info(f"Writing score plot to {im_file}")
     fig.savefig(im_file.as_posix())
@@ -967,17 +1067,19 @@ def plot_score_per_interval(scores, score_intervallen, index_labels, categories,
 # cmap = sns.color_palette("deep", 10)
 
 
-def make_heatmap(correlations, image_directory,
-                 show_plots=False,
-                 figsize=None, image_type=".pdf",
-                 export_svg=False,
-                 export_highcharts=False,
-                 highcharts_directory=None,
-                 title=None,
-                 cache_directory=None,
-                 english=False
-
-                 ):
+def make_heatmap(
+    correlations,
+    image_directory,
+    show_plots=False,
+    figsize=None,
+    image_type=".pdf",
+    export_svg=False,
+    export_highcharts=False,
+    highcharts_directory=None,
+    title=None,
+    cache_directory=None,
+    english=False,
+):
     plot_properties = correlations["plots"]["correlation"]
     outfile = Path(plot_properties["output_file"])
     if cache_directory is not None:
@@ -1003,7 +1105,9 @@ def make_heatmap(correlations, image_directory,
 
     sns.set(font_scale=0.8)
     # cmap is now a list of colors
-    cmap = mpc.ListedColormap(sns.cubehelix_palette(start=2.8, rot=.1, light=0.9, n_colors=12))
+    cmap = mpc.ListedColormap(
+        sns.cubehelix_palette(start=2.8, rot=0.1, light=0.9, n_colors=12)
+    )
 
     # Create two appropriately sized subplots
     # grid_kws = {'width_ratios': (0.9, 0.03), 'wspace': 0.18}
@@ -1011,23 +1115,27 @@ def make_heatmap(correlations, image_directory,
 
     im_file = image_directory / Path(outfile.stem).with_suffix(".pdf")
     fig, axis = plt.subplots(figsize=(10, 10))
-    plt.subplots_adjust(left=.28, bottom=.27, top=0.98, right=0.9)
-    cbar_ax = fig.add_axes([.91, .315, .02, .62])
+    plt.subplots_adjust(left=0.28, bottom=0.27, top=0.98, right=0.9)
+    cbar_ax = fig.add_axes([0.91, 0.315, 0.02, 0.62])
     # cmap = sns.color_palette("deep", 10)
 
-    sns.heatmap(corr, square=True, ax=axis, cbar_ax=cbar_ax, cmap=cmap,
-                vmin=-0.2, vmax=1.0,
-                cbar_kws={
-                    'orientation': 'vertical',
-                    'label': r'Correlatiecoëfficiënt $\rho$'}
-                )
+    sns.heatmap(
+        corr,
+        square=True,
+        ax=axis,
+        cbar_ax=cbar_ax,
+        cmap=cmap,
+        vmin=-0.2,
+        vmax=1.0,
+        cbar_kws={"orientation": "vertical", "label": r"Correlatiecoëfficiënt $\rho$"},
+    )
     xlabels = axis.get_xticklabels()
     ylabels = axis.get_yticklabels()
     for xlbl, ylbl in zip(xlabels, ylabels):
         tekst = xlbl.get_text()
         categorie = corr_index[tekst]
         categorie_properties = categories[categorie]
-        kleur = categorie_properties['color']
+        kleur = categorie_properties["color"]
         RGB = CBS_COLORS_RBG.get(kleur, [0, 0, 0])
         rgb = [_ / 255 for _ in RGB]
         tekst_clean = tekst.replace("_verdict", "").replace("tests_", "")
@@ -1055,13 +1163,15 @@ def make_heatmap(correlations, image_directory,
         plt.show()
 
 
-def make_conditional_pdf_plot(categories, image_directory,
-                              show_plots=False,
-                              export_highcharts=False,
-                              highcharts_directory=None,
-                              cache_directory=None,
-                              english=False,
-                              ):
+def make_conditional_pdf_plot(
+    categories,
+    image_directory,
+    show_plots=False,
+    export_highcharts=False,
+    highcharts_directory=None,
+    cache_directory=None,
+    english=False,
+):
     outfile = Path(categories["categories_output_file"])
     if cache_directory is not None:
         outfile = Path(cache_directory) / outfile
@@ -1123,7 +1233,7 @@ def make_conditional_pdf_plot(categories, image_directory,
     fig.canvas.draw()
 
     #    y_label = '% van bedrijven met website'
-    y_label = '% of companies with website'
+    y_label = "% of companies with website"
 
     axis.set_ylabel(y_label, rotation="horizontal", horizontalalignment="left")
     axis.yaxis.set_label_coords(-0.04, 1.05)
@@ -1133,7 +1243,7 @@ def make_conditional_pdf_plot(categories, image_directory,
     sns.despine(ax=axis, left=True)
 
     labels = [_.get_text() for _ in axis.get_xticklabels()]
-    axis.set_xticklabels(labels, ha='center')
+    axis.set_xticklabels(labels, ha="center")
 
     add_axis_label_background(fig=fig, axes=axis, loc="south", margin=0.10)
 
@@ -1144,11 +1254,15 @@ def make_conditional_pdf_plot(categories, image_directory,
         plot_title = "Number of succeeded categories "
         hc_plot_title = "Distribution of scores per category"
 
-    legend = axis.legend(loc="lower left",
-                         title=plot_title,
-                         prop={"size": 10},
-                         bbox_to_anchor=(0.2, 0.02), frameon=False,
-                         bbox_transform=fig.transFigure, ncol=5)
+    legend = axis.legend(
+        loc="lower left",
+        title=plot_title,
+        prop={"size": 10},
+        bbox_to_anchor=(0.2, 0.02),
+        frameon=False,
+        bbox_transform=fig.transFigure,
+        ncol=5,
+    )
 
     legend._legend_box.align = "left"
     for patch in legend.get_patches():
@@ -1183,13 +1297,15 @@ def make_conditional_pdf_plot(categories, image_directory,
     plt.close()
 
 
-def make_verdeling_per_aantal_categorie(categories, image_directory,
-                                        show_plots=False,
-                                        export_highcharts=False,
-                                        highcharts_directory=None,
-                                        cache_directory=None,
-                                        english=False,
-                                        ):
+def make_verdeling_per_aantal_categorie(
+    categories,
+    image_directory,
+    show_plots=False,
+    export_highcharts=False,
+    highcharts_directory=None,
+    cache_directory=None,
+    english=False,
+):
     outfile = Path(categories["categories_output_file"])
     if cache_directory is not None:
         outfile = Path(cache_directory) / outfile
@@ -1219,7 +1335,9 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
 
     sum_of_all_categories = sum_per_number_of_cat_df.sum()
 
-    percentage_per_number_of_cat = 100 * sum_per_number_of_cat_df / sum_of_all_categories
+    percentage_per_number_of_cat = (
+        100 * sum_per_number_of_cat_df / sum_of_all_categories
+    )
 
     if hc_title := plot_settings.get("highcharts_label"):
         title = hc_title
@@ -1245,7 +1363,9 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
 
     hc_dir.mkdir(exist_ok=True, parents=True)
 
-    im_file = image_directory / Path("_".join([outfile.stem, image_key])).with_suffix(".pdf")
+    im_file = image_directory / Path("_".join([outfile.stem, image_key])).with_suffix(
+        ".pdf"
+    )
 
     figure_properties = CBSPlotSettings()
 
@@ -1267,10 +1387,14 @@ def make_verdeling_per_aantal_categorie(categories, image_directory,
     axis.set_xticklabels(xlabels, rotation=0, ha="right")
     sns.despine(ax=axis, left=True)
 
-    legend = axis.legend(loc="lower left",
-                         title=l_label,
-                         bbox_to_anchor=(0.2, 0.03), frameon=False,
-                         bbox_transform=fig.transFigure, ncol=5)
+    legend = axis.legend(
+        loc="lower left",
+        title=l_label,
+        bbox_to_anchor=(0.2, 0.03),
+        frameon=False,
+        bbox_transform=fig.transFigure,
+        ncol=5,
+    )
 
     legend._legend_box.align = "left"
     for patch in legend.get_patches():

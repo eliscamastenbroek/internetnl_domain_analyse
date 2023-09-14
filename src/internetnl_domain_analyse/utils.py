@@ -10,7 +10,7 @@ import requests
 import tldextract
 from tqdm import tqdm
 
-from ict_analyser.analyser_tool.utils import (reorganise_stat_df)
+from ict_analyser.analyser_tool.utils import reorganise_stat_df
 
 _logger = logging.getLogger(__name__)
 tld_logger = logging.getLogger("tldextract")
@@ -22,9 +22,11 @@ def read_tables_from_sqlite(filename: Path, table_names, index_name) -> pd.DataF
         table_names = [table_names]
 
     if not filename.exists():
-        _logger.warning("Records file not found. Make sure you set the environment variable "
-                        "RECORDS_CACHE_DIR or pass it via the command line argument "
-                        "--records_cache_dir")
+        _logger.warning(
+            "Records file not found. Make sure you set the environment variable "
+            "RECORDS_CACHE_DIR or pass it via the command line argument "
+            "--records_cache_dir"
+        )
         raise FileNotFoundError(f"Records file not found {filename.absolute()}")
 
     _logger.info(f"Reading from {filename}")
@@ -32,7 +34,9 @@ def read_tables_from_sqlite(filename: Path, table_names, index_name) -> pd.DataF
     tables = list()
     for table_name in table_names:
         _logger.debug(f"Reading table {table_name}")
-        df = pd.read_sql(f"select * from {table_name}", con=connection, index_col=index_name)
+        df = pd.read_sql(
+            f"select * from {table_name}", con=connection, index_col=index_name
+        )
         tables.append(df)
     _logger.debug(f"Done")
     if len(tables) > 1:
@@ -87,7 +91,9 @@ def get_clean_url(url, cache_dir=None):
                 clean_url = ".".join([tld.subdomain, tld.domain, tld.suffix])
             if clean_url is not None:
                 if " " in clean_url:
-                    _logger.debug(f"{clean_url} cannot be real url with space. skipping")
+                    _logger.debug(
+                        f"{clean_url} cannot be real url with space. skipping"
+                    )
                     clean_url = None
                 else:
                     # We hebben een url gevonden. Maak hem met kleine letters en sla de suffix op
@@ -119,9 +125,11 @@ def add_derived_variables(tables, variables):
         var_props = variables.loc[variable_name, :]
         eval_statement = var_props.get("eval")
         if eval_statement is None:
-            _logger.debug(f"Column {variable_name} does not exist but settings do not provide an eval statement.\n"
-                          f"Is ok, not all years have all properties defined. Only if an eval statement"
-                          f"is defined, we are going to add a new columns")
+            _logger.debug(
+                f"Column {variable_name} does not exist but settings do not provide an eval statement.\n"
+                f"Is ok, not all years have all properties defined. Only if an eval statement"
+                f"is defined, we are going to add a new columns"
+            )
             continue
 
         _logger.info(f"creating new column {variable_name} as {eval_statement}")
@@ -158,19 +166,29 @@ def fill_booleans(tables, translations, variables):
     return tables
 
 
-def prepare_stat_data_for_write(all_stats, file_base, variables, module_key, variable_key,
-                                breakdown_labels=None, n_digits=3, connection=None):
+def prepare_stat_data_for_write(
+    all_stats,
+    file_base,
+    variables,
+    module_key,
+    variable_key,
+    breakdown_labels=None,
+    n_digits=3,
+    connection=None,
+):
     data = pd.DataFrame.from_dict(all_stats)
     if connection is not None:
         data.to_sql(name=file_base, con=connection, if_exists="replace")
 
-    stat_df = reorganise_stat_df(records_stats=data,
-                                 variables=variables,
-                                 use_original_names=True,
-                                 module_key=module_key,
-                                 variable_key=variable_key,
-                                 n_digits=n_digits,
-                                 sort_index=False)
+    stat_df = reorganise_stat_df(
+        records_stats=data,
+        variables=variables,
+        use_original_names=True,
+        module_key=module_key,
+        variable_key=variable_key,
+        n_digits=n_digits,
+        sort_index=False,
+    )
     index_names = list(stat_df.index.names)
     new_index_names = index_names + [stat_df.columns[0]]
     stat_df = stat_df.reset_index().set_index(new_index_names, drop=True)
@@ -186,7 +204,7 @@ def prepare_stat_data_for_write(all_stats, file_base, variables, module_key, var
 
 
 def get_option_mask(question_df, variables, question_type, valid_options=None):
-    """  get the mask to filter the positive options from a question """
+    """get the mask to filter the positive options from a question"""
     mask_total = None
     if valid_options is None:
         options = ("Passed", "Yes", "Good")
@@ -205,9 +223,9 @@ def get_option_mask(question_df, variables, question_type, valid_options=None):
     return mask_total
 
 
-def impose_variable_defaults(variables,
-                             module_info: dict = None,
-                             module_key: str = None):
+def impose_variable_defaults(
+    variables, module_info: dict = None, module_key: str = None
+):
     """
     Impose default values to  the variables data frame
 
@@ -260,9 +278,22 @@ def impose_variable_defaults(variables,
         # defined for the current variable, copy it to the associate column in the data frame
         # such that we can access it more easily
         for name in (
-                "type", "fixed", "original_name", "question", "label", "check", "optional",
-                "gewicht", "no_impute", "info_per_breakdown", "report_number", "section",
-                "keep_options", "eval", "unit"):
+            "type",
+            "fixed",
+            "original_name",
+            "question",
+            "label",
+            "check",
+            "optional",
+            "gewicht",
+            "no_impute",
+            "info_per_breakdown",
+            "report_number",
+            "section",
+            "keep_options",
+            "eval",
+            "unit",
+        ):
             try:
                 variables.loc[var_key, name] = var_prop[name]
             except ValueError:
@@ -305,33 +336,35 @@ def impose_variable_defaults(variables,
             try:
                 module_include = module_info[module_name]["include"]
             except KeyError:
-                _logger.warning("failed to get the include flag from {}".format(module_name))
+                _logger.warning(
+                    "failed to get the include flag from {}".format(module_name)
+                )
             else:
                 variables.loc[var_key, "module_include"] = module_include
 
     # create data frame of one columns from the option dictionaries.
-    opt_df = pd.DataFrame.from_dict(options, orient="index").rename(columns={0: "options"})
+    opt_df = pd.DataFrame.from_dict(options, orient="index").rename(
+        columns={0: "options"}
+    )
     opt_df = opt_df[opt_df.index != dummy]
 
-    filter_df = pd.DataFrame.from_dict(filter_dummy, orient="index").rename(columns={0: "filter"})
+    filter_df = pd.DataFrame.from_dict(filter_dummy, orient="index").rename(
+        columns={0: "filter"}
+    )
     filter_df = filter_df[filter_df.index != dummy]
 
     trans_df = pd.DataFrame.from_dict(translate, orient="index").rename(
-        columns={0: "translateopts"})
+        columns={0: "translateopts"}
+    )
     trans_df = trans_df[trans_df.index != dummy]
 
     # drop the original column with properties
-    variables.drop(["properties"],
-                   inplace=True,
-                   axis=1)
+    variables.drop(["properties"], inplace=True, axis=1)
 
     # merge the options column with the rest of the columns
-    variables = pd.concat([variables, opt_df],
-                          axis=1)
-    variables = pd.concat([variables, filter_df],
-                          axis=1)
-    variables = pd.concat([variables, trans_df],
-                          axis=1)
+    variables = pd.concat([variables, opt_df], axis=1)
+    variables = pd.concat([variables, filter_df], axis=1)
+    variables = pd.concat([variables, trans_df], axis=1)
 
     # check if we have a dict data type that does not has a option field set. In that case
     # raise a warning: all the dict type need the options defined
@@ -349,8 +382,7 @@ def add_missing_groups(all_stats, group_by, group_by_original, missing_groups):
         for gb_new, gb_org in zip(group_by, group_by_original):
             data_df.index = data_df.index.rename(gb_org)
         if missing_groups is not None:
-            df_extra = pd.DataFrame(index=missing_groups,
-                                    columns=data_df.columns)
+            df_extra = pd.DataFrame(index=missing_groups, columns=data_df.columns)
             data_df = pd.concat([df_extra, data_df])
             new_stats[indicator] = data_df
     return new_stats
@@ -405,10 +437,14 @@ def clean_all_suffix(dataframe, suffix_key, variables):
 
 def get_all_clean_urls(urls, show_progress=False, cache_directory=None):
     if show_progress:
-        progress_bar = tqdm(total=urls.size, file=sys.stdout, position=0,
-                            ncols=100,
-                            leave=True,
-                            colour="GREEN")
+        progress_bar = tqdm(
+            total=urls.size,
+            file=sys.stdout,
+            position=0,
+            ncols=100,
+            leave=True,
+            colour="GREEN",
+        )
     else:
         progress_bar = None
 
@@ -430,9 +466,9 @@ def get_all_clean_urls(urls, show_progress=False, cache_directory=None):
 
 
 def get_windows_or_linux_value(value):
-    """ Pas de waarde aan als deze in een dict gegeven is met een windows en linux veld """
+    """Pas de waarde aan als deze in een dict gegeven is met een windows en linux veld"""
     if isinstance(value, dict):
-        if 'win' in sys.platform:
+        if "win" in sys.platform:
             new_value = value["windows"]
         else:
             new_value = value["linux"]
@@ -443,7 +479,7 @@ def get_windows_or_linux_value(value):
 
 
 def dump_data_frame_as_sqlite(dataframe, file_name):
-    """ Dump data als sqlite, maar zorg dat je duplicates eruit haalt """
+    """Dump data als sqlite, maar zorg dat je duplicates eruit haalt"""
 
     # maak lower van de columnnamen want sqlite is case insensitive
     is_duplicated_column = dataframe.columns.str.lower().duplicated()
@@ -454,4 +490,3 @@ def dump_data_frame_as_sqlite(dataframe, file_name):
     _logger.info(f"Writing cache as sqlite {file_name}")
     with sqlite3.connect(file_name) as connection:
         clean_df.to_sql(name="table", con=connection, if_exists="replace")
-
