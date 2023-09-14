@@ -17,16 +17,16 @@ general:
         do_it: true
         data_file: data/2023/internet_nl_web_all_2023.sqlite
     all_mail:
-#      2020:
-#        # If data file is none, we don´t load the data, but we add the year as none to keep
-#        # the legend the same
-#        data_file:
-#      2021:
-#        do_it: true
-#        data_file: data/2021/internet_nl_mail_all_21.sqlite
-#      2022:
-#        do_it: true
-#        data_file: data/2022/internet_nl_mail_all_22.sqlite
+      #      2020:
+      #        # If data file is none, we don´t load the data, but we add the year as none to keep
+      #        # the legend the same
+      #        data_file:
+      #      2021:
+      #        do_it: true
+      #        data_file: data/2021/internet_nl_mail_all_21.sqlite
+      #      2022:
+      #        do_it: true
+      #        data_file: data/2022/internet_nl_mail_all_22.sqlite
       2023:
         do_it: true
         data_file: data/2023/internet_nl_mail_all_23.sqlite
@@ -299,14 +299,14 @@ plots:
         all_mail:
           percentage:
             highcharts_info_per_year:
-#              2021:
-#                highcharts_directory: hoofdstuk4/Fig_4_3_1_a
-#                highcharts_label: "4.3.1(a) Verdeling van de email-scan Internet.nl-score voor bedrijven met 2 of meer werknemers
-#                voor  2021"
-#              2022:
-#                highcharts_directory: hoofdstuk4/Fig_4_3_1_b
-#                highcharts_label: "4.3.1(b) Verdeling van de email-scan Internet.nl-score voor bedrijven met 2 of meer werknemers
-#                voor  2022"
+              #              2021:
+              #                highcharts_directory: hoofdstuk4/Fig_4_3_1_a
+              #                highcharts_label: "4.3.1(a) Verdeling van de email-scan Internet.nl-score voor bedrijven met 2 of meer werknemers
+              #                voor  2021"
+              #              2022:
+              #                highcharts_directory: hoofdstuk4/Fig_4_3_1_b
+              #                highcharts_label: "4.3.1(b) Verdeling van de email-scan Internet.nl-score voor bedrijven met 2 of meer werknemers
+              #                voor  2022"
               2023:
                 highcharts_directory: hoofdstuk4/Fig_4_3_1
                 highcharts_label: "4.3.1 Verdeling van de email-scan Internet.nl-score voor bedrijven met 2 of meer werknemers 
