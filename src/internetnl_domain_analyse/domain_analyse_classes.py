@@ -439,7 +439,7 @@ class DomainAnalyser:
                     sheet_name = sheet_name[:30] + "{:02d}".format(cnt)
                 cnt += 1
                 sheets.append(sheets)
-                stat_df.to_excel(writer, sheet_name)
+                stat_df.to_excel(excel_writer=writer, sheet_name=sheet_name)
 
     def calculate_statistics_one_breakdown(self, group_by):
 

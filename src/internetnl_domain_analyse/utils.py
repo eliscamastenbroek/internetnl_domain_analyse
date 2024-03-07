@@ -383,6 +383,7 @@ def add_missing_groups(all_stats, group_by, group_by_original, missing_groups):
             data_df.index = data_df.index.rename(gb_org)
         if missing_groups is not None:
             df_extra = pd.DataFrame(index=missing_groups, columns=data_df.columns)
+            df_extra = df_extra.astype(data_df.dtypes)
             data_df = pd.concat([df_extra, data_df])
             new_stats[indicator] = data_df
     return new_stats
