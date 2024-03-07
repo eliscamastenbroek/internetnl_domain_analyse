@@ -11,6 +11,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from pandas import DataFrame, Series
 import yaml
 
 from ict_analyser.analyser_tool.sample_statistics import SampleStatistics
@@ -368,7 +369,7 @@ class DomainAnalyser:
 
         return cache_exists
 
-    def variable_dict2df(self, variables, module_info: dict = None) -> pd.DataFrame:
+    def variable_dict2df(self, variables, module_info: dict = None) -> DataFrame:
         """
         Converteer de directory met variable info naar een data frame
         Args:
@@ -448,7 +449,7 @@ class DomainAnalyser:
                 self.dataframe, index_names=index_names, units_key="units"
             )
         except KeyError:
-            _logger.info(f"Breakdonw on {index_names} does not exist")
+            _logger.info(f"Breakdown on {index_names} does not exist")
             return None, None
 
         all_stats = dict()
@@ -495,6 +496,10 @@ class DomainAnalyser:
                 _logger.info(f"Failed to get selection of {column}. Skipping")
                 continue
 
+            if data is None:
+                _logger.warning(f"Could not get data selection for {var_key}. Skipping")
+                continue
+
             stats = SampleStatistics(
                 group_keys=group_by,
                 records_df_selection=data,
@@ -514,27 +519,11 @@ class DomainAnalyser:
                 all_stats[column] = stats.records_sum
             else:
                 all_stats[column] = stats.records_weighted_mean_agg
-            all_hist[var_key] = dict()
-            try:
-                for grp_key, df in data.groupby(level=0, axis=0):
-                    ww = df_weights.loc[grp_key, "ratio_units"].to_numpy()
-                    dd = df.loc[grp_key, var_key].to_numpy()
-                    try:
-                        all_hist[var_key][grp_key] = np.histogram(
-                            dd,
-                            weights=ww,
-                            density=False,
-                            bins=self.n_bins,
-                            range=(0, 100),
-                        )
-                    except ValueError as err:
-                        _logger.warning("Fails for dicts. Skip for now")
-                        all_hist[var_key][grp_key] = None
-                    else:
-                        _logger.debug(f"Success with {var_key}")
-            except KeyError:
-                pass
 
+            # voeg hier het histogram van de data toe
+            all_hist[var_key] = calculate_histogram_per_breakdown(
+                data, var_key=var_key, df_weights=df_weights, n_bins=self.n_bins
+            )
         return all_stats, all_hist
 
     def get_correct_categories_count(self):
@@ -697,6 +686,7 @@ class DomainAnalyser:
 
         self.all_stats_per_format = dict()
         self.all_hist_per_format = dict()
+        missing_groups = None
 
         for file_base, props in self.statistics.items():
             scan_data = props.get("scan_data", self.scan_data_key)
@@ -1641,3 +1631,62 @@ def add_missing_years(plot_df, years_to_plot=None, jaar_level_name="Jaar", colum
         plot_df = df.reset_index().set_index(index_names, drop=True)
 
     return plot_df
+
+
+def calculate_histogram_per_breakdown(
+    data: DataFrame, var_key: str, df_weights: Series, n_bins: int = 100
+) -> dict:
+    """
+    Bereken per breakdown van de data het histogram die hoort bij var_key
+
+    Parameters
+    ----------
+    data: DataFrame
+        De data met breakdown op de index
+    var_key: str
+        De naam van de kolom waarvoor we de histogram gaan berekenen
+    df_weights: Series
+        De weegfactoren die we voor de histogram gebruiken
+    n_bins: int
+        Aan binnen in het histogram
+
+    Returns
+    -------
+    dict:
+        De histogrammen per breakdown
+
+
+    """
+
+    histogram_per_breakdown = dict()
+
+    for grp_key, df in data.groupby(level=0):
+        # initieer histogram voor deze breakdown met None
+        histogram_per_breakdown[grp_key] = None
+
+        try:
+            ww = df_weights.loc[grp_key, "ratio_units"].to_numpy()
+        except KeyError:
+            _logger.debug("Could not get weight factors. Skip for now")
+            continue
+        try:
+            dd = df.loc[grp_key, var_key].to_numpy()
+        except KeyError:
+            _logger.debug(f"Could not get data belonging to {var_key}. Skip for now")
+            continue
+
+        try:
+            histogram = np.histogram(
+                dd,
+                weights=ww,
+                density=False,
+                bins=n_bins,
+                range=(0, 100),
+            )
+        except ValueError as err:
+            _logger.warning("Fails for dicts. Skip for now")
+        else:
+            _logger.debug(f"Success with {var_key}")
+            histogram_per_breakdown[grp_key] = histogram
+
+    return histogram_per_breakdown
