@@ -816,7 +816,22 @@ class DomainAnalyser:
             # the first column is left out as that is the url name
             tables.dropna(axis=0, how="all", subset=tables.columns[1:], inplace=True)
 
-            tables.fillna("nan", inplace=True)
+            # split the tables in numerical and non-numerical part and fill with either NA (for
+            # numerical) or with 'nan' for strings.
+            original_columns = tables.columns
+            tables_num = tables.select_dtypes(include="number")
+            number_columns = tables_num.columns
+            non_number_columns = [col for col in original_columns if col not in number_columns]
+            tables_non_num = tables[non_number_columns]
+
+            # fill with NA for numerical values and 'nan' for non-numerical values
+            tables_num = tables_num.fillna(pd.NA)
+            tables_non_num = tables_non_num.fillna("nan")
+
+            # put back to one data frame again and set order equal to orignal dataframe
+            tables = pd.concat([tables_num, tables_non_num], axis=1)
+            tables = tables[original_columns]
+
             self.translations["nans"] = dict(nan=0)
 
             if self.translations is not None:
