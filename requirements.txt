@@ -1,6 +1,7 @@
 cbsplotlib
 ict_analyser
-matplotlib
+internetnl-scan
+openpyxl
 PyLaTeX
 PyYAML
 setuptools
