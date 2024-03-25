@@ -1,10 +1,8 @@
 cbsplotlib
 ict_analyser
-importlib_metadata
 matplotlib
 PyLaTeX
 PyYAML
-setuptools
 setuptools
 tldextract
 tqdm
