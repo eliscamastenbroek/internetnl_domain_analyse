@@ -821,7 +821,9 @@ class DomainAnalyser:
             original_columns = tables.columns
             tables_num = tables.select_dtypes(include="number")
             number_columns = tables_num.columns
-            non_number_columns = [col for col in original_columns if col not in number_columns]
+            non_number_columns = [
+                col for col in original_columns if col not in number_columns
+            ]
             tables_non_num = tables[non_number_columns]
 
             # fill with NA for numerical values and 'nan' for non-numerical values
