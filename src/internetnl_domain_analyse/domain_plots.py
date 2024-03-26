@@ -252,10 +252,7 @@ def make_bar_plot_horizontal(
     unit=None,
     english=False,
 ):
-    x_ticks = axis.get_xticks()
-    min_x = x_ticks[0]
-    max_x = x_ticks[-1]
-    x_range = max_x - min_x
+    x_range = None
     try:
         plot_df.plot(kind="barh", ax=axis, rot=0, legend=None)
     except IndexError as err:
@@ -267,6 +264,10 @@ def make_bar_plot_horizontal(
         # put the high
         axis.invert_yaxis()
 
+        xticks = axis.get_xticks()
+        min_x = xticks[0]
+        max_x = xticks[-1]
+        x_range = max_x - min_x
         if y_max_bar_plot is not None:
             axis.set_xlim((0, y_max_bar_plot))
         else:
@@ -660,10 +661,8 @@ def make_bar_plot_stacked(
 
     x_label = None
     y_label = None
-    x_ticks = axis.get_xticks()
-    min_x = x_ticks[0]
-    max_x = x_ticks[-1]
-    x_range = max_x - min_x
+    y_lim = None
+    x_range = None
 
     renames = dict()
     for nr, name in translations.items():
@@ -685,6 +684,10 @@ def make_bar_plot_stacked(
         # put the high
         axis.invert_yaxis()
 
+        xticks = axis.get_xticks()
+        min_x = xticks[0]
+        max_x = xticks[-1]
+        x_range = max_x - min_x
         if y_max_bar_plot is not None:
             axis.set_xlim((0, y_max_bar_plot))
         else:
