@@ -248,9 +248,14 @@ def make_bar_plot_horizontal(
     y_spacing_bar_plot,
     y_max_bar_plot,
     legend_position,
+    legend_max_columns,
     unit=None,
     english=False,
 ):
+    x_ticks = axis.get_xticks()
+    min_x = x_ticks[0]
+    max_x = x_ticks[-1]
+    x_range = max_x - min_x
     try:
         plot_df.plot(kind="barh", ax=axis, rot=0, legend=None)
     except IndexError as err:
@@ -262,10 +267,6 @@ def make_bar_plot_horizontal(
         # put the high
         axis.invert_yaxis()
 
-        xticks = axis.get_xticks()
-        min_x = xticks[0]
-        max_x = xticks[-1]
-        x_range = max_x - min_x
         if y_max_bar_plot is not None:
             axis.set_xlim((0, y_max_bar_plot))
         else:
@@ -302,6 +303,8 @@ def make_bar_plot_horizontal(
         )
 
         number_of_columns = plot_df.columns.values.size
+        if legend_max_columns is not None and number_of_columns > legend_max_columns:
+            number_of_columns = legend_max_columns
         if legend_position is None:
             legend_bbox_to_anchor = (0.02, 0.00)
         else:
@@ -343,6 +346,7 @@ def make_bar_plot_vertical(
     unit=None,
     english=False,
 ):
+    y_label = ""
     try:
         plot_df.plot(kind="bar", ax=axis, rot=0, legend=None)
     except IndexError as err:
@@ -420,6 +424,7 @@ def make_bar_plot(
     y_spacing_bar_plot=None,
     translations=None,
     legend_position=None,
+    legend_max_columns=None,
     box_margin=None,
     export_svg=False,
     export_highcharts=False,
@@ -515,6 +520,7 @@ def make_bar_plot(
             y_spacing_bar_plot=y_spacing_bar_plot,
             y_max_bar_plot=y_max_bar_plot,
             legend_position=legend_position,
+            legend_max_columns=legend_max_columns,
             unit=unit,
             english=english,
         )
@@ -654,7 +660,10 @@ def make_bar_plot_stacked(
 
     x_label = None
     y_label = None
-    y_lim = None
+    x_ticks = axis.get_xticks()
+    min_x = x_ticks[0]
+    max_x = x_ticks[-1]
+    x_range = max_x - min_x
 
     renames = dict()
     for nr, name in translations.items():
@@ -676,10 +685,6 @@ def make_bar_plot_stacked(
         # put the high
         axis.invert_yaxis()
 
-        xticks = axis.get_xticks()
-        min_x = xticks[0]
-        max_x = xticks[-1]
-        x_range = max_x - min_x
         if y_max_bar_plot is not None:
             axis.set_xlim((0, y_max_bar_plot))
         else:
@@ -1339,8 +1344,12 @@ def make_verdeling_per_aantal_categorie(
         100 * sum_per_number_of_cat_df / sum_of_all_categories
     )
 
+    x_label = "undefined x"
+    y_label = "undefined y"
     if hc_title := plot_settings.get("highcharts_label"):
         title = hc_title
+        hc_plot_title = "undefined"
+        l_label = "undefined"
     else:
         if not english:
             x_label = "Aantal geslaagde categorieën"

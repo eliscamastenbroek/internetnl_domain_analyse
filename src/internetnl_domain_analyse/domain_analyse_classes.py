@@ -1193,6 +1193,7 @@ class DomainPlotter:
             y_spacing_pdf_plot = plot_prop.get("y_spacing_pdf_plot", 5)
             y_max_bar_plot = plot_prop.get("y_max_bar_plot")
             legend_position = plot_prop.get("legend_position")
+            legend_max_columns = plot_prop.get("legend_max_columns")
             y_spacing_bar_plot = plot_prop.get("y_spacing_bar_plot")
 
             box_margin = plot_prop.get("box_margin")
@@ -1489,6 +1490,7 @@ class DomainPlotter:
                                     highcharts_directory=highcharts_directory,
                                     title=title,
                                     legend_position=legend_pos,
+                                    legend_max_columns=legend_max_columns,
                                     normalize_data=normalize_data,
                                     force_plot=self.force_plots,
                                     enable_highcharts_legend=plot_info.enable_highcharts_legend,
