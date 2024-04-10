@@ -14,13 +14,12 @@ import pandas as pd
 from pandas import DataFrame, Series
 import yaml
 
-from weighted_sample_statistics import Weightedweighted_sample_statistics
-from ict_analyser.analyser_tool.utils import (
-    prepare_df_for_statistics,
+from weighted_sample_statistics import (WeightedSampleStatistics, VariableProperties)
+from weighted_sample_statistics import (
     get_records_select,
     rename_all_variables,
+    prepare_df_for_statistics
 )
-from ict_analyser.analyser_tool.variable_properties import VariableProperties
 from internetnl_domain_analyse.domain_plots import (
     make_cdf_plot,
     make_bar_plot,
@@ -55,7 +54,7 @@ def make_plot_cache_file_name(cache_directory, file_base, prefix):
 
 class ImageFileInfo:
     def __init__(
-        self, scan_data_key, cache_file_name_base="image_info", cache_directory="cache"
+            self, scan_data_key, cache_file_name_base="image_info", cache_directory="cache"
     ):
         self.scan_data_key = scan_data_key
         self.cache_directory = Path(cache_directory)
@@ -68,14 +67,14 @@ class ImageFileInfo:
         self.data = None
 
     def add_entry(
-        self,
-        plot_key,
-        plot_info,
-        image_key,
-        sub_image_label,
-        file_name,
-        tex_right_shift=None,
-        section=None,
+            self,
+            plot_key,
+            plot_info,
+            image_key,
+            sub_image_label,
+            file_name,
+            tex_right_shift=None,
+            section=None,
     ):
         """add a new entry"""
 
@@ -117,7 +116,7 @@ class ImageFileInfo:
         """Lees de cache"""
         if self.cache_file_name.exists():
             with codecs.open(
-                self.cache_file_name.as_posix(), "r", encoding="UTF-8"
+                    self.cache_file_name.as_posix(), "r", encoding="UTF-8"
             ) as stream:
                 self.data = yaml.load(stream=stream, Loader=yaml.Loader)
         else:
@@ -126,7 +125,7 @@ class ImageFileInfo:
     def write_cache(self):
         """Schrijf de cache"""
         with codecs.open(
-            self.cache_file_name.as_posix(), "w", encoding="UTF-8"
+                self.cache_file_name.as_posix(), "w", encoding="UTF-8"
         ) as stream:
             yaml.dump(data=self.data, stream=stream, Dumper=yaml.Dumper)
 
@@ -188,35 +187,35 @@ class RecordsCacheInfo:
 
 class DomainAnalyser:
     def __init__(
-        self,
-        scan_data_key=None,
-        cache_file_base="tables_df",
-        cache_directory_base_name=None,
-        tld_extract_cache_directory=None,
-        output_file=None,
-        reset=None,
-        records_cache_info: RecordsCacheInfo = None,
-        internet_nl_filename=None,
-        breakdown_labels=None,
-        statistics: dict = None,
-        default_scan=None,
-        variables: dict = None,
-        module_info: dict = None,
-        weights=None,
-        url_key="website_url",
-        suffix_key="suffix",
-        translations=None,
-        module_key="module",
-        variable_key="variable",
-        sheet_renames=None,
-        n_digits=None,
-        write_dataframe_to_sqlite=False,
-        statistics_to_xls=False,
-        n_bins=100,
-        mode=None,
-        correlations=None,
-        categories=None,
-        dump_cache_as_sqlite=False,
+            self,
+            scan_data_key=None,
+            cache_file_base="tables_df",
+            cache_directory_base_name=None,
+            tld_extract_cache_directory=None,
+            output_file=None,
+            reset=None,
+            records_cache_info: RecordsCacheInfo = None,
+            internet_nl_filename=None,
+            breakdown_labels=None,
+            statistics: dict = None,
+            default_scan=None,
+            variables: dict = None,
+            module_info: dict = None,
+            weights=None,
+            url_key="website_url",
+            suffix_key="suffix",
+            translations=None,
+            module_key="module",
+            variable_key="variable",
+            sheet_renames=None,
+            n_digits=None,
+            write_dataframe_to_sqlite=False,
+            statistics_to_xls=False,
+            n_bins=100,
+            mode=None,
+            correlations=None,
+            categories=None,
+            dump_cache_as_sqlite=False,
     ):
 
         _logger.info(f"Running here {os.getcwd()}")
@@ -513,8 +512,8 @@ class DomainAnalyser:
             )
 
             if (
-                not np.isnan(var_prop_klass.report_number)
-                and var_prop_klass.report_number
+                    not np.isnan(var_prop_klass.report_number)
+                    and var_prop_klass.report_number
             ):
                 all_stats[column] = stats.records_sum
             else:
@@ -617,9 +616,9 @@ class DomainAnalyser:
     def calculate_correlations_and_scores(self):
 
         if (
-            self.corr_pkl_file.exists()
-            and self.score_pkl_file.exists()
-            and self.reset is None
+                self.corr_pkl_file.exists()
+                and self.score_pkl_file.exists()
+                and self.reset is None
         ):
             _logger.info(
                 f"Cache {self.corr_pkl_file} and {self.score_pkl_file} already exist. "
@@ -708,7 +707,7 @@ class DomainAnalyser:
             group_by = list(props["groupby"].values())
             group_by_original = None
             if (
-                group_by_if_not_exist := props.get("groupby_if_not_exist")
+                    group_by_if_not_exist := props.get("groupby_if_not_exist")
             ) and self.dataframe is not None:
                 have_missing_groups = False
                 for group in group_by:
@@ -984,39 +983,39 @@ class DomainAnalyser:
 
 class DomainPlotter:
     def __init__(
-        self,
-        scan_data,
-        scan_data_key=None,
-        default_scan=None,
-        plot_info=None,
-        show_plots=False,
-        barh=False,
-        image_directory=None,
-        cache_directory=None,
-        image_type="pdf",
-        max_plots=None,
-        tex_prepend_path=None,
-        statistics=None,
-        variables=None,
-        cdf_plot=False,
-        bar_plot=False,
-        cor_plot=False,
-        cumulative=False,
-        show_title=False,
-        breakdown_labels=None,
-        translations: dict = None,
-        export_highcharts=False,
-        highcharts_directory=None,
-        correlations=None,
-        tex_horizontal_shift=None,
-        bovenschrift=True,
-        variables_to_plot=None,
-        exclude_variables=None,
-        force_plots=False,
-        latex_files=False,
-        years_to_add_to_plot_legend=None,
-        module_info=None,
-        english=False,
+            self,
+            scan_data,
+            scan_data_key=None,
+            default_scan=None,
+            plot_info=None,
+            show_plots=False,
+            barh=False,
+            image_directory=None,
+            cache_directory=None,
+            image_type="pdf",
+            max_plots=None,
+            tex_prepend_path=None,
+            statistics=None,
+            variables=None,
+            cdf_plot=False,
+            bar_plot=False,
+            cor_plot=False,
+            cumulative=False,
+            show_title=False,
+            breakdown_labels=None,
+            translations: dict = None,
+            export_highcharts=False,
+            highcharts_directory=None,
+            correlations=None,
+            tex_horizontal_shift=None,
+            bovenschrift=True,
+            variables_to_plot=None,
+            exclude_variables=None,
+            force_plots=False,
+            latex_files=False,
+            years_to_add_to_plot_legend=None,
+            module_info=None,
+            english=False,
     ):
 
         self.english = english
@@ -1222,12 +1221,12 @@ class DomainPlotter:
             if stats_df is not None:
 
                 for module_name, module_df in stats_df.groupby(
-                    level=module_level_name, sort=False
+                        level=module_level_name, sort=False
                 ):
                     do_this_module = True
                     for mod_key, mod_prop in module_info.items():
                         if mod_prop.get("label") == module_name and not mod_prop.get(
-                            "include", True
+                                "include", True
                         ):
                             do_this_module = False
                     if not do_this_module:
@@ -1237,7 +1236,7 @@ class DomainPlotter:
                     if stop_plotting:
                         break
                     for question_name, question_df in module_df.groupby(
-                        level=question_level_name, sort=False
+                            level=question_level_name, sort=False
                     ):
                         _logger.debug(f"Question {question_name}")
 
@@ -1289,11 +1288,11 @@ class DomainPlotter:
                         if cdf_prop := cdf_variables.get(original_name):
                             highcharts_directory_cdf = self.highcharts_directory
                             if highcharts_info_per_year := cdf_prop.get(
-                                "highcharts_info_per_year"
+                                    "highcharts_info_per_year"
                             ):
                                 for (
-                                    hc_year_key,
-                                    hc_year_prop,
+                                        hc_year_key,
+                                        hc_year_prop,
                                 ) in highcharts_info_per_year.items():
                                     hc_dir = highcharts_directory_cdf / Path(
                                         hc_year_prop["highcharts_directory"]
@@ -1314,7 +1313,7 @@ class DomainPlotter:
                         if plot_info.directory is not None:
                             # we overschrijven hier de subdir die onder de statistiek opgegeven is
                             highcharts_directory = (
-                                self.highcharts_directory / plot_info.directory
+                                    self.highcharts_directory / plot_info.directory
                             )
                         else:
                             if plot_bar:
@@ -1395,7 +1394,7 @@ class DomainPlotter:
                                 ref_stat_df = reference_lines[ref_key]["data"]
                                 ref_quest_df = None
                                 for ref_quest_name, ref_quest_df in ref_stat_df.groupby(
-                                    level=question_level_name
+                                        level=question_level_name
                                 ):
                                     if ref_quest_name == question_name:
                                         break
@@ -1653,7 +1652,7 @@ def add_missing_years(plot_df, years_to_plot=None, jaar_level_name="Jaar", colum
 
 
 def calculate_histogram_per_breakdown(
-    data: DataFrame, var_key: str, df_weights: Series, n_bins: int = 100
+        data: DataFrame, var_key: str, df_weights: Series, n_bins: int = 100
 ) -> dict:
     """
     Bereken per breakdown van de data het histogram die hoort bij var_key
