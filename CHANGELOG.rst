@@ -2,7 +2,7 @@
 Changelog
 =========
 
-Version 1.8.8
+Version 1.8.9
 =============
 - Nu statistieken op basis van weighted_sample_statistics
 
