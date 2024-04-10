@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from internetnl_scan.utils import get_clean_url
 
-from weighted_sample_statistics import reorganize_stat_df
+from weighted_sample_statistics import reorganise_stat_df
 
 _logger = logging.getLogger(__name__)
 tld_logger = logging.getLogger("tldextract")
