@@ -14,7 +14,7 @@ import pandas as pd
 from pandas import DataFrame, Series
 import yaml
 
-from ict_analyser.analyser_tool.sample_statistics import SampleStatistics
+from weighted_sample_statistics import Weightedweighted_sample_statistics
 from ict_analyser.analyser_tool.utils import (
     prepare_df_for_statistics,
     get_records_select,
