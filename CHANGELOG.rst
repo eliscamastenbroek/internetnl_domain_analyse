@@ -2,6 +2,10 @@
 Changelog
 =========
 
+Version 1.8.8
+=============
+- Nu statistieken op basis van weighted_sample_statistics
+
 Version 1.8.7
 =============
 - Nu kan je breakdowns ook als combinaties geven. Nodig voor publicatie 2023
