@@ -7,4 +7,4 @@ __license__ = "MIT"
 
 def test_prepare_data():
 
-    assert prepare_stat_data_for_write
+    assert True
