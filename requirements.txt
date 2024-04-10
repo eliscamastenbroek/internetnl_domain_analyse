@@ -1,4 +1,3 @@
-weighted_sample_statistics
 cbsplotlib
 PyLaTeX
 PyYAML
@@ -11,3 +10,5 @@ matplotlib
 numpy
 seaborn
 requests
+openpyxl
+internetnl-scan
