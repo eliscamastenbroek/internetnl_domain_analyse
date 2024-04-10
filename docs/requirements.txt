@@ -16,4 +16,4 @@ numpy
 seaborn
 requests
 openpyxl
-internetnl-scan
+weighted_sample_statistics
