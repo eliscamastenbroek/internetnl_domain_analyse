@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from internetnl_scan.utils import get_clean_url
 
-from ict_analyser.analyser_tool.utils import reorganise_stat_df
+from weighted_sample_statistics import reorganize_stat_df
 
 _logger = logging.getLogger(__name__)
 tld_logger = logging.getLogger("tldextract")
@@ -116,14 +116,14 @@ def fill_booleans(tables, translations, variables):
 
 
 def prepare_stat_data_for_write(
-    all_stats,
-    file_base,
-    variables,
-    module_key,
-    variable_key,
-    breakdown_labels=None,
-    n_digits=3,
-    connection=None,
+        all_stats,
+        file_base,
+        variables,
+        module_key,
+        variable_key,
+        breakdown_labels=None,
+        n_digits=3,
+        connection=None,
 ):
     data = pd.DataFrame.from_dict(all_stats)
     if connection is not None:
@@ -173,7 +173,7 @@ def get_option_mask(question_df, variables, question_type, valid_options=None):
 
 
 def impose_variable_defaults(
-    variables, module_info: dict = None, module_key: str = None
+        variables, module_info: dict = None, module_key: str = None
 ):
     """
     Impose default values to  the variables data frame
@@ -227,21 +227,21 @@ def impose_variable_defaults(
         # defined for the current variable, copy it to the associate column in the data frame
         # such that we can access it more easily
         for name in (
-            "type",
-            "fixed",
-            "original_name",
-            "question",
-            "label",
-            "check",
-            "optional",
-            "gewicht",
-            "no_impute",
-            "info_per_breakdown",
-            "report_number",
-            "section",
-            "keep_options",
-            "eval",
-            "unit",
+                "type",
+                "fixed",
+                "original_name",
+                "question",
+                "label",
+                "check",
+                "optional",
+                "gewicht",
+                "no_impute",
+                "info_per_breakdown",
+                "report_number",
+                "section",
+                "keep_options",
+                "eval",
+                "unit",
         ):
             try:
                 variables.loc[var_key, name] = var_prop[name]
