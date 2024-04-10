@@ -499,7 +499,7 @@ class DomainAnalyser:
                 _logger.warning(f"Could not get data selection for {var_key}. Skipping")
                 continue
 
-            stats = SampleStatistics(
+            stats = WeightedSampleStatistics(
                 group_keys=group_by,
                 records_df_selection=data,
                 weights_df=df_weights,
