@@ -511,7 +511,7 @@ class DomainAnalyser:
                 report_numbers=var_prop_klass.report_number,
             )
 
-            stats.activate()
+            stats.calculate()
 
             if (
                     not np.isnan(var_prop_klass.report_number)
@@ -1704,7 +1704,7 @@ def calculate_histogram_per_breakdown(
                 range=(0, 100),
             )
         except ValueError as err:
-            _logger.warning("Fails for dicts. Skip for now")
+            _logger.debug("Fails for dicts. Skip for now")
         else:
             _logger.debug(f"Success with {var_key}")
             histogram_per_breakdown[grp_key] = histogram
