@@ -500,8 +500,10 @@ class DomainAnalyser:
                 continue
 
             if data.index.size < df_weights.index.size:
-                _logger.debug("we filtered data. Also filter the weights")
-                df_weights.reindex(data.index)
+                _logger.info(
+                    f"we filtered data, reducing from {df_weights.index.size} to {data.index.size}"
+                )
+                df_weights = df_weights.reindex(data.index)
 
             stats = WeightedSampleStatistics(
                 group_keys=group_by,
