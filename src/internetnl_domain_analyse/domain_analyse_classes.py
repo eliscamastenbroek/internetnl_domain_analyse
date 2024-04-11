@@ -496,8 +496,12 @@ class DomainAnalyser:
                 continue
 
             if data is None:
-                _logger.warning(f"Could not get data selection for {var_key}. Skipping")
+                _logger.info(f"Could not get data selection for {var_key}. Skipping")
                 continue
+
+            if data.index.size < df_weights.index.size:
+                _logger.debug("we filtered data. Also filter the weights")
+                df_weights.reindex(data.index)
 
             stats = WeightedSampleStatistics(
                 group_keys=group_by,
@@ -1533,7 +1537,7 @@ class DomainPlotter:
                                 ):
                                     for grp_key, hist in hist_info.items():
                                         if hist is None:
-                                            _logger.debug(
+                                            _logger.warning(
                                                 f"Hist {grp_key} does not have a histogram. Skipping"
                                             )
                                             continue
