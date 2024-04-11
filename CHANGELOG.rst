@@ -2,7 +2,7 @@
 Changelog
 =========
 
-Version 1.9.4
+Version 1.9.5
 =============
 - Nu statistieken op basis van weighted_sample_statistics
 - Force calculate included
