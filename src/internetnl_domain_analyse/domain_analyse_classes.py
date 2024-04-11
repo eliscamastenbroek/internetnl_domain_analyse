@@ -500,8 +500,10 @@ class DomainAnalyser:
                 continue
 
             if data.index.size < df_weights.index.size:
-                _logger.debug("we filtered data. Also filter the weights")
-                df_weights.reindex(data.index)
+                _logger.info(
+                    f"we filtered data, reducing from {df_weights.index.size} to {data.index.size}"
+                )
+                df_weights = df_weights.reindex(data.index)
 
             stats = WeightedSampleStatistics(
                 group_keys=group_by,
@@ -1200,6 +1202,7 @@ class DomainPlotter:
             legend_position = plot_prop.get("legend_position")
             legend_max_columns = plot_prop.get("legend_max_columns")
             y_spacing_bar_plot = plot_prop.get("y_spacing_bar_plot")
+            bar_width = plot_prop.get("bar_width")
 
             box_margin = plot_prop.get("box_margin")
 
@@ -1348,6 +1351,11 @@ class DomainPlotter:
                             y_spacing = plot_info.y_spacing
                         else:
                             y_spacing = y_spacing_bar_plot
+
+                        if plot_info.bar_width is not None:
+                            bar_width = plot_info.bar_width
+                        else:
+                            bar_width = bar_width
 
                         if keep_options:
                             # als keep options gegeven is dan houden we alle opties
@@ -1501,6 +1509,7 @@ class DomainPlotter:
                                     enable_highcharts_legend=plot_info.enable_highcharts_legend,
                                     unit=unit,
                                     english=self.english,
+                                    bar_width=bar_width,
                                 )
 
                                 _logger.debug(
@@ -1590,6 +1599,7 @@ class PlotInfo:
         self.y_spacing = None
         self.legend_position = None
         self.enable_highcharts_legend = True
+        self.bar_width = None
 
         self.get_plot_info()
 
@@ -1620,6 +1630,7 @@ class PlotInfo:
                     self.label = info.get("highcharts_label")
                     self.y_max = info.get("y_max")
                     self.y_spacing = info.get("y_spacing")
+                    self.bar_width = info.get("bar_width")
                     self.legend_position = get_windows_or_linux_value(
                         info.get("legend_position")
                     )

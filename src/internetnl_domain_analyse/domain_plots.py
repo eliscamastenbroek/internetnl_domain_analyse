@@ -251,10 +251,17 @@ def make_bar_plot_horizontal(
     legend_max_columns,
     unit=None,
     english=False,
+    bar_width=None,
 ):
     x_range = None
+
+    if bar_width is not None:
+        kwargs = dict(width=bar_width)
+    else:
+        kwargs = {}
+
     try:
-        plot_df.plot(kind="barh", ax=axis, rot=0, legend=None)
+        plot_df.plot(kind="barh", ax=axis, rot=0, legend=None, **kwargs)
     except IndexError as err:
         _logger.warning(err)
         _logger.warning(f"skip {plot_title}")
@@ -436,6 +443,7 @@ def make_bar_plot(
     enable_highcharts_legend=True,
     unit=None,
     english=False,
+    bar_width=None,
 ):
     image_name = re.sub("_\d(\.\d){0,1}$", "", plot_variable)
     image_file = image_directory / Path(
@@ -524,6 +532,7 @@ def make_bar_plot(
             legend_max_columns=legend_max_columns,
             unit=unit,
             english=english,
+            bar_width=bar_width,
         )
 
     _logger.info(f"Saving plot {image_file_name}")
