@@ -511,6 +511,8 @@ class DomainAnalyser:
                 report_numbers=var_prop_klass.report_number,
             )
 
+            stats.activate()
+
             if (
                     not np.isnan(var_prop_klass.report_number)
                     and var_prop_klass.report_number
