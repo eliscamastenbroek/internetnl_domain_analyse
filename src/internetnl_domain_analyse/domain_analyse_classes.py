@@ -133,13 +133,12 @@ class ImageFileInfo:
 class RecordsCacheInfo:
     def __init__(self, records_cache_data: dict, year: str, stat_directory: str = None):
         """
-        Store the properties of the caches file in a class
+        Store the properties of the cache file in a class
         """
         self.records_cache_data = records_cache_data
         self.stat_directory = stat_directory
 
-        # pick the last two digit of the year
-        self.year_digits = f"{year}"[-2:]
+        self.year_digits = f"{year}"
 
         self.cache_dir = None
         self.file_name = None
@@ -150,7 +149,7 @@ class RecordsCacheInfo:
 
     def get_cache_file_name(self):
         """
-        Retrieve the cache file name from the dictionary. If environments variables are given,
+        Retrieve the cache file name from the dictionary. If environment variables are given,
         base the directory on the environment name. Names are given like RECORDS_CACHE_DIR_20,
         RECORDS_CACHE_DIR_21, for 2020, 2021 resp.
         """
