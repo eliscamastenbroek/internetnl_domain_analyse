@@ -24,7 +24,8 @@ def read_tables_from_sqlite(filename: Path, table_names, index_name) -> pd.DataF
     if not filename.exists():
         _logger.warning(
             "Records file not found. Make sure you set the environment variable "
-            "RECORDS_CACHE_DIR or pass it via the command line argument "
+            "RECORDS_CACHE_DIR_<yearkey> for the file and RECORDS_TABLE_RECS_<yearkey> and "
+            "RECORDS_TABLE_INFO<yearkey> for the tables or pass it via the command line argument "
             "--records_cache_dir"
         )
         raise FileNotFoundError(f"Records file not found {filename.absolute()}")
@@ -116,14 +117,14 @@ def fill_booleans(tables, translations, variables):
 
 
 def prepare_stat_data_for_write(
-        all_stats,
-        file_base,
-        variables,
-        module_key,
-        variable_key,
-        breakdown_labels=None,
-        n_digits=3,
-        connection=None,
+    all_stats,
+    file_base,
+    variables,
+    module_key,
+    variable_key,
+    breakdown_labels=None,
+    n_digits=3,
+    connection=None,
 ):
     data = pd.DataFrame.from_dict(all_stats)
     if connection is not None:
@@ -173,7 +174,7 @@ def get_option_mask(question_df, variables, question_type, valid_options=None):
 
 
 def impose_variable_defaults(
-        variables, module_info: dict = None, module_key: str = None
+    variables, module_info: dict = None, module_key: str = None
 ):
     """
     Impose default values to  the variables data frame
@@ -227,21 +228,21 @@ def impose_variable_defaults(
         # defined for the current variable, copy it to the associate column in the data frame
         # such that we can access it more easily
         for name in (
-                "type",
-                "fixed",
-                "original_name",
-                "question",
-                "label",
-                "check",
-                "optional",
-                "gewicht",
-                "no_impute",
-                "info_per_breakdown",
-                "report_number",
-                "section",
-                "keep_options",
-                "eval",
-                "unit",
+            "type",
+            "fixed",
+            "original_name",
+            "question",
+            "label",
+            "check",
+            "optional",
+            "gewicht",
+            "no_impute",
+            "info_per_breakdown",
+            "report_number",
+            "section",
+            "keep_options",
+            "eval",
+            "unit",
         ):
             try:
                 variables.loc[var_key, name] = var_prop[name]

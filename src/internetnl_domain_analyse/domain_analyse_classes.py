@@ -131,14 +131,21 @@ class ImageFileInfo:
 
 
 class RecordsCacheInfo:
-    def __init__(self, records_cache_data: dict, year: str, stat_directory: str = None):
+    def __init__(
+        self, records_cache_data: dict, year_key: str, stat_directory: str = None
+    ):
         """
         Store the properties of the cache file in a class
         """
         self.records_cache_data = records_cache_data
         self.stat_directory = stat_directory
 
-        self.year_digits = f"{year}"
+        self.year_key = f"{year_key}"
+        match = re.search("20(\d\d)", self.year_key)
+        if match:
+            self.year_digits = match.group(1)
+        else:
+            self.year_digits = year_key[-2:]
 
         self.cache_dir = None
         self.file_name = None
@@ -154,7 +161,7 @@ class RecordsCacheInfo:
         RECORDS_CACHE_DIR_21, for 2020, 2021 resp.
         """
 
-        records_environment_variable = "_".join(["RECORDS_CACHE_DIR", self.year_digits])
+        records_environment_variable = "_".join(["RECORDS_CACHE_DIR", self.year_key])
         records_cache_dir_name = os.getenv(records_environment_variable)
 
         if records_cache_dir_name is None:
@@ -176,12 +183,27 @@ class RecordsCacheInfo:
         """
         Get the table names of the cache files.
         """
-        self.table_names = self.records_cache_data.get("records_table_names")
-        if self.table_names is None:
-            self.table_names = [
-                f"records_df_{self.year_digits}_2",
-                f"info_records_df_{self.year_digits}",
-            ]
+
+        table_records_environment_variable = "_".join(
+            ["RECORDS_TABLE_RECS", self.year_key]
+        )
+        table_records_name = os.environ.get(table_records_environment_variable)
+        table_info_environment_variable = "_".join(
+            ["RECORDS_TABLE_INFO", self.year_key]
+        )
+        tabl_info_name = os.environ.get(table_info_environment_variable)
+
+        if table_records_name is None:
+            # the environment variabel RECORDS_TABLE_INFO is not set. read from the settings file
+            self.table_names = self.records_cache_data.get("records_table_names")
+            if self.table_names is None:
+                # It is also not found in the settings file. Make a guess
+                self.table_names = [
+                    f"records_df_{self.year_digits}_2",
+                    f"info_records_df_{self.year_digits}",
+                ]
+        else:
+            self.table_names = [table_records_name, tabl_info_name]
 
 
 class DomainAnalyser:

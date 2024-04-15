@@ -380,7 +380,7 @@ def main():
             records_cache_data = records_cache_data_per_year[scan_year]
             records_cache_info = RecordsCacheInfo(
                 records_cache_data=records_cache_data,
-                year=scan_year,
+                year_key=scan_year,
                 stat_directory=stat_directory,
             )
 
