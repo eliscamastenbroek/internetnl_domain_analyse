@@ -1127,6 +1127,8 @@ class DomainPlotter:
     def make_plots(self):
         _logger.info("Making the plot")
 
+        legend_translates = dict()
+
         for plot_key, plot_prop in self.plot_info.items():
             if not plot_prop.get("do_it", True):
                 _logger.debug(f"Skipping plot {plot_key}")
@@ -1157,12 +1159,13 @@ class DomainPlotter:
             stats_df_per_year = {}
             last_year = None
             df_index_names = None
-            for year in scan_data_per_year.keys():
+            for year, scan_info in scan_data_per_year.items():
                 df = self.get_plot_cache(
                     scan_data_key=scan_data_key, plot_key=plot_key, year_key=year
                 )
+                year_label = scan_info.get("label", year)
                 if df is not None:
-                    stats_df_per_year[year] = df
+                    stats_df_per_year[year_label] = df
                     last_year = year
                     df_index_names = list(df.index.names)
 
