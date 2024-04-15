@@ -2,11 +2,12 @@
 Changelog
 =========
 
-Version 1.9.6
+Version 1.9.7
 =============
 - Nu statistieken op basis van weighted_sample_statistics
 - Force calculate included
 - Histograms can now be plotted as well
+- Bar width can now be adjusted
 
 Version 1.8.7
 =============
