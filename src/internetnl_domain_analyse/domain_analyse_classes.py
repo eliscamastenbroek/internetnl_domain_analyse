@@ -88,7 +88,7 @@ class ImageFileInfo:
         if section:
             self.data[image_key][plot_key]["section"] = section
 
-        # in order to get the key order in the dict the same as in the input file, alter the order
+        # To get the key order in the dict the same as in the input file, alter the order
         if len(self.data[image_key].keys()) > 1:
             tmp_data = self.data[image_key].copy()
             self.data[image_key] = dict()
@@ -130,7 +130,7 @@ class ImageFileInfo:
             yaml.dump(data=self.data, stream=stream, Dumper=yaml.Dumper)
 
 
-class RecordsCacheInfo:
+class RecordCacheInfo:
     def __init__(
         self, records_cache_data: dict, year_key: str, stat_directory: str = None
     ):
@@ -215,7 +215,7 @@ class DomainAnalyser:
         tld_extract_cache_directory=None,
         output_file=None,
         reset=None,
-        records_cache_info: RecordsCacheInfo = None,
+        records_cache_info: RecordCacheInfo = None,
         internet_nl_filename=None,
         breakdown_labels=None,
         statistics: dict = None,
@@ -254,7 +254,7 @@ class DomainAnalyser:
         outfile_suff = self.output_file.suffixes
         outfile_base = self.output_file.with_suffix("").with_suffix("").as_posix()
         outfile_year = Path(
-            "_".join([outfile_base, scan_data_key, self.records_cache_info.year_digits])
+            "_".join([outfile_base, scan_data_key, self.records_cache_info.year_key])
         )
         self.output_file = outfile_year.with_suffix(".".join(outfile_suff))
         self.dump_cache_as_sqlite = dump_cache_as_sqlite
@@ -290,7 +290,7 @@ class DomainAnalyser:
             self.internet_nl_filename = Path("internet_nl.sqlite")
 
         self.cache_directory = Path(
-            "_".join([cache_directory_base_name, self.records_cache_info.year_digits])
+            "_".join([cache_directory_base_name, self.records_cache_info.year_key])
         )
         self.cache_directory.mkdir(exist_ok=True)
         if tld_extract_cache_directory is None:
@@ -298,9 +298,7 @@ class DomainAnalyser:
         else:
             self.tld_extract_cache_directory = tld_extract_cache_directory
         cache_file_base = Path(
-            "_".join(
-                [cache_file_base, self.records_cache_info.year_digits, scan_data_key]
-            )
+            "_".join([cache_file_base, self.records_cache_info.year_key, scan_data_key])
             + ".pkl"
         )
         self.cache_file = self.cache_directory / cache_file_base

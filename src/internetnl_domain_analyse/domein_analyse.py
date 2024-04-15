@@ -13,7 +13,7 @@ from internetnl_domain_analyse import __version__
 from internetnl_domain_analyse.domain_analyse_classes import (
     DomainAnalyser,
     DomainPlotter,
-    RecordsCacheInfo,
+    RecordCacheInfo,
 )
 from internetnl_domain_analyse.domain_plots import (
     make_heatmap,
@@ -378,7 +378,7 @@ def main():
                 continue
             internet_nl_filename = Path(filename)
             records_cache_data = records_cache_data_per_year[scan_year]
-            records_cache_info = RecordsCacheInfo(
+            records_cache_info = RecordCacheInfo(
                 records_cache_data=records_cache_data,
                 year_key=scan_year,
                 stat_directory=stat_directory,
