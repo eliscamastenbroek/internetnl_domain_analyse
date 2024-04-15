@@ -1102,9 +1102,9 @@ class DomainPlotter:
             )
 
     #
-    def get_plot_cache(self, scan_data_key, plot_key, year):
-        last_two_digits = f"{year}"[-2:]
-        cache_directory = "_".join([self.cache_directory.as_posix(), last_two_digits])
+    def get_plot_cache(self, scan_data_key, plot_key, year_key):
+        year_label = f"{year_key}"
+        cache_directory = "_".join([self.cache_directory.as_posix(), year_label])
         cache_file = make_plot_cache_file_name(
             cache_directory=Path(cache_directory),
             prefix=scan_data_key,
@@ -1115,7 +1115,7 @@ class DomainPlotter:
             with open(cache_file, "rb") as stream:
                 stats_df_per_year = pickle.load(stream)
         except FileNotFoundError as err:
-            if self.scan_data[scan_data_key][year].get("data_file") is None:
+            if self.scan_data[scan_data_key][year_key].get("data_file") is None:
                 _logger.debug("We are skipping this year as the data is not available.")
             else:
                 # we missen de pkl file terwijl we wel een data file hebben. Genereer de foutmelding
@@ -1159,7 +1159,7 @@ class DomainPlotter:
             df_index_names = None
             for year in scan_data_per_year.keys():
                 df = self.get_plot_cache(
-                    scan_data_key=scan_data_key, plot_key=plot_key, year=year
+                    scan_data_key=scan_data_key, plot_key=plot_key, year_key=year
                 )
                 if df is not None:
                     stats_df_per_year[year] = df
@@ -1233,7 +1233,9 @@ class DomainPlotter:
                     stat_prop = self.statistics[ref_key]
                     scan_data_key = stat_prop.get("scan_data", self.default_scan)
                     ref_stat = self.get_plot_cache(
-                        scan_data_key=scan_data_key, plot_key=plot_key, year=last_year
+                        scan_data_key=scan_data_key,
+                        plot_key=plot_key,
+                        year_key=last_year,
                     )
                     reference_lines[ref_key]["data"] = ref_stat
 

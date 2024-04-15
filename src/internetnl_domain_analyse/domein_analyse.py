@@ -369,7 +369,8 @@ def main():
             if not scan_prop.get("do_it", True):
                 continue
             filename = scan_prop["data_file"]
-            years_to_add_to_plot_legend.append(scan_year)
+            legend_year_label = scan_prop.get("label", scan_year)
+            years_to_add_to_plot_legend.append(legend_year_label)
             if filename is None:
                 _logger.info(
                     f"File name for year {scan_year} was None. Skip it but add it to"
