@@ -1454,7 +1454,11 @@ class DomainPlotter:
                         _logger.info(f"Plot nr {plot_count}")
                         if plot_bar:
                             if keep_options:
-                                for year in scan_data_per_year.keys():
+                                for (
+                                    year_key,
+                                    local_scan_info,
+                                ) in scan_data_per_year.items():
+                                    year = local_scan_info.get("label", year_key)
                                     this_year_df = plot_df.loc[
                                         slice(None),
                                         slice(None),
@@ -1463,7 +1467,7 @@ class DomainPlotter:
                                         year,
                                     ]
                                     image_file = make_bar_plot_stacked(
-                                        year=year,
+                                        year=year_key,
                                         plot_df=this_year_df,
                                         plot_key=plot_key,
                                         plot_variable=plot_variable,
