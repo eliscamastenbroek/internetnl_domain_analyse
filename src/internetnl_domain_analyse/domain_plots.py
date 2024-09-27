@@ -249,6 +249,7 @@ def make_bar_plot_horizontal(
     y_max_bar_plot,
     legend_position,
     legend_max_columns,
+    add_logo=True,
     unit=None,
     english=False,
     bar_width=None,
@@ -307,7 +308,12 @@ def make_bar_plot_horizontal(
         axis.tick_params(which="both", left=False)
 
         add_axis_label_background(
-            fig=fig, axes=axis, loc="east", radius_corner_in_mm=1, margin=margin
+            fig=fig,
+            axes=axis,
+            loc="east",
+            radius_corner_in_mm=1,
+            margin=margin,
+            add_logo=add_logo,
         )
 
         number_of_columns = plot_df.columns.values.size
@@ -351,6 +357,7 @@ def make_bar_plot_vertical(
     xoff,
     yoff,
     trans,
+    add_logo=True,
     unit=None,
     english=False,
 ):
@@ -418,6 +425,7 @@ def make_bar_plot(
     question_name,
     image_directory,
     show_plots=False,
+    add_logo=True,
     figsize=None,
     highcharts_height=None,
     image_type="pdf",
@@ -508,6 +516,7 @@ def make_bar_plot(
             xoff=xoff,
             yoff=yoff,
             trans=trans,
+            add_logo=add_logo,
             unit=unit,
             english=english,
         )
@@ -530,6 +539,7 @@ def make_bar_plot(
             y_max_bar_plot=y_max_bar_plot,
             legend_position=legend_position,
             legend_max_columns=legend_max_columns,
+            add_logo=add_logo,
             unit=unit,
             english=english,
             bar_width=bar_width,
@@ -602,6 +612,7 @@ def make_bar_plot_stacked(
     barh=False,
     subplot_adjust=None,
     sort_values=False,
+    add_logo=True,
     y_max_bar_plot=None,
     y_spacing_bar_plot=None,
     translations=None,
@@ -723,7 +734,12 @@ def make_bar_plot_stacked(
         axis.tick_params(which="both", left=False)
 
         add_axis_label_background(
-            fig=fig, axes=axis, loc="east", radius_corner_in_mm=1, margin=margin
+            fig=fig,
+            axes=axis,
+            loc="east",
+            radius_corner_in_mm=1,
+            margin=margin,
+            add_logo=add_logo,
         )
 
         number_of_columns = plot_df.columns.values.size

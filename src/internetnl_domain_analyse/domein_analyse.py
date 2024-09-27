@@ -226,6 +226,12 @@ def parse_args():
         help="Gebruik Engelse vertaling voor labels van plaatjes",
         action="store_true",
     )
+    parser.add_argument(
+        "--no_logo",
+        action="store_true",
+        default=False,
+        help="Voeg een CBS logo toe aan de plaatjes",
+    )
     parsed_arguments = parser.parse_args()
 
     return parsed_arguments
@@ -273,6 +279,11 @@ def main():
     print("-" * 100)
 
     _logger.setLevel(args.loglevel)
+
+    if args.no_logo:
+        add_logo = False
+    else:
+        add_logo = True
 
     _logger.info("Reading settings file {}".format(args.settings_filename))
     with codecs.open(args.settings_filename, "r", encoding="UTF-8") as stream:
@@ -468,6 +479,7 @@ def main():
                 show_title=show_title,
                 cdf_plot=cdf_plot,
                 bar_plot=bar_plot,
+                add_logo=add_logo,
                 cache_directory=cache_directory_base_name,
                 translations=label_translations,
                 export_highcharts=args.export_highcharts,

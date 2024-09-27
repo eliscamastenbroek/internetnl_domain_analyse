@@ -1027,6 +1027,7 @@ class DomainPlotter:
         cdf_plot=False,
         bar_plot=False,
         cor_plot=False,
+        add_logo=True,
         cumulative=False,
         show_title=False,
         breakdown_labels=None,
@@ -1082,7 +1083,7 @@ class DomainPlotter:
         )
         self.image_info.read_cache()
 
-        self.make_plots()
+        self.make_plots(add_logo=add_logo)
 
         self.image_info.fix_order(self.variables)
         self.image_info.write_cache()
@@ -1124,7 +1125,7 @@ class DomainPlotter:
             stats_df_per_year = None
         return stats_df_per_year
 
-    def make_plots(self):
+    def make_plots(self, add_logo=True):
         _logger.info("Making the plot")
 
         legend_translates = dict()
@@ -1469,6 +1470,7 @@ class DomainPlotter:
                                     image_file = make_bar_plot_stacked(
                                         year=year_key,
                                         plot_df=this_year_df,
+                                        add_logo=add_logo,
                                         plot_key=plot_key,
                                         plot_variable=plot_variable,
                                         scan_data_key=scan_data_key,
@@ -1507,6 +1509,7 @@ class DomainPlotter:
                                     plot_df=plot_df,
                                     plot_key=plot_key,
                                     plot_variable=plot_variable,
+                                    add_logo=add_logo,
                                     scan_data_key=scan_data_key,
                                     module_name=module_name,
                                     question_name=question_name,
