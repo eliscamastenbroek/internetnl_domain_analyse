@@ -2,6 +2,10 @@
 Changelog
 =========
 
+Version 2.0.5
+=============
+- Nieuwe optie 'no_logo' toegevoegd
+
 Version 2.0.4
 =============
 - Nu statistieken op basis van weighted_sample_statistics
