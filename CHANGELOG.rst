@@ -2,6 +2,10 @@
 Changelog
 =========
 
+Version 2.0.6
+=============
+- Kleine vertaalfout in Engelse versie
+
 Version 2.0.5
 =============
 - Nieuwe optie 'no_logo' toegevoegd
