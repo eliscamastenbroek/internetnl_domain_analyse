@@ -151,7 +151,7 @@ def make_cdf_plot(
         if not english:
             y_label = "Cumulatief % van bedrijven met website"
         else:
-            y_label = "Cumulative % of companies with met website"
+            y_label = "Cumulative % of companies with with website"
 
     else:
         if not english:
