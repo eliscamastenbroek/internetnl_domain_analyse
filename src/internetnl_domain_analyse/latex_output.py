@@ -89,7 +89,11 @@ def make_latex_overview(
                         f"{err2}\nNo section key {section_key} was found. skipping"
                     )
                 else:
-                    section_title = section_prop["title"]
+                    try:
+                        section_title = section_prop["title"]
+                    except TypeError:
+                        _logger.warning(f"Failed for {section_key}: {section_prop}")
+                        raise
         try:
             doc = doc_per_module[module]
         except KeyError:
