@@ -2,6 +2,10 @@
 Changelog
 =========
 
+Version 2.0.8
+=============
+- update tox.ini
+
 Version 2.0.7
 =============
 - import vanuit ict_analyser
