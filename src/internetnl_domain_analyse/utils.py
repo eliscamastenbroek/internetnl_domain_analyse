@@ -1,14 +1,13 @@
 import logging
+import re
 import sqlite3
 import sys
 from pathlib import Path
 
 import pandas as pd
 import yaml
-from tqdm import tqdm
-
 from internetnl_scan.utils import get_clean_url
-
+from tqdm import tqdm
 
 _logger = logging.getLogger(__name__)
 tld_logger = logging.getLogger("tldextract")
@@ -35,7 +34,7 @@ def reorganise_stat_df(
         Use the original name of the variable
     """
 
-    logger.debug("Reorganising stat")
+    _logger.debug("Reorganising stat")
     # at the beginning, sbi and gk as multindex index, variabel/choice as mi-columns
     try:
         mask = records_stats.index.get_level_values(1) != ""
@@ -70,7 +69,7 @@ def reorganise_stat_df(
     stat_df["od_key"] = None
 
     for var_name in stat_df[variable_key].unique():
-        logger.debug("var varname {}".format(var_name))
+        _logger.debug("var varname {}".format(var_name))
         # copy the module key from the variables to the statistics data frame
         # get the mask to identify all variable in the stat_df equal to the current var_name
         # note that var_name in stat_df is not unique as each varname occurs multiple time
@@ -147,7 +146,7 @@ def reorganise_stat_df(
                 try:
                     option_label = options_dict[choice]
                 except KeyError:
-                    logger.warning(f"Invalid option {choice} for {var_name}")
+                    _logger.warning(f"Invalid option {choice} for {var_name}")
                 else:
                     stat_df.loc[mask, "optie"] = option_label
 
