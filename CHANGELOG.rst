@@ -2,6 +2,10 @@
 Changelog
 =========
 
+Version 2.0.9
+=============
+- link naar ict_analyser verwijderd
+
 Version 2.0.8
 =============
 - update tox.ini

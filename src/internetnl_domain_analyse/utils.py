@@ -9,11 +9,161 @@ from tqdm import tqdm
 
 from internetnl_scan.utils import get_clean_url
 
-from ict_analyser.utils import reorganise_stat_df
 
 _logger = logging.getLogger(__name__)
 tld_logger = logging.getLogger("tldextract")
 tld_logger.setLevel(logging.WARNING)
+
+
+def reorganise_stat_df(
+    records_stats,
+    variables,
+    variable_key,
+    use_original_names=False,
+    n_digits=3,
+    sort_index=True,
+    module_key="module",
+    vraag_key="vraag",
+    optie_key="optie",
+):
+    """
+    We have a statistics data frame, but not yet all the information of the variables
+
+    Parameters
+    ----------
+    use_original_names: bool
+        Use the original name of the variable
+    """
+
+    logger.debug("Reorganising stat")
+    # at the beginning, sbi and gk as multindex index, variabel/choice as mi-columns
+    try:
+        mask = records_stats.index.get_level_values(1) != ""
+    except IndexError:
+        mask = records_stats.index.get_level_values(0) != ""
+    stat_df = records_stats.loc[mask].copy()
+    # with unstack, the gk is put as an extra level to the columns. sbi is now a normal  index
+    if len(stat_df.index.names) > 1:
+        stat_df = stat_df.unstack()
+
+    # transposing and resetting index puts the variables and choice + gk at the index,
+    # reset index create columns out of them. The sbi codes are now at the columns
+    temp_df = stat_df.transpose()
+    stat_df = temp_df.reset_index()
+    # stat_df = stat_df.T.reset_index()
+    # onderstaande bij 1 index
+    stat_df.rename(columns={"index": "variable"}, inplace=True)
+    # onderstaand alleen bij unstack
+    stat_df.rename(columns={"level_0": "variable"}, inplace=True)
+
+    try:
+        stat_df.drop([""], inplace=True, axis=1)
+    except KeyError:
+        pass
+
+    # add new columns with the module type so we can reorganise the questions into modules
+    stat_df[module_key] = "Unknown"
+    stat_df["module_include"] = True
+    stat_df[optie_key] = ""
+    stat_df[vraag_key] = ""
+    stat_df["check"] = False
+    stat_df["od_key"] = None
+
+    for var_name in stat_df[variable_key].unique():
+        logger.debug("var varname {}".format(var_name))
+        # copy the module key from the variables to the statistics data frame
+        # get the mask to identify all variable in the stat_df equal to the current var_name
+        # note that var_name in stat_df is not unique as each varname occurs multiple time
+        # for other gk code, sbi groups etc. However, it is unique in the variabel dataframe
+
+        mask = stat_df[variable_key] == var_name
+
+        # tijdelijke oplossing categorien
+        # import re
+        # we hebben de naam nodig zonder nummertje erachter. De naam is nodig om gegevens
+        # uit de yaml file te halen\
+        match = re.search(r"_(\d)[\.0]*$", var_name)
+        if bool(match):
+            choice = int(match.group(1))
+            var_name_clean = re.sub(r"_\d[\.0]*$", "", var_name)
+        else:
+            choice = None
+            var_name_clean = var_name
+        # var_name_clean = re.sub("\_x$", "", var_name_clean)
+        try:
+            module_key_key = variables.loc[var_name_clean, module_key]
+        except KeyError:
+            pass
+        else:
+            stat_df.loc[mask, module_key] = module_key_key
+
+        try:
+            module_label = variables.loc[var_name_clean, "module_label"]
+        except KeyError:
+            pass
+        else:
+            if module_label is not None:
+                stat_df.loc[mask, module_key] = module_label
+
+        if use_original_names:
+            try:
+                label = variables.loc[var_name_clean, "original_name"]
+            except KeyError:
+                label = var_name
+            else:
+                if label in ("", None):
+                    label = var_name
+        else:
+            try:
+                label = variables.loc[var_name_clean, "label"]
+            except KeyError:
+                label = var_name
+            else:
+                if label in ("", None):
+                    label = var_name
+
+        stat_df.loc[mask, "vraag"] = label
+
+        try:
+            module_include = variables.loc[var_name_clean, "module_include"]
+        except KeyError:
+            pass
+        else:
+            stat_df.loc[mask, "module_include"] = module_include
+
+        try:
+            check_vraag = variables.loc[var_name_clean, "check"]
+        except KeyError:
+            pass
+        else:
+            stat_df.loc[mask, "check"] = check_vraag
+
+        try:
+            options_dict = variables.loc[var_name_clean, "options"]
+        except KeyError:
+            pass
+        else:
+            if options_dict is not None and choice is not None:
+                try:
+                    option_label = options_dict[choice]
+                except KeyError:
+                    logger.warning(f"Invalid option {choice} for {var_name}")
+                else:
+                    stat_df.loc[mask, "optie"] = option_label
+
+    # select only the module with the include flag to true
+    stat_df = stat_df[stat_df["module_include"]]
+    stat_df = stat_df[stat_df[module_key] != "Unknown"]
+    stat_df.drop(["module_include", "check", "od_key"], axis=1, inplace=True)
+
+    if n_digits is not None:
+        stat_df = stat_df.round(decimals=n_digits)
+
+    index_variables = [module_key, vraag_key, optie_key]
+    if sort_index:
+        stat_df.sort_values([module_key, vraag_key, variable_key], axis=0, inplace=True)
+    stat_df.set_index(index_variables, inplace=True, drop=True)
+    return stat_df
 
 
 # noinspection SqlDialectInspection
