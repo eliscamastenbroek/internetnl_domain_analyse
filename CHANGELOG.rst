@@ -2,6 +2,10 @@
 Changelog
 =========
 
+Version 2.0.7
+=============
+- import vanuit ict_analyser
+
 Version 2.0.6
 =============
 - Kleine vertaalfout in Engelse versie
